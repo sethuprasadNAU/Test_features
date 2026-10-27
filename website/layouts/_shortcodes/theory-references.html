@@ -1,0 +1,16 @@
+{{- /*
+  {{< theory-references >}}
+
+  The numbered reference list of the two theory pages, from
+  data/theory_references.toml, so both pages carry the same numbers and there
+  is one copy to correct (task /w-37). Each entry gets the anchor (#ref-2)
+  that the in-text citations link to: [[2]](#ref-2). The site renders no raw
+  HTML from Markdown, so the anchor needs a shortcode.
+*/ -}}
+{{- $refs := hugo.Data.theory_references.refs -}}
+{{- if not $refs -}}
+  {{- errorf "the theory-references shortcode found no data/theory_references.toml entries (%s)" .Page.Path -}}
+{{- end -}}
+{{- range $refs }}
+<p><span class="ref-num" id="ref-{{ .n }}">[{{ .n }}]</span> {{ .text | $.Page.RenderString }}</p>
+{{- end }}

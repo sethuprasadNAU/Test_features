@@ -1,0 +1,28 @@
+name: tritrack_sync
+description: >
+  Shared sync/merge primitives for TriTrack's app and server: the table and
+  schema-version constants, the last-write-wins merge rule, row validation,
+  and the backup envelope DTOs. Plain Dart — no Flutter, no sqflite — so both
+  sides can depend on it without disagreeing about the merge rule or the
+  column set.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.12.2
+
+# **The first dependency this package has had** (task 11.331). Pinned exactly,
+# the way `server/pubspec.yaml` pins everything, because the server compiles
+# this package into the process that holds the Postgres credentials (Security
+# Model §3.8 names it, what it is trusted with, and the alternatives).
+dependencies:
+  # The IANA time-zone rules, so a deployment day can be read in the field
+  # site's zone rather than the reader's. Published by the Dart team
+  # (`labs.dart.dev`). Trusted with exactly one job: converting between an
+  # instant and a wall-clock date in a named zone. It never sees a row.
+  # Its tz database is 2025c; a newer one arrives only by moving this pin.
+  timezone: 0.11.1
+
+dev_dependencies:
+  test: ^1.25.0
+  lints: ^5.0.0

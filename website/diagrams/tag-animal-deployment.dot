@@ -1,0 +1,28 @@
+# Source for website/static/diagrams/tag-animal-deployment.svg.
+# Rendered by website/tools/render_diagrams.sh — do not hand-edit the SVG.
+#
+# For managing-your-tags.md: the tag is equipment, the individual is the
+# animal, and the deployment is the dated link between them. See
+# CLAUDE_DOCS/ANIMALS_AND_DEPLOYMENTS_DESIGN.md §1, §2 and §4a — the note
+# below states §4a's rule in one sentence, because it is the idea a beta
+# crew is most likely to get wrong.
+digraph TagAnimalDeployment {
+  rankdir=TB;
+  bgcolor="transparent";
+  graph [fontname="Helvetica,Arial,sans-serif", fontsize=12, margin=0,
+         nodesep=0.5, ranksep=0.6];
+  node [fontname="Helvetica,Arial,sans-serif", fontsize=13, shape=box,
+        style="rounded", margin="0.2,0.14"];
+  edge [fontname="Helvetica,Arial,sans-serif", fontsize=11];
+
+  tag [label="Tag\nequipment you own"];
+  deployment [label="Deployment — the dated link\nattached_date → removed_date",
+              class="highlight"];
+  individual [label="Individual\nthe animal you study"];
+  note [shape=note, class="note", fontsize=11,
+        label="A bearing gets its animal from the\lmoment it was taken, not from a\lpointer on the tag — it belongs to\lwhichever deployment's dates cover\lthat moment.\l"];
+
+  tag -> deployment;
+  deployment -> individual;
+  individual -> note [style=invis];
+}

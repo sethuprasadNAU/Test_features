@@ -1,0 +1,52 @@
+{
+  "_doc": [
+    "Task 10.91, repaired by task 10.95 (L-4): the committed baseline for",
+    "scripts/gate_c_adversarial_pass.py. This is not a suppression list.",
+    "gate_c_baseline.py enforces on every run:",
+    "  1. A failure whose check_id is not listed here is red.",
+    "  2. An entry whose cited `section` does not exist in",
+    "     TriTrack_Security_Model.md, whose section text does not itself say",
+    "     the finding is accepted/non-blocking, or whose section never names",
+    "     this entry's own finding_id, is red.",
+    "  3. A listed check that PASSES this run (instead of failing) is red —",
+    "     narrow this file deliberately in the same change that fixes it,",
+    "     never leave a stale entry to hide a future regression.",
+    "  4. A run whose total check count (held + failed + skipped) does not",
+    "     match expected_check_count below is red.",
+    "  5. An entry may only be added once the cited section already records",
+    "     the finding as accepted; never add the entry in the same change",
+    "     that introduces or first observes the failure.",
+    "`check_id` is the FULL, EXACT held_check() name string in",
+    "gate_c_adversarial_pass.py -- not its leading token. L-4: the leading",
+    "token space collides (`Cd` names three distinct checks; `Ea`, `A1`, `A2`",
+    "name two each), so a baseline keyed on it could absorb a genuinely new",
+    "failure under an existing entry's identity."
+  ],
+  "expected_check_count": 40,
+  "entries": [
+    {
+      "check_id": "Ce2 a denial flood cannot grow the audit store without bound",
+      "finding_id": "D-2 (row-count arm)",
+      "section": "9.4",
+      "note": "A denial flood grows the audit store without bound; /sync/pull carries no rate limit and Sec4.7's retention sweep is a mechanism nothing schedules. Sec9.4 (the #### D-2 subsection) rates this explicitly Not blocking, on availability grounds (Sec5.6) unaffected by tasks 10.28/10.33."
+    },
+    {
+      "check_id": "Dc a User_Emails key another user holds is indistinguishable from a free one",
+      "finding_id": "G-4",
+      "section": "9.5",
+      "note": "A User_Emails key another user holds answers identically to a free one -- D-1 arm (c), unscoped because User_Emails has no project column. Sec9.5 rates the disclosure negligible (a client-generated UUIDv4, guessing 122 bits) and says explicitly that is why this is not blocking; Sec11.7 records the accept decision formally."
+    },
+    {
+      "check_id": "Dh a row cannot be pinned at the maximum revision",
+      "finding_id": "revision unbounded",
+      "section": "8.4",
+      "note": "revision is never range-checked, so any row a caller may write can be pinned at 2^63-1 and never legitimately updated again. First recorded Sec8.4 under 'Other new findings, recorded, none blocking', re-confirmed live at every later gate."
+    },
+    {
+      "check_id": "Eb a Tags key another project holds is indistinguishable from a free one",
+      "finding_id": "H-3",
+      "section": "10.7",
+      "note": "A Tags key another project holds answers identically to a free one -- the same D-1 arm (c) shape as G-4, on the same random-UUIDv4 key. Sec10.7 rates it explicitly Non-blocking for G-4's reason, which applies unchanged."
+    }
+  ]
+}

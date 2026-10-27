@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>CADisableMinimumFrameDurationOnPhone</key>
+		<true/>
+		<key>CFBundleDevelopmentRegion</key>
+		<string>$(DEVELOPMENT_LANGUAGE)</string>
+		<key>CFBundleDisplayName</key>
+		<string>TriTrack</string>
+		<key>CFBundleExecutable</key>
+		<string>$(EXECUTABLE_NAME)</string>
+		<key>CFBundleIdentifier</key>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+		<key>CFBundleInfoDictionaryVersion</key>
+		<string>6.0</string>
+		<key>CFBundleName</key>
+		<string>TriTrack</string>
+		<key>CFBundlePackageType</key>
+		<string>APPL</string>
+		<key>CFBundleShortVersionString</key>
+		<string>$(FLUTTER_BUILD_NAME)</string>
+		<key>CFBundleSignature</key>
+		<string>????</string>
+		<key>CFBundleVersion</key>
+		<string>$(FLUTTER_BUILD_NUMBER)</string>
+		<!-- Task 10.77 (finding K-3): closed today only by having no
+		     CFBundleURLTypes registered — the day Phase 11's magic-link flow
+		     adds one, the deep-link receiver below is armed by default
+		     (absent = enabled) with no second control, unlike Android where
+		     app_router.dart's `overridePlatformDefaultLocation` also applies.
+		     Disabled explicitly now so a future URL type does not silently
+		     re-open route injection past splash_screen.dart's identity gate. -->
+		<key>FlutterDeepLinkingEnabled</key>
+		<false/>
+		<key>LSRequiresIPhoneOS</key>
+		<true/>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>TriTrack uses your location to center the map and record where bearing observations were taken.</string>
+		<key>NSLocalNetworkUsageDescription</key>
+		<string>TriTrack can connect to a sync server on your local Wi-Fi network to back up and share observations across your own devices. This is entirely optional — the app works fully offline without it.</string>
+		<!-- Task 10.79 / Security Model §4.8 control 2. local_auth's
+		     isDeviceSupported() check touches the biometry APIs even though
+		     this app never calls authenticate() and never prompts for Face ID
+		     — iOS still requires the description string to be present or the
+		     process can be killed for the missing usage description the first
+		     time it touches LAContext. -->
+		<key>NSFaceIDUsageDescription</key>
+		<string>TriTrack checks whether this device has Face ID, Touch ID or a passcode set, to warn you once if it does not — nothing is ever scanned or stored.</string>
+		<key>NSAppTransportSecurity</key>
+		<dict>
+			<!-- Permits plain HTTP only to addresses iOS itself recognizes as
+			     local/private (LAN IPs, .local hostnames, loopback) — never to
+			     a public internet host. Needed because task 10.2 makes the
+			     server URL a field the user types in (a laptop's current LAN
+			     IP), so the exact address can't be pinned to an ATS exception
+			     domain the way a fixed production hostname could be. This is
+			     safe to ship in release builds, unlike Android's equivalent
+			     (see the Android network security config's comment for why
+			     that one is debug-only instead). -->
+			<key>NSAllowsLocalNetworking</key>
+			<true/>
+		</dict>
+		<key>UIApplicationSceneManifest</key>
+		<dict>
+			<key>UIApplicationSupportsMultipleScenes</key>
+			<false/>
+			<key>UISceneConfigurations</key>
+			<dict>
+				<key>UIWindowSceneSessionRoleApplication</key>
+				<array>
+					<dict>
+						<key>UISceneClassName</key>
+						<string>UIWindowScene</string>
+						<key>UISceneConfigurationName</key>
+						<string>flutter</string>
+						<key>UISceneDelegateClassName</key>
+						<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+						<key>UISceneStoryboardFile</key>
+						<string>Main</string>
+					</dict>
+				</array>
+			</dict>
+		</dict>
+		<key>UIApplicationSupportsIndirectInputEvents</key>
+		<true/>
+		<key>UILaunchStoryboardName</key>
+		<string>LaunchScreen</string>
+		<key>UIMainStoryboardFile</key>
+		<string>Main</string>
+		<key>UISupportedInterfaceOrientations</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<key>UISupportedInterfaceOrientations~ipad</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationPortraitUpsideDown</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<key>UIStatusBarHidden</key>
+		<false/>
+	</dict>
+</plist>

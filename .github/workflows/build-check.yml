@@ -1,0 +1,221 @@
+# Task 11.76 — prove the app still builds on all three platforms, without
+# spending the Actions budget doing it.
+#
+# ## The gap this closes
+#
+# Task 11.30 removed platform channels and their Xcode and Gradle references.
+# `flutter analyze` was clean and 1,524 tests passed, and none of that could
+# say whether the apps still *built* — a stale project-file reference passes
+# every test and fails a device build. Michael built iOS and Android by hand
+# to find out. This workflow is that check, automated.
+#
+# ## Why Android runs on every push and Apple does not
+#
+# Measured 2026-08-30: this repository is private on a free organisation
+# plan, roughly 2,000 Actions minutes a month, with Linux runners at 1x and
+# macOS runners at **10x**, and 195 minutes spent so far this month. A
+# Flutter iOS build takes 10-15 minutes of Mac time, so one run of iOS plus
+# macOS costs on the order of 200 *billed* minutes — more than the whole
+# month's spending to date, in a single run.
+#
+# So: Android builds on Linux, same runner class as the other two workflows,
+# effectively free. iOS and macOS build only on `workflow_dispatch` — a
+# button somebody presses — never on push, never on a schedule. Weekly alone
+# would be about 40% of the monthly allowance for one check.
+#
+# A trigger nobody is told to pull is not a trigger, so
+# `CLAUDE_DOCS/RELEASE_CHECKLIST.md` tells a person to press it.
+#
+# ## The capability guard travels with the build, not the offline suite
+#
+# `test/platform/capability_matrix_test.dart` (task 11.40) parses only the
+# three hand-written Android manifests, so everything Gradle merges in from a
+# plugin is invisible to it — task 11.66 found seven such additions by hand.
+# The fix needs the manifest Gradle actually merges, which only exists after
+# a build, so it runs here rather than under `flutter test`: see
+# `scripts/verify_merged_manifest_capabilities.sh`, run in the Android job
+# right after `flutter build apk --debug`.
+#
+# ## What this deliberately does not do
+#
+# No signing, no certificates, no keystores, no TestFlight. Michael has no
+# Apple Developer account yet. The Android build is `--debug`, which uses the
+# Flutter template's debug key rather than anything meant for distribution;
+# the macOS `Runner` target already ships Flutter's default ad-hoc
+# `CODE_SIGN_IDENTITY = "-"`, and `flutter build ios --no-codesign` skips
+# signing outright. Proving the three platforms compile is the whole point —
+# a private key that can publish software as Michael is its own decision,
+# deliberately not made here.
+name: Platform build check
+
+# PAUSED 2026-10-02 (task 11.325): this workflow now starts only when somebody presses
+# "Run workflow". Michael is making many commits a day and GitHub's minutes are limited, so
+# the checks run as one batch on his own machines instead: `scripts/nightly_check.sh`.
+# TO RESTORE: replace the `on:` block below with the one saved in the comment under it,
+# and delete this notice. `CLAUDE_DOCS/RELEASE_CHECKLIST.md` says when: before a release,
+# or when development slows. `test/documentation/ci_pause_test.dart` fails if this notice
+# and the real triggers disagree.
+on:
+  workflow_dispatch:
+#
+# Saved triggers, exactly as they were:
+# on:
+#   push:
+#   pull_request:
+
+concurrency:
+  group: build-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Same runner class, same pinned-SDK recipe as offline-suite.yml and
+  # server-suite.yml. Effectively free, so it runs on everything.
+  android:
+    name: Android
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      # **A one-commit checkout, deliberately (task 11.155's audit).** This job
+      # compiles the app at HEAD; nothing in it asks git anything, so a deeper
+      # clone would cost time on every push for nothing.
+      #
+      # **What it does read from its environment: the Android SDK the runner
+      # image ships, the network (`flutter pub get`, Gradle's dependency
+      # resolution, and the Flutter SDK clone on a cache miss), and the
+      # `/opt/flutter` cache.** Every one of those fails the build outright
+      # when it is missing — there is no shape here where the job succeeds
+      # having built less than an APK.
+      #
+      # **And its one derivation already refuses to match nothing:**
+      # `scripts/verify_merged_manifest_capabilities.sh` exits 1 if the merged
+      # manifest is absent, and exits 1 again if it parses zero
+      # `<uses-permission>` out of it rather than reporting full coverage of an
+      # empty set. That is the guard 11.150 wished it had had, already here.
+      - uses: actions/checkout@v4
+
+      - name: Cache the Flutter SDK
+        id: flutter-cache
+        uses: actions/cache@v4
+        with:
+          path: /opt/flutter
+          key: flutter-3.44.6-${{ runner.os }}
+
+      - name: Install Flutter 3.44.6
+        if: steps.flutter-cache.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch 3.44.6 https://github.com/flutter/flutter.git /opt/flutter
+          /opt/flutter/bin/flutter --version
+          /opt/flutter/bin/flutter precache --android
+
+      - name: Put Flutter on PATH
+        run: echo "/opt/flutter/bin" >> "$GITHUB_PATH"
+
+      - name: Confirm the toolchain is the pinned one
+        run: |
+          flutter --version
+          dart --version
+
+      - run: flutter pub get
+
+      # Debug, not release: proving it compiles and packages is the point,
+      # and a debug build needs no signing config at all rather than falling
+      # back to the debug key the way `flutter build apk` (release) does.
+      - name: flutter build apk --debug
+        run: flutter build apk --debug
+
+      # Task 11.66 found seven capabilities Gradle merges in from plugins
+      # that no hand-written manifest declares, so `capability_matrix_test.dart`
+      # (which reads only the hand-written ones) cannot see them. This reads
+      # the manifest the build above just produced.
+      - name: Check the merged manifest against the capability matrix
+        run: scripts/verify_merged_manifest_capabilities.sh
+
+      # Task 11.125, item 2(iv), from task 11.119's survey. **The debug
+      # manifest is the one that merges in `usesCleartextTraffic="true"`** —
+      # measured 2026-09-02: debug carries it, profile and release do not. So
+      # until now the capability guard's strongest property was checked only in
+      # the build where the transport control is switched off, which is task
+      # 10.54's shape exactly: a control measured in the configuration that
+      # disables it.
+      #
+      # A profile build, not release: release needs a signing config this
+      # workflow deliberately does not have, and profile is the nearest
+      # artifact that is built the way a shipped one is. Measured on the same
+      # day, the two manifests declare an identical set of permissions and
+      # components — which is the answer this step exists to keep true rather
+      # than a reason not to ask.
+      - name: flutter build apk --profile
+        run: flutter build apk --profile
+
+      - name: Check the profile merged manifest against the capability matrix
+        run: |
+          scripts/verify_merged_manifest_capabilities.sh \
+            build/app/intermediates/merged_manifest/profile/processProfileMainManifest/AndroidManifest.xml
+
+  # workflow_dispatch only — see the header. Both platforms share one job so
+  # the 10x-billed runner is spun up once rather than twice.
+  apple:
+    name: iOS + macOS (on demand)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      # **A one-commit checkout, for the same reason as the Android job above**
+      # (task 11.155's audit): this compiles the app at HEAD and reads no git
+      # history. It runs only on `workflow_dispatch`, and its environment
+      # dependencies — Xcode and the macOS runner image, the network, the
+      # Flutter cache — all fail the build rather than narrowing it.
+      - uses: actions/checkout@v4
+
+      - name: Record start time
+        id: clock
+        run: echo "epoch=$(date +%s)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache the Flutter SDK
+        id: flutter-cache
+        uses: actions/cache@v4
+        with:
+          path: /opt/flutter
+          key: flutter-3.44.6-${{ runner.os }}
+
+      - name: Install Flutter 3.44.6
+        if: steps.flutter-cache.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch 3.44.6 https://github.com/flutter/flutter.git /opt/flutter
+          /opt/flutter/bin/flutter --version
+          /opt/flutter/bin/flutter precache --ios --macos
+
+      - name: Put Flutter on PATH
+        run: echo "/opt/flutter/bin" >> "$GITHUB_PATH"
+
+      - name: Confirm the toolchain is the pinned one
+        run: |
+          flutter --version
+          dart --version
+
+      - run: flutter pub get
+
+      - name: flutter build ios --no-codesign
+        run: flutter build ios --no-codesign
+
+      - name: flutter build macos
+        run: flutter build macos
+
+      # Printed here, not left to a settings page nobody opens — the budget
+      # should be visible where it is actually spent. GitHub bills macOS
+      # runners at 10x wall-clock minutes; this is that arithmetic done on
+      # this run's own timing rather than an estimate.
+      - name: Report the billed cost of this run
+        if: always()
+        run: |
+          start_epoch=${{ steps.clock.outputs.epoch }}
+          end_epoch=$(date +%s)
+          wall_minutes=$(( (end_epoch - start_epoch + 59) / 60 ))
+          billed_minutes=$(( wall_minutes * 10 ))
+          {
+            echo "### macOS runner cost — task 11.76"
+            echo
+            echo "Wall clock: ${wall_minutes} minute(s)."
+            echo "Billed against the monthly Actions quota at macOS's 10x rate: **${billed_minutes} minute(s)**."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "Billed macOS minutes for this run: ${billed_minutes} (${wall_minutes} wall-clock x10)"

@@ -1,0 +1,207 @@
+# The trigger task 11.64 asked task 11.40 to choose.
+#
+# ## What this runs, and why it is not in the other workflow
+#
+# `scripts/verify_round8_broken_control.py` breaks the server on purpose —
+# twice, in different places — and requires
+# `verify_round8_server_surface.py` to notice. **It is the only thing proving
+# the 152 gate checks that instrument makes can fail at all.** A run in which
+# every attack is refused is exactly what a blind instrument produces, and this
+# project has shipped three of those.
+#
+# It takes roughly ten minutes, because each variant is a fresh
+# `dart compile exe`. Task 11.64 deliberately kept it **out** of
+# `gate_smoke_test.sh`: a ten-minute build inside a three-minute run would stop
+# the run being used, and a check nobody runs is the shape that has lost this
+# project instruments three times. So it needed a trigger rather than a
+# schedule, and this is it.
+#
+# ## Why paths, and not a schedule or a person
+#
+# The rule 11.64 wrote is "re-run it after touching the sync envelope or the
+# auth routes." That is a trigger with a *condition*, and a condition a person
+# has to remember is the thing this whole task exists to replace. A nightly
+# schedule would be worse in both directions: ten minutes of building every
+# night when nothing changed, and still nothing on the afternoon somebody edits
+# the envelope.
+#
+# **The paths below are the three files the script itself patches**, read out
+# of `verify_round8_broken_control.py` rather than chosen — `AUTH_ROUTES`,
+# `EMAIL_SENDER`, `SYNC_PROTOCOL` — plus the two instruments involved. If the
+# script learns a fourth variant, this list is wrong, and
+# `test/documentation/broken_control_trigger_test.dart` fails until it is
+# fixed. That guard exists because a hand-written list of paths is exactly the
+# hand-maintained list one layer up that task 11.49 found three times.
+name: Broken-control check
+
+# PAUSED 2026-10-02 (task 11.325): this workflow now starts only when somebody presses
+# "Run workflow". Michael is making many commits a day and GitHub's minutes are limited, so
+# the checks run as one batch on his own machines instead: `scripts/nightly_check.sh`.
+# TO RESTORE: replace the `on:` block below with the one saved in the comment under it,
+# and delete this notice. `CLAUDE_DOCS/RELEASE_CHECKLIST.md` says when: before a release,
+# or when development slows. `test/documentation/ci_pause_test.dart` fails if this notice
+# and the real triggers disagree.
+on:
+  workflow_dispatch:
+#
+# Saved triggers, exactly as they were:
+# on:
+#   push:
+#     paths:
+#       - 'server/lib/src/auth/auth_routes.dart'
+#       - 'server/lib/src/auth/auth_service.dart'
+#       - 'server/lib/src/auth/email_sender.dart'
+#       - 'server/lib/src/authz/closed_membership_disclosure.dart'
+#       - 'server/lib/src/authz/row_authorizer.dart'
+#       - 'server/lib/src/projects/join_service.dart'
+#       - 'server/lib/src/projects/project_routes.dart'
+#       - 'server/lib/src/schema/postgres_schema.dart'
+#       - 'server/lib/src/security/rate_limiter.dart'
+#       - 'server/lib/src/sync/sync_routes.dart'
+#       - 'server/lib/src/sync/sync_service.dart'
+#       - 'packages/tritrack_sync/lib/src/row_validator.dart'
+#       - 'packages/tritrack_sync/lib/src/sync_protocol.dart'
+#       - 'scripts/verify_11_127_broken_control.py'
+#       - 'scripts/verify_11_49_broken_control.py'
+#       - 'scripts/verify_11_49_server_reads.py'
+#       - 'scripts/verify_11_85_broken_control.py'
+#       - 'scripts/verify_11_9_team_surface.py'
+#       - 'scripts/verify_c1_row_naming.py'
+#       - 'scripts/verify_h3_existence_oracle_sweep.py'
+#       - 'scripts/verify_round8_broken_control.py'
+#       - 'scripts/verify_round8_server_surface.py'
+#       - '.github/workflows/broken-control-check.yml'
+#   pull_request:
+#     paths:
+#       - 'server/lib/src/auth/auth_routes.dart'
+#       - 'server/lib/src/auth/auth_service.dart'
+#       - 'server/lib/src/auth/email_sender.dart'
+#       - 'server/lib/src/authz/closed_membership_disclosure.dart'
+#       - 'server/lib/src/authz/row_authorizer.dart'
+#       - 'server/lib/src/projects/join_service.dart'
+#       - 'server/lib/src/projects/project_routes.dart'
+#       - 'server/lib/src/schema/postgres_schema.dart'
+#       - 'server/lib/src/security/rate_limiter.dart'
+#       - 'server/lib/src/sync/sync_routes.dart'
+#       - 'server/lib/src/sync/sync_service.dart'
+#       - 'packages/tritrack_sync/lib/src/row_validator.dart'
+#       - 'packages/tritrack_sync/lib/src/sync_protocol.dart'
+#       - 'scripts/verify_11_127_broken_control.py'
+#       - 'scripts/verify_11_49_broken_control.py'
+#       - 'scripts/verify_11_49_server_reads.py'
+#       - 'scripts/verify_11_85_broken_control.py'
+#       - 'scripts/verify_11_9_team_surface.py'
+#       - 'scripts/verify_c1_row_naming.py'
+#       - 'scripts/verify_h3_existence_oracle_sweep.py'
+#       - 'scripts/verify_round8_broken_control.py'
+#       - 'scripts/verify_round8_server_surface.py'
+#       - '.github/workflows/broken-control-check.yml'
+#   workflow_dispatch:
+
+concurrency:
+  group: broken-control-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  broken-control:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      # **A one-commit checkout. The line that used to be here said
+      # `fetch-depth: 0` "because the script builds each broken variant in a
+      # throwaway `git worktree`, which a shallow clone cannot create" — and
+      # that reason is false.** Measured on 2026-09-04 (task 11.155): a
+      # `git clone --depth 1` of this repository reports
+      # `is-shallow-repository true` with one reachable commit, and
+      # `git worktree add --detach <dir> HEAD` in it succeeds and produces a
+      # complete working tree. That is all three `verify_*_broken_control.py`
+      # scripts ask of git — `worktree add … HEAD`, `checkout -- .` inside the
+      # new tree, and `worktree remove` — and none of them reads history.
+      #
+      # **It was a confident sentence covering a guess**, of exactly the shape
+      # this project keeps finding, and it was buying a full clone of 650-odd
+      # commits on every push to nine watched source files. Removed rather than
+      # left with a corrected comment, because a full clone on a job that does
+      # not need one is a cost with no reader.
+      #
+      # **If this turns out to be wrong it fails loudly, not quietly** — a
+      # `git worktree add` that cannot run makes the step exit non-zero before
+      # any probe is attempted. Restore `fetch-depth: 0` here if that happens,
+      # and say in the comment which git version and which command failed.
+      - uses: actions/checkout@v4
+
+      - name: Write a throwaway .env
+        run: |
+          {
+            echo "POSTGRES_USER=ci"
+            echo "POSTGRES_PASSWORD=$(openssl rand -hex 24)"
+            echo "POSTGRES_DB=tritrack_ci"
+          } > .env
+
+      # Task 11.69. The e2e overlay runs the server as this user so the magic
+      # link it writes — mode 600, because it is a live credential — is owned
+      # by the runner rather than by root. On Docker Desktop the file-sharing
+      # layer remaps that ownership and nobody ever noticed; on a Linux runner
+      # it does not, and this workflow's first run died reading it:
+      # `PermissionError: [Errno 13] Permission denied:
+      # '.e2e_magic_links/…link'`. Written into GITHUB_ENV rather than exported
+      # in one step, because the bring-up and the instrument run are two steps
+      # and both need it. See scripts/lib/host_user.sh.
+      - name: Run the development server as this runner
+        run: |
+          {
+            echo "TRITRACK_DEV_UID=$(id -u)"
+            echo "TRITRACK_DEV_GID=$(id -g)"
+          } >> "$GITHUB_ENV"
+
+      # The script expects a HEALTHY server already answering on 8080 under
+      # compose project `tritrack-gate` — the pairing is what makes its result
+      # evidence, since a red run against a broken server proves nothing unless
+      # the same instrument comes back clean against an intact one.
+      #
+      # **`scripts/gate_drill_stack_up.sh`, not this workflow's own compose
+      # line — task 11.312 item 3.** This step and the paragraph Michael runs
+      # by hand on the VM used to each carry their own copy of this bring-up,
+      # and nothing had ever compared the two. One script now, so they cannot
+      # drift apart again.
+      - name: Bring up the healthy stack
+        run: scripts/gate_drill_stack_up.sh
+
+      # **All three harnesses, not one — task 11.85, 2026-08-31.** Until then
+      # this workflow ran only the round-8 one, while
+      # `verify_11_49_broken_control.py` had existed since 2026-08-29 with no
+      # trigger at all: nothing re-ran it when the routes it breaks changed.
+      # That is the hand-maintained list this workflow's own comment warns
+      # about, one layer further up.
+      # `test/documentation/broken_control_trigger_test.dart` now derives the
+      # set from `scripts/*_broken_control.py`, so a fourth harness fails the
+      # offline suite until it is added here.
+      #
+      # **Not `if: failure()`-chained and not one combined step**, so a red in
+      # one harness names itself rather than being read as a red in whichever
+      # ran first.
+      - name: Can the round-8 instrument still fail?
+        run: python3 scripts/verify_round8_broken_control.py
+
+      - name: Can the server-reads instrument still fail?
+        if: always()
+        run: python3 scripts/verify_11_49_broken_control.py
+
+      - name: Can the join-surface probes still fail?
+        if: always()
+        run: python3 scripts/verify_11_85_broken_control.py
+
+      # Task 11.127, and the two it covers were chosen for what a Gate C
+      # verdict rests on: the every-table oracle sweep makes the widest claim
+      # in the project with the weakest evidence behind it, and the C-1
+      # reproduction is the only live one of the finding the gate was built
+      # around. Six of the eight instruments task 11.119 counted are still
+      # uncovered and individually marked in
+      # `CLAUDE_DOCS/UNEXERCISED_CONTROLS.md`.
+      - name: Can the C-1 reproduction and the oracle sweep still fail?
+        if: always()
+        run: python3 scripts/verify_11_127_broken_control.py
+
+      - name: Tear down
+        if: always()
+        run: docker compose -p tritrack-gate -f docker-compose.yml -f docker-compose.e2e.yml down -v

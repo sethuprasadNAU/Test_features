@@ -1,0 +1,251 @@
+name: tritrack
+description: "A new Flutter project."
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+# The following defines the version and build number for your application.
+# A version number is three numbers separated by dots, like 1.2.43
+# followed by an optional build number separated by a +.
+# Both the version and the builder number may be overridden in flutter
+# build by specifying --build-name and --build-number, respectively.
+# In Android, build-name is used as versionName while build-number used as versionCode.
+# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
+# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
+# Read more about iOS versioning at
+# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+# In Windows, build-name is used as the major, minor, and patch parts
+# of the product and file versions while build-number is used as the build suffix.
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+# Dependencies specify other packages that your package needs in order to work.
+# To automatically upgrade your package dependencies to the latest versions
+# consider running `flutter pub upgrade --major-versions`. Alternatively,
+# dependencies can be manually updated by changing the version numbers below to
+# the latest version available on pub.dev. To see which dependencies have newer
+# versions available, run `flutter pub outdated`.
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+  cupertino_icons: ^1.0.8
+  flutter_riverpod: ^3.3.2
+  riverpod_annotation: ^4.0.3
+  go_router: ^17.3.0
+  sqflite: ^2.4.3
+  sqflite_common_ffi: ^2.4.2
+  path: ^1.9.1
+  path_provider: ^2.1.6
+  uuid: ^4.6.0
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.12.0
+  geolocator: ^14.0.3
+  flutter_compass: ^0.8.1
+  sensors_plus: ^7.1.0
+  flutter_map: ^8.3.1
+  latlong2: ^0.10.1
+  intl: ^0.20.3
+  collection: ^1.19.1
+  shared_preferences: ^2.5.5
+  http: ^1.6.0
+  # iOS/macOS-only `http.Client` backed by `NSURLSession`, used by
+  # `serverHttpClientProvider` so App Transport Security has CFNetwork
+  # traffic to actually govern (Security Model §7.6/§8.5 F13; task 10.48).
+  # The plain `http.Client()` above still serves every other platform.
+  cupertino_http: ^3.0.2
+  # Declared directly (task 11.112) because server_config_screen.dart now
+  # reads `NSError.domain`/`.code` off a `cupertino_http` exception directly —
+  # previously only a transitive dependency of cupertino_http, pulled in
+  # without our own pubspec saying so.
+  objective_c: ^9.1.0
+  image: ^4.5.4
+  file_picker: ">=12.0.0-beta.1"
+  archive: ^4.0.9
+  csv: ^8.0.0
+  # Session tokens live in the platform keychain/keystore, never in
+  # SharedPreferences or the SQLite database (Security Model §4.8 — the
+  # highest-value part of the "no SQLCipher" decision, since a plaintext token
+  # on a lost device grants live server access to everything the project will
+  # ever contain, which is strictly worse than the static local copy).
+  flutter_secure_storage: ^10.3.1
+  # Task 11.133 item 3. The app's version and build number are read from the
+  # build at runtime rather than typed into a constant: a version string is the
+  # single worst place for a hand-maintained value, because it is the thing a
+  # beta tester's bug report is keyed on, and a stale one sends the report to
+  # the wrong commit. Reads the Android `PackageManager` / Apple bundle info;
+  # declares no permissions and adds nothing exported to the merged manifest.
+  package_info_plus: ^10.2.1
+  # Task 11.133 item 2. The map credit's "ⓘ" and the App Info page offer the
+  # providers' own licence pages — "there needs to be a way to access more
+  # information, including origin and licence of the data" is a condition of
+  # the OpenStreetMap tile licence, and a link that does not open is not a way.
+  # **Adds a `<queries>` element to the merged Android manifest** (the browser
+  # intent it must be able to see under Android 11+ package visibility); see
+  # `CLAUDE_DOCS/CAPABILITY_MATRIX.md`.
+  url_launcher: ^6.3.2
+  tritrack_sync:
+    path: packages/tritrack_sync
+  # Task 11.209. §3.8: the pin is a version, the review is this sentence. Used
+  # for exactly one thing — the map selection card's "Share…" entry, which
+  # hands the platform share sheet the coordinate text and (where the
+  # selection has one) a GPX file, so a bearing or estimate can reach Gaia,
+  # Avenza, or a message thread without retyping a lat/lon. It wraps each
+  # platform's native share intent/activity — no network access, no analytics,
+  # no data retained by the package itself. Adds a non-exported FileProvider
+  # and a non-exported broadcast receiver to the merged Android manifest (no
+  # `<queries>` entry needed — see `CLAUDE_DOCS/CAPABILITY_MATRIX.md`). If
+  # this package were ever dropped, "Share…" disappears from the menu;
+  # "Copy coordinates", "Copy for TriTrack" and "Open in Maps" are
+  # unaffected, since none of them uses it.
+  share_plus: ^13.3.0
+  # Task 10.79 / Security Model §4.8 control 2. Used for exactly one call,
+  # `isDeviceSupported()` — never `authenticate()` — to detect whether this
+  # device has a passcode/biometric lock configured, so the app can warn once
+  # when it does not. §4.8's whole case for skipping SQLCipher rests on
+  # platform full-disk encryption, which that lock secret keys; nothing here
+  # gates app use on the answer. Requires `MainActivity` to extend
+  # `FlutterFragmentActivity` on Android (already done) and
+  # `NSFaceIDUsageDescription` in both `Info.plist`s (already done), even
+  # though Face ID itself is never invoked — the platform check still touches
+  # the biometry APIs internally.
+  local_auth: ^3.0.2
+  # Task 11.271. Already a transitive dependency (pulled in by `fake_async`);
+  # declared directly now that `lib/` imports it. The one production seam
+  # this task's fixed-clock harness controls — `animal_detail_screen.dart`'s
+  # `_now` getter — reads `clock.now()` instead of `DateTime.now()` so a test
+  # can pin it with `withClock`. Every other `DateTime.now()` call in `lib/`
+  # is unchanged and reads the real clock, same as before.
+  clock: ^1.1.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  # Task 11.208: request_deadline_test.dart runs its inactivity-deadline test
+  # on a virtual clock instead of real wall-clock timers, so it can no longer
+  # be flaky on a busy machine. Was already a transitive dependency (pulled
+  # in by flutter_test); listed directly now that a test imports it.
+  fake_async: ^1.3.3
+  # Task 11.209: gpx_writer_test.dart parses the GPX this app writes back
+  # into a document and reads the waypoint out of it, rather than
+  # regex-matching the text it just generated — a real parser catches an
+  # escaping or well-formedness bug a regex would not. Test-only; nothing in
+  # `lib/` imports it. Already a transitive dependency (pulled in by
+  # `archive`); listed directly now that a test imports it, same reasoning as
+  # `fake_async` above.
+  xml: ^6.6.1
+  # Task 10.50 (F13, Security Model §10.5.3): the App Transport Security
+  # verification has to run as the real, sandboxed app bundle — with its own
+  # Info.plist — not the `flutter_tester` harness plain `flutter test` uses,
+  # which ships no Info.plist of its own and cannot exercise ATS at all.
+  # `integration_test/` is a different directory from `test/` and is never
+  # discovered by a bare `flutter test`, which is what keeps this out of the
+  # default suite (task 10.41's invariant) without needing a skip tag.
+  integration_test:
+    sdk: flutter
+
+  # The "flutter_lints" package below contains a set of recommended lints to
+  # encourage good coding practices. The lint set provided by the package is
+  # activated in the `analysis_options.yaml` file located at the root of your
+  # package. See that file for information about deactivating specific lint
+  # rules and activating additional ones.
+  flutter_lints: ^6.0.0
+  riverpod_generator: ^4.0.4
+  build_runner: ^2.15.1
+  freezed: ^3.2.6-dev.1
+  json_serializable: ^6.14.0
+  mocktail: ^1.0.5
+  shared_preferences_platform_interface: ^2.4.2
+  path_provider_platform_interface: ^2.1.3
+  # Task 11.286: app_info_screen_test.dart controls whether `AttributionLink`'s
+  # browser launch succeeds or fails, to watch the unreachable-browser path
+  # (show the address instead of doing nothing) before trusting it. Already a
+  # transitive dependency of `url_launcher`; listed directly now that a test
+  # imports it.
+  url_launcher_platform_interface: ^2.3.2
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.8
+
+# flutter_launcher_icons config — see CLAUDE_DOCS/design_handoff_tritrack/README.md
+# "App Icon Setup Notes". Master art copied into assets/icon/ from the design
+# handoff (assets/icon/png/ in that bundle); regenerate by re-copying if the
+# brand mark changes.
+flutter_launcher_icons:
+  image_path: "assets/icon/tritrack-icon-1024.png"
+  ios: true
+  remove_alpha_ios: true
+  android: true
+  adaptive_icon_background: "#3E7A4C"
+  adaptive_icon_foreground: "assets/icon/tritrack-icon-adaptive-foreground-1024.png"
+  macos:
+    generate: true
+    image_path: "assets/icon/tritrack-icon-1024.png"
+
+# flutter_native_splash config — the instant cold-start frame (green bg +
+# centered icon) shown before Flutter's first frame / before the full
+# Flutter SplashScreen (lib/features/splash/splash_screen.dart) takes over.
+flutter_native_splash:
+  color: "#3E7A4C"
+  image: assets/icon/tritrack-icon-512.png
+  android_12:
+    color: "#3E7A4C"
+    image: assets/icon/tritrack-icon-512.png
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter packages.
+flutter:
+
+  # The following line ensures that the Material Icons font is
+  # included with your application, so that you can use the icons in
+  # the material Icons class.
+  uses-material-design: true
+
+  assets:
+    # Embedded NOAA World Magnetic Model coefficients (offline declination).
+    # Swappable: drop a newer WMM****.COF here and point WmmService at it.
+    - assets/wmm/WMM2025.COF
+    # Task 11.331. Which time zone covers each place on Earth, land and sea,
+    # so a new project's zone can default to its area's center offline. About
+    # 4.0 MB; built by scripts/time_zone_boundaries/build.sh, which names the
+    # source release, its checksum and how to update it.
+    - assets/time_zones/boundaries.bin
+    - assets/icon/tritrack-icon-1024.png
+    - assets/icon/tritrack-icon-512.png
+    - assets/icon/tritrack-icon-monochrome-white-1024.png
+
+  # To add assets to your application, add an assets section, like this:
+  # assets:
+  #   - images/a_dot_burr.jpeg
+  #   - images/a_dot_ham.jpeg
+
+  # An image asset can refer to one or more resolution-specific "variants", see
+  # https://flutter.dev/to/resolution-aware-images
+
+  # For details regarding adding assets from package dependencies, see
+  # https://flutter.dev/to/asset-from-package
+
+  # To add custom fonts to your application, add a fonts section here,
+  # in this "flutter" section. Each entry in this list should have a
+  # "family" key with the font family name, and a "fonts" key with a
+  # list giving the asset and other descriptors for the font. For
+  # example:
+  # fonts:
+  #   - family: Schyler
+  #     fonts:
+  #       - asset: fonts/Schyler-Regular.ttf
+  #       - asset: fonts/Schyler-Italic.ttf
+  #         style: italic
+  #   - family: Trajan Pro
+  #     fonts:
+  #       - asset: fonts/TrajanPro.ttf
+  #       - asset: fonts/TrajanPro_Bold.ttf
+  #         weight: 700
+  #
+  # For details regarding fonts from package dependencies,
+  # see https://flutter.dev/to/font-from-package

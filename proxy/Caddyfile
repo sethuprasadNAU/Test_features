@@ -1,0 +1,76 @@
+# TLS termination in front of the server (task 10.49 / Security Model §4.1,
+# §8.6). Three straight gates found no reverse-proxy configuration anywhere
+# in the repository — this is that configuration, layered on with
+# `docker-compose.tls.yml` rather than baked into the base file, on the same
+# reasoning `docker-compose.e2e.yml` and `docker-compose.server-test.yml`
+# already use: the production-shaped base file never gains a behavior nobody
+# asked for.
+#
+# TRITRACK_TLS_DOMAIN decides everything about how Caddy gets a certificate,
+# and it is required (see docker-compose.tls.yml) rather than defaulted,
+# because guessing here is exactly the "shipped default that quietly serves
+# cleartext" shape §4.10 exists to prevent:
+#
+#   - A real, publicly resolvable domain (e.g. tritrack.example.org) — Caddy
+#     requests a certificate from Let's Encrypt automatically (ACME, HTTP-01
+#     over port 80) and renews it automatically. This is the real-deployment
+#     path, and it needs DNS pointed at this host and ports 80/443 reachable
+#     from the internet BEFORE it will work — see server/README.md's
+#     "TLS termination" section for that human step. It is not something this
+#     file, or any automated run, can verify — there is no real host in this
+#     repository.
+#   - `localhost`, a bare IP, or any other address Caddy's own heuristic
+#     recognizes as "not a public name" — Caddy issues from its own internal,
+#     locally-trusted CA instead of attempting ACME. This is what makes a
+#     local, self-signed verification run possible with the *same* Caddyfile
+#     the real deployment uses: nothing here has to change between the two,
+#     only what TRITRACK_TLS_DOMAIN is set to.
+{$TRITRACK_TLS_DOMAIN} {
+	# The origin (task 10.49, alongside this file). `server` already refuses
+	# to serve cleartext beyond loopback without either this opt-in or its
+	# own TLS configured (Security Model §4.1) — `docker-compose.tls.yml`
+	# gives it TRITRACK_TLS_CERT_PATH/TRITRACK_TLS_KEY_PATH pointing at a
+	# self-signed pair generated once for exactly this purpose (see
+	# server/README.md), so it can run with TRITRACK_ENV=production without
+	# tripping over its own cleartext-LAN refusal.
+	#
+	# `tls_insecure_skip_verify` is deliberate and narrow: it applies only to
+	# this one backend hop, over the Docker bridge network — the same trust
+	# boundary Postgres already crosses in cleartext (Security Model §2.2) —
+	# never to what a client outside this compose network sees, which is the
+	# certificate named above, verified normally. The origin's self-signed
+	# certificate authenticates nothing to Caddy; its only job is to make
+	# `server`'s own "am I speaking TLS" requirement true. Do not widen this
+	# to the public-facing side.
+	reverse_proxy https://server:8080 {
+		transport http {
+			tls_insecure_skip_verify
+		}
+
+		# Task 10.52 / Security Model §4.4 — finding I-1.
+		#
+		# **`header_up`, not the default append.** Caddy's reverse_proxy
+		# normally *appends* the client address to whatever X-Forwarded-For
+		# arrived, so a caller who sends their own header gets it forwarded
+		# with the real address tacked on the end. `header_up` with a single
+		# value REPLACES the header outright: whatever the caller sent is
+		# discarded here, at the first trusted hop, and the origin receives
+		# exactly one address that Caddy wrote itself. The origin's parser
+		# (`request_identity.dart`) handles a longer chain correctly anyway —
+		# but a header with exactly one entry and no attacker contribution has
+		# no ambiguity left to get wrong, and this is a boundary worth making
+		# unambiguous rather than merely parsed carefully.
+		#
+		# `{remote_host}` is Caddy's own TCP peer — the client's real address,
+		# read from the socket, not from anything the client claimed.
+		#
+		# **The origin does not trust this header because it is named
+		# X-Forwarded-For.** It trusts it only when the TCP peer that sent it
+		# is listed in TRITRACK_TRUSTED_PROXIES (set to this container's
+		# address in docker-compose.tls.yml). Change one without the other and
+		# the origin falls back to counting every request against the proxy's
+		# own address — which is finding I-1 exactly, so the two belong
+		# together in your head and are cross-referenced in both files.
+		header_up X-Forwarded-For {remote_host}
+	}
+}

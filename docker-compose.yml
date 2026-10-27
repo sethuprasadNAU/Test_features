@@ -1,0 +1,685 @@
+# Local dev harness (task 10.3): `docker compose up` brings up Postgres and
+# the server with one command. Copy .env.example to .env and fill it in
+# first — see the root README's "Server" section for the full walkthrough
+# (including how to find your LAN IP so a phone can reach this).
+#
+# Security-relevant choices here are requirements, not preferences —
+# TriTrack_Security_Model.md §2.2 / §3.6:
+#   - Postgres has no `ports:` mapping. It is reachable only by the `server`
+#     container, over the internal Docker network, never from the host or
+#     the LAN. An exposed Postgres port is the textbook opportunistic-scanner
+#     finding this is written to prevent.
+#   - `server` is the only service published to the host, and it is published
+#     to **127.0.0.1 by default**. Letting a phone on the Wi-Fi reach it is a
+#     one-variable, documented opt-in (`SERVER_PUBLISH_ADDRESS`, see below and
+#     .env.example) rather than what a clean checkout does on its own.
+#
+# That last point changed in task 10.22, closing Security Gate C's finding C-3
+# (§7.3 B3). This file used to default `TRITRACK_ALLOW_CLEARTEXT_LAN=1` behind
+# a `0.0.0.0` publish, so the artifact people actually ran was cleartext on
+# every interface — §4.10's "the default is what gets deployed" had been
+# applied to the diagnostics console and not to the transport.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env — see .env.example}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env — see .env.example}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env — see .env.example}
+    volumes:
+      - tritrack_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+      # Task 11.308. `scripts/server_up.sh` exports GIT_COMMIT before calling
+      # `docker compose`, so it reaches the build even though this file never
+      # names it in `environment:` above (that block is the CONTAINER's
+      # environment; this is the BUILD's). `unknown` is what a bare
+      # `docker compose build`/`up` typed outside that script gets — the
+      # label then says so, rather than a stale or guessed commit.
+      args:
+        GIT_COMMIT: ${GIT_COMMIT:-unknown}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 8080
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env — see .env.example}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env — see .env.example}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env — see .env.example}
+      # Task 11.290. How long a scheduled project deletion waits before the
+      # server destroys the project. Read by the routes that schedule one and
+      # by the `project-destruction` sweep below — both from the same two
+      # variables, so the number an owner is shown is the number applied.
+      # Blank means "the backup retention window", TRITRACK_BACKUP_KEEP, which
+      # is the only honest default: a shorter grace would promise a speed the
+      # backups on disk do not deliver.
+      TRITRACK_PROJECT_DELETION_GRACE_DAYS: ${TRITRACK_PROJECT_DELETION_GRACE_DAYS:-}
+      TRITRACK_BACKUP_KEEP: ${TRITRACK_BACKUP_KEEP:-30}
+      # Task 10.14 / Security Model §4.1, corrected by 10.22. Fixed at 1, and
+      # deliberately NOT overridable from .env, because inside this container
+      # "all interfaces" means the private Docker bridge and nothing else —
+      # Docker's own port proxy cannot reach a process bound to the container's
+      # loopback, so binding narrower here would make the harness unusable
+      # without making anything safer.
+      #
+      # What decides whether cleartext reaches a real network is the publish
+      # address under `ports:` below, which defaults to loopback. Gate C's C-3
+      # finding was precisely that this line looked like the exposure control
+      # and was not one; the two now sit in the same file with the reasoning
+      # between them.
+      #
+      # This stays subject to both server-side refusals: TRITRACK_ENV=production
+      # refuses outright, and so does a machine with a publicly routable
+      # address (see security_config.dart, and its note on why a *container*
+      # cannot make that second judgement for its host).
+      TRITRACK_ALLOW_CLEARTEXT_LAN: "1"
+      # No default value. `development` used to be the default here, which meant
+      # the shipped artifact had the production refusals switched off before
+      # anyone made a decision. Unset behaves the same as `development` for
+      # every check that reads it — the difference is that the safe posture is
+      # now the one nobody had to remember, and `TRITRACK_ENV=production` in
+      # .env makes this file refuse to start without TLS, which is the point.
+      TRITRACK_ENV: ${TRITRACK_ENV:-}
+      TRITRACK_TLS_CERT_PATH: ${TRITRACK_TLS_CERT_PATH:-}
+      TRITRACK_TLS_KEY_PATH: ${TRITRACK_TLS_KEY_PATH:-}
+      # Task 10.52 / Security Model §4.4. Empty here on purpose: this file
+      # publishes the server directly, with nothing in front of it, so the TCP
+      # peer IS the client and no forwarding header should ever be read. Unset
+      # gives exactly that.
+      #
+      # It is a passthrough rather than a hardcoded `none` so that an operator
+      # who puts their own proxy in front of this base file can declare it,
+      # and — more to the point — so that exposing this file makes the server
+      # refuse to start until somebody answers the question. That refusal is
+      # the control; see docker-compose.tls.yml, which answers it, and
+      # server/README.md's "Source identity behind a proxy".
+      TRITRACK_TRUSTED_PROXIES: ${TRITRACK_TRUSTED_PROXIES:-}
+      # Task 10.74 / §4.4.2, finding K-2. Passed through for the same reason
+      # as the line above and only matters alongside it: the moment that
+      # allowlist is non-empty, the server asks how callers reach the proxy it
+      # names, and without this line the operator's answer could never arrive.
+      # Empty is correct for the shipped file, which has no proxy at all.
+      #
+      # Whenever either variable above is set to something other than empty,
+      # it is an operator's own measured claim about their own network, never
+      # a value this repository can generate on their behalf. Full reasoning:
+      # CLAUDE_DOCS/SECURITY_SCOPE_AND_EXIT.md, "What TRITRACK_TRUSTED_PROXIES
+      # / TRITRACK_PROXY_SOURCE_IDENTITY mean".
+      TRITRACK_PROXY_SOURCE_IDENTITY: ${TRITRACK_PROXY_SOURCE_IDENTITY:-}
+      # Task 10.62 / Security Model §4.4.2, finding J-2. The one fact the
+      # container is missing and this file has: the address the *host*
+      # publishes it on, copied verbatim from `ports:` below.
+      #
+      # Without it the server cannot tell the default deployment (loopback,
+      # exactly one possible caller, so one rate-limit bucket IS the per-source
+      # bucket) from the LAN deployment (a phone on the Wi-Fi, many callers,
+      # and on Docker Desktop they all arrive as one VM-gateway address). Those
+      # two differ by one line in .env and by nothing the server could see, and
+      # that is how J-2 stayed invisible while the collapse was written down in
+      # rate_limiter.dart. Set SERVER_PUBLISH_ADDRESS to anything non-loopback
+      # and this server now refuses to start until source identity is declared
+      # AND measured.
+      TRITRACK_PUBLISH_ADDRESS: ${SERVER_PUBLISH_ADDRESS:-127.0.0.1}
+      # The diagnostics console (task 10.13) — off unless explicitly enabled,
+      # in every environment, not just production. No `:?` required-secret
+      # marker: leaving these unset is the supported, secure default, not a
+      # setup step someone forgot.
+      TRITRACK_DIAGNOSTICS_ENABLED: ${TRITRACK_DIAGNOSTICS_ENABLED:-false}
+      TRITRACK_DIAGNOSTICS_ALLOW_REMOTE: ${TRITRACK_DIAGNOSTICS_ALLOW_REMOTE:-false}
+      TRITRACK_DIAGNOSTICS_TOKEN: ${TRITRACK_DIAGNOSTICS_TOKEN:-}
+      # Task 11.129. Where the one record that survives a dead database is
+      # written. Left at the image default here; it is an override rather than
+      # a switch, because there is no value that turns the record off — "the
+      # durable record was disabled in this deployment" is the sentence nobody
+      # wants to read during an outage.
+      TRITRACK_DEGRADATION_PATH: ${TRITRACK_DEGRADATION_PATH:-/var/lib/tritrack/degradation.json}
+      # Task 11.287. The relay that carries sign-in links. Passed through with
+      # no defaults, because there is no relay this repository can name on an
+      # operator's behalf — and because until this task a production server
+      # had NO sender at all: every sign-in request answered 202 and delivered
+      # nothing, which is §4.5's identical response doing its job over an
+      # outage. The server now refuses to start under TRITRACK_ENV=production
+      # unless TRITRACK_SMTP_HOST is set; a development stack leaves these
+      # blank and uses docker-compose.dev-lan.yml's file sender instead. The
+      # credentials are secrets (§4.6) and live in .env, never here.
+      TRITRACK_SMTP_HOST: ${TRITRACK_SMTP_HOST:-}
+      TRITRACK_SMTP_PORT: ${TRITRACK_SMTP_PORT:-}
+      TRITRACK_SMTP_TLS: ${TRITRACK_SMTP_TLS:-}
+      TRITRACK_SMTP_USERNAME: ${TRITRACK_SMTP_USERNAME:-}
+      TRITRACK_SMTP_PASSWORD: ${TRITRACK_SMTP_PASSWORD:-}
+      TRITRACK_SMTP_FROM: ${TRITRACK_SMTP_FROM:-}
+      # The host path in .env is TRITRACK_SMTP_CA_CERT; it is mounted below
+      # at one fixed container path, and this tells the server to trust it.
+      # Blank when unset, which means "the system store is enough" — true of
+      # any relay whose certificate a public CA signed.
+      TRITRACK_SMTP_CA_CERT_PATH: ${TRITRACK_SMTP_CA_CERT:+/tls/smtp-ca.pem}
+    # ## The server keeps one piece of state, and it is not a bind mount
+    #
+    # **Task 11.129.** A sign-in answers `202 sent` whether a link was sent or
+    # not (§4.5, and that uniformity is load-bearing), and `auth_routes.dart`
+    # says the operational visibility comes from the audit log instead. The
+    # audit log is a Postgres table, so when Postgres is gone the person is
+    # told "sent", no link arrives, and the audit write fails too: **the
+    # compensating control is unavailable in exactly the failure it
+    # compensates for.** This volume is where the surviving record goes — how
+    # many audit writes were lost, on which days, first and last. It names
+    # nobody; see `server/lib/src/security/degradation_record.dart` for that
+    # decision and its reasoning.
+    #
+    # **A named volume, deliberately, not `./something:/var/lib/tritrack`.** A
+    # bind mount passes host ownership straight through on Linux, which is
+    # what made task 11.70's backup silently unwritable and what made task
+    # 11.125's two status commands give opposite answers about the same
+    # backups. Nothing here needs to be read from the host directly — read it
+    # with `docker compose exec server /app/bin/server --degradation-report`,
+    # which needs no database and is the point.
+    volumes:
+      - tritrack_server_state:/var/lib/tritrack
+      # Task 11.287. `/dev/null` when unset, the same shape the backup
+      # services use for an optional key file: the mount always exists, and
+      # the environment variable above is what says whether to read it.
+      # docker-compose.tls.yml's `volumes: !override` repeats this line.
+      - ${TRITRACK_SMTP_CA_CERT:-/dev/null}:/tls/smtp-ca.pem:ro
+    # ## The healthcheck asks LIVENESS, and says READINESS in its message
+    #
+    # **Task 11.128, added at Michael's request.** This service had no
+    # healthcheck at all until 2026-09-02, so `docker compose ps` reported
+    # nothing about the one process anybody actually uses.
+    #
+    # `--health-check` is a second mode of the server binary rather than a
+    # `curl`: the runtime image is `debian:bookworm-slim` with `ca-certificates`
+    # and nothing else, and `server/Dockerfile` gives up the whole Dart SDK on
+    # the argument that a smaller image is a smaller attack surface. Installing
+    # an HTTP client to check on an HTTP server would spend exactly that. Same
+    # shape as `audit-retention --check` below.
+    #
+    # **The verdict is `/health`, deliberately, and NOT `/ready`.** Readiness
+    # must never decide a container's health, because the remedy attached to
+    # unhealthy is a restart and a restart cannot reach a database that is down
+    # — that is the whole liveness/readiness split, written up in
+    # `server/lib/src/readiness.dart`. But the probe asks `/ready` as well and
+    # puts the answer in its output, because Docker keeps each probe's output
+    # and this project's rule is that an instrument's last words must be a
+    # finding (task 11.69). So a server whose database is unreachable reports
+    # `healthy` here — correctly — and its health log says, in a sentence,
+    # that sign-in is dead and which route to ask.
+    #
+    # ## What this does NOT do, measured on 2026-09-02 rather than assumed
+    #
+    # **It does not restart anything.** `restart: unless-stopped` above reacts
+    # to the container *exiting*; Docker Engine's restart policies do not act on
+    # a failing healthcheck at all — that is a Swarm/Kubernetes behaviour, and
+    # this stack is neither. Watched directly: a `server` container forced
+    # unhealthy sat in `Up (unhealthy)` indefinitely with its restart count
+    # unchanged. So what this buys is **an honest `docker compose ps` and an
+    # honest health log**, and nothing automatic. Anybody who wants automatic
+    # recovery has to add something that reads this and acts.
+    healthcheck:
+      # A shell form, not the binary alone, so the finding reaches the health
+      # log the same way `audit-retention`'s does.
+      test: ["CMD-SHELL", "/app/bin/server --health-check 2>&1"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      # First boot runs the schema migrations before it binds, and a cold
+      # `postgres` on a slow disk makes that the longest part of a start. Three
+      # failed probes inside this window would report a healthy server dead.
+      start_period: 60s
+    ports:
+      # The one line that decides who can reach this server (task 10.22).
+      #
+      # SERVER_PUBLISH_ADDRESS defaults to 127.0.0.1: a clean checkout serves
+      # only this machine. `curl localhost:8080/health` works, the e2e suite
+      # works, and nothing is on the Wi-Fi. To let a phone reach it, set
+      # SERVER_PUBLISH_ADDRESS=0.0.0.0 in .env — deliberately, on a laptop
+      # whose own addresses are private, having read .env.example's note.
+      #
+      # SERVER_PORT isn't a secret — unlike the Postgres credentials above,
+      # it's fine for this one to have a sensible default rather than
+      # requiring every developer to type "8080" on first setup.
+      - "${SERVER_PUBLISH_ADDRESS:-127.0.0.1}:${SERVER_PORT:-8080}:8080"
+
+  # Encrypted database backups (task 10.24 / Security Model §4.9), closing
+  # Gate C finding C-4. Driven by scripts/backup_db.sh and
+  # scripts/restore_db.sh — see server/README.md's "Database backups" section
+  # for the custody arrangement, which is the part that matters.
+  #
+  # `profiles:` keeps this out of `docker compose up`. It is a one-shot job
+  # (`docker compose run`), not a service, and a long-lived container holding
+  # a mount of every historical snapshot is exactly what §4.9 is trying not to
+  # create.
+  backup:
+    profiles: ["backup"]
+    build:
+      context: server/backup
+    # Task 11.70. The one line that decides whether a backup can be written at
+    # all on a Linux server — and it is here, in the file, rather than in a
+    # `chown` step in server/README.md, because Michael decided on 2026-08-30
+    # that a fix which travels with the repository beats a documented step a
+    # human has to perform correctly and nothing can check. That is task
+    # 11.37 item 5's rule, and a backup that silently does not happen is the
+    # worst instance of it this project has found.
+    #
+    # server/backup/Dockerfile ends `USER postgres` (uid 70), correctly: this
+    # container needs no root. But uid 70 is a stranger on the host, and the
+    # backup directory and the mode-600 signing key below belong to the
+    # operator. On Linux a bind mount passes host ownership straight through,
+    # so uid 70 can neither create the archive nor read the key, and until
+    # this line existed backup.sh reported `pg_dump | age pipeline failed` —
+    # a message about the database for a failure entirely about a directory.
+    # Docker Desktop remaps ownership, which is why this held on a Mac.
+    #
+    # scripts/backup_db.sh and scripts/restore_db.sh — the two documented
+    # commands — source scripts/lib/backup_user.sh, which sets these to the
+    # invoking user. The signing key therefore stays the operator's rather
+    # than a shared account's, which is what decides whose backups a restore
+    # will trust.
+    #
+    # The fallback is 70:70, the image's own user, so a raw `docker compose
+    # run backup` behaves exactly as its Dockerfile says. It is NOT a silent
+    # failure any more: backup.sh and restore.sh both refuse before touching
+    # the database, naming the ownership mismatch and the command to use
+    # instead. A fallback of 0:0 would "work" and leave every archive on the
+    # host root-owned and mode 600 — an operator who cannot read their own
+    # backups.
+    user: "${TRITRACK_BACKUP_UID:-70}:${TRITRACK_BACKUP_GID:-70}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env — see .env.example}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env — see .env.example}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env — see .env.example}
+      # Public keys, not secrets — the whole point of §4.9's public-key choice
+      # is that the box taking the backup cannot read one. No default: an
+      # empty value makes the job fail loudly rather than fall back to
+      # anything, because there is no non-encrypted path to fall back to.
+      TRITRACK_BACKUP_RECIPIENTS: ${TRITRACK_BACKUP_RECIPIENTS:-}
+      TRITRACK_BACKUP_KEEP: ${TRITRACK_BACKUP_KEEP:-30}
+      # The minisign PUBLIC key(s) a restore will trust (task 10.43 / §4.9.2).
+      # Also not a secret — but unlike the recipients above it has to be
+      # AUTHENTIC, which is why it is configured here, with the restore
+      # procedure, and never read from beside the archive. An archive
+      # directory that ships its own verifying key verifies nothing, which is
+      # finding H-6 in one sentence.
+      TRITRACK_BACKUP_VERIFY_KEY: ${TRITRACK_BACKUP_VERIFY_KEY:-}
+      TRITRACK_RESTORE_ARCHIVE: ${TRITRACK_RESTORE_ARCHIVE:-}
+      TRITRACK_RESTORE_TARGET_DB: ${TRITRACK_RESTORE_TARGET_DB:-}
+      TRITRACK_RESTORE_REPLACE: ${TRITRACK_RESTORE_REPLACE:-}
+      TRITRACK_RESTORE_UNSIGNED: ${TRITRACK_RESTORE_UNSIGNED:-}
+      # Drill-only fault injection into the swap (task 10.43 / finding H-9).
+      # It can only make a rename fail; see restore.sh's SWAP section.
+      TRITRACK_RESTORE_FAULT: ${TRITRACK_RESTORE_FAULT:-}
+    volumes:
+      # A host directory rather than a named volume, deliberately: an archive
+      # that only exists inside Docker on the server is not off-site, and §2.1
+      # is about the copy that has to survive the server itself. This is the
+      # directory you *would* sync to encrypted-at-rest storage — safely,
+      # because the contents are already ciphertext the destination cannot
+      # read.
+      #
+      # **Task 11.80: nothing syncs it, and this comment used to imply
+      # otherwise.** There is no second copy of any archive anywhere; losing
+      # this machine loses every account, session and sync bookmark on it. The
+      # destination is a decision Michael has not made — see server/README.md,
+      # "Where the archive is not".
+      - ${TRITRACK_BACKUP_DIR:-./backups}:/backups
+      # The private key, when a restore needs one. Read-only, and mounted for
+      # the length of one command — see §4.9 on why it does not live here.
+      - ${TRITRACK_RESTORE_IDENTITY:-/dev/null}:/identity/key.txt:ro
+      # The backup SIGNING key (task 10.43 / §4.9.2), and the one key in this
+      # design that does belong on this machine: an unattended backup job has
+      # to sign without a human. It is a different key from the age identities
+      # above, in the opposite place, defending a different property — those
+      # decide who may READ an archive, this decides who may WRITE one the
+      # restore path will trust. Losing it costs nothing but future
+      # verifiability; there is no data behind it.
+      - ${TRITRACK_BACKUP_SIGNING_KEY:-/dev/null}:/signing/key.sec:ro
+
+  # Something takes the backup, and something says how old the newest one is
+  # (task 11.78 / Security Model §4.9).
+  #
+  # ## Why this service exists at all
+  #
+  # Task 11.70 made a backup work when it runs, and `server/README.md` then told
+  # the operator to "schedule it the same way as the audit purge — a daily cron.
+  # Nothing schedules it for you." That is a documented step a human performs
+  # and nothing checks — the class 11.70's own decision rejected one service up,
+  # when it chose the `user:` line above over a `chown` in the instructions.
+  # **11.70 turned a backup that fails loudly into a backup that is never
+  # taken**, and the end state for a person is the one it set out to fix: they
+  # believe they have encrypted backups and the newest archive is from the week
+  # they set the server up.
+  #
+  # So this is a service and not a README paragraph. `docker compose up` starts
+  # it and `restart: unless-stopped` survives a reboot, neither of which asks
+  # anybody to remember anything.
+  #
+  # ## No `profiles:`, unlike `backup` above, and that is the point
+  #
+  # `backup` is a one-shot job kept out of `docker compose up` on purpose. This
+  # is the opposite: a service that is not started by default is a schedule
+  # nobody applied. It is a long-lived container holding the same mounts, which
+  # §4.9 dislikes — accepted deliberately, because "no container ever holds this
+  # mount" and "no backup is ever taken" were both true at once and only one of
+  # them can lose somebody a field season.
+  #
+  # ## The healthcheck measures the ARCHIVE, never this container
+  #
+  # `tritrack-backup-freshness` reads the age of the newest archive in
+  # `/backups`. It knows nothing about whether this loop is running, and that
+  # asymmetry is the whole design: a wedged scheduler, an empty
+  # TRITRACK_BACKUP_RECIPIENTS, a full disk and a `.env` edited last month all
+  # produce the same red, because they produce the same fact. A check that asked
+  # "is the scheduler up?" would have been green through every one of them.
+  #
+  # `docker compose ps` is therefore where an operator sees this — an
+  # always-on surface, unlike the diagnostics console, which is off by default
+  # and loopback-only. `scripts/backup_status.sh` asks the same question in one
+  # word, and the loop prints the same finding into `docker compose logs`
+  # every cycle.
+  backup-scheduler:
+    build:
+      context: server/backup
+    command: ["tritrack-backup-schedule"]
+    restart: unless-stopped
+    # The same declaration, and for exactly the same reason, as the `backup`
+    # service above — see its comment. It must stay the same: a scheduler
+    # running as a different user from the one that takes manual backups would
+    # write archives the operator cannot read, and sign them with a key it
+    # cannot open. `server/test/security/backup_schedule_test.dart` asserts the
+    # two lines match rather than trusting this comment.
+    user: "${TRITRACK_BACKUP_UID:-70}:${TRITRACK_BACKUP_GID:-70}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env — see .env.example}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env — see .env.example}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env — see .env.example}
+      TRITRACK_BACKUP_RECIPIENTS: ${TRITRACK_BACKUP_RECIPIENTS:-}
+      TRITRACK_BACKUP_KEEP: ${TRITRACK_BACKUP_KEEP:-30}
+      TRITRACK_BACKUP_VERIFY_KEY: ${TRITRACK_BACKUP_VERIFY_KEY:-}
+      # How often a backup is taken. 24h: a day is the unit of field work, and
+      # a day's bearings is the largest loss this design accepts as routine.
+      TRITRACK_BACKUP_INTERVAL_HOURS: ${TRITRACK_BACKUP_INTERVAL_HOURS:-24}
+      # How often the loop wakes to ask. Hourly: the answer only changes on
+      # the hour scale, and a tighter loop would burn a database connection
+      # attempt for nothing. Declared here rather than left to the script's own
+      # default so that a test — and an operator debugging a schedule — can
+      # turn it down without editing an image.
+      TRITRACK_BACKUP_CHECK_SECONDS: ${TRITRACK_BACKUP_CHECK_SECONDS:-3600}
+      # When the age of the newest archive becomes a complaint. **48h, and the
+      # number was chosen rather than inherited.** One missed daily run is a
+      # reboot, a slow dump or a clock nudge, and paging somebody for it teaches
+      # them to ignore this signal — which is the only failure mode that would
+      # put us back where 11.78 started. Two consecutive missed runs is not a
+      # hiccup; it is a schedule that has stopped. 48h also bounds what is at
+      # risk to two days of observations, which is a bad week rather than a lost
+      # season. Michael has the final say on this number; it is one line in
+      # .env, and the reasoning is in server/README.md so the next person can
+      # disagree with the argument rather than the default.
+      TRITRACK_BACKUP_MAX_AGE_HOURS: ${TRITRACK_BACKUP_MAX_AGE_HOURS:-48}
+    volumes:
+      - ${TRITRACK_BACKUP_DIR:-./backups}:/backups
+      # The signing key, same as `backup` above. Not the age identity: this
+      # container never restores, and §4.9's arrangement is that the private
+      # keys which can READ an archive are not on this machine at all.
+      - ${TRITRACK_BACKUP_SIGNING_KEY:-/dev/null}:/signing/key.sec:ro
+    healthcheck:
+      # A shell form, not the script alone, so the finding reaches the health
+      # log: Docker records the command's combined output, and the last line
+      # this prints is always the age or the absence (task 11.69's rule about
+      # an instrument's last words).
+      test: ["CMD-SHELL", "tritrack-backup-freshness 2>&1"]
+      interval: 15m
+      timeout: 60s
+      retries: 1
+      # Long enough for the first backup of a brand-new stack to finish before
+      # its absence is reported as a fault. A deployment that genuinely cannot
+      # take one still goes red, five minutes later.
+      start_period: 5m
+
+  # Something applies §4.7's retention windows, and something says how old the
+  # oldest surviving row is (task 11.79 / Security Model §4.7).
+  #
+  # ## Why this service exists
+  #
+  # Nothing called `AuditRetentionService.purge()`. The windows in
+  # server/README.md — a year for sign-in events, 180 days for sync traffic —
+  # therefore described an intention rather than what was on disk, and §4.7's
+  # own "Violated by: retention that quietly grows without bound" was live on
+  # every running instance.
+  #
+  # And the documented remedy could not be followed: `dart run
+  # bin/purge_audit_logs.dart` needs a Dart SDK and source, while the server
+  # image is a compiled binary on debian-slim with neither. **The one documented
+  # way to apply retention worked only on a developer's laptop** — task 11.70's
+  # class, found because the same question got asked twice. The entrypoint is
+  # compiled into the image now (see server/Dockerfile).
+  #
+  # This is task 11.78's backup-scheduler, one table over, and it is deliberately
+  # the same shape rather than a second invention.
+  #
+  # ## Started by `docker compose up`, for the reason the backup scheduler is
+  #
+  # A service kept behind a compose profile is not started by default, and a
+  # schedule nobody applied is exactly the state this task found.
+  #
+  # ## The healthcheck measures the ROWS, never this container
+  #
+  # `--check` reads the age of the oldest surviving row in each class and knows
+  # nothing about whether the loop is running. A wedged scheduler, a container
+  # somebody stopped, a database the sweep cannot write to and a `.env` edited
+  # last month all go red, because to a person they are one fact: we are still
+  # holding rows we said we would have deleted. `docker compose ps` shows it,
+  # and `scripts/audit_retention_status.sh` asks the same question in one word.
+  audit-retention:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    entrypoint: ["/app/bin/tritrack-audit-retention"]
+    command: ["--schedule"]
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env — see .env.example}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env — see .env.example}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env — see .env.example}
+      # How often the loop wakes to ask. Hourly: the answer changes on the day
+      # scale, and a tighter loop would spend a database connection for nothing.
+      TRITRACK_AUDIT_RETENTION_CHECK_SECONDS: ${TRITRACK_AUDIT_RETENTION_CHECK_SECONDS:-3600}
+      # How far past its window a row may survive before that is a fault. **48h,
+      # chosen for the same reason task 11.78 put 48h between a 24h backup
+      # interval and its staleness limit.** The sweep runs on an interval, so
+      # between runs a row legitimately sits a few hours past its window; a
+      # check with no grace would be red for part of every day and would
+      # therefore be ignored — the only failure mode that puts us back where
+      # this started. Michael has the final say; it is one line in .env, and the
+      # reasoning is in server/README.md so the next person can disagree with
+      # the argument rather than the default.
+      TRITRACK_AUDIT_RETENTION_GRACE_HOURS: ${TRITRACK_AUDIT_RETENTION_GRACE_HOURS:-48}
+    healthcheck:
+      # A shell form, not the binary alone, so the finding reaches the health
+      # log: Docker records the command's combined output, and the last line
+      # this prints is always the verdict (task 11.69's rule about an
+      # instrument's last words).
+      test: ["CMD-SHELL", "/app/bin/tritrack-audit-retention --check 2>&1"]
+      interval: 15m
+      timeout: 60s
+      retries: 1
+      # A fresh database is inside every window from the moment it exists, so
+      # this needs only long enough for the first connection to succeed.
+      start_period: 1m
+
+  # Something destroys a project on the date its owner scheduled, and
+  # something says whether any such date has passed with the project still
+  # here (task 11.290).
+  #
+  # ## Why this service exists
+  #
+  # An owner can schedule a project's destruction — a permit condition, a
+  # landowner agreement, a collaborator withdrawing consent — and every member
+  # sees the countdown. **The server owns the clock.** Not "on next sync": an
+  # owner who schedules a deletion and leaves for a field season must not end
+  # up with a project that quietly never dies because no device came back, and
+  # a device with a wrong clock must not be able to move somebody's deadline.
+  # So the deletion is carried out here, by this loop, from the date in
+  # `project_destruction.destroy_at`, with no device involved.
+  #
+  # It is `audit-retention` above, one table over, and deliberately the same
+  # shape: started by `docker compose up`, a loop that decides by the rows, and
+  # a healthcheck that measures THE ROWS, never this container.
+  #
+  # ## The healthcheck measures the promise, not the process
+  #
+  # `--check` reads how far past its date the most overdue scheduled deletion
+  # is. A wedged loop, a stopped container and a database the sweep cannot
+  # write to all go red, because to a person they are one fact: somebody was
+  # told a project would be gone by now and it is still here. `docker compose
+  # ps` shows it and `scripts/project_destruction_status.sh` prints the
+  # sentence (`scripts/operator_status.sh` names it as a question it does not
+  # ask) — and the owner who scheduled the deletion has a countdown on their
+  # own screen, which is the reader this design actually has.
+  project-destruction:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    entrypoint: ["/app/bin/tritrack-project-destruction"]
+    command: ["--schedule"]
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env — see .env.example}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env — see .env.example}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env — see .env.example}
+      # The same two lines the `server` service reads, so the loop's banner
+      # and the owner's dialog name the same grace period.
+      TRITRACK_PROJECT_DELETION_GRACE_DAYS: ${TRITRACK_PROJECT_DELETION_GRACE_DAYS:-}
+      TRITRACK_BACKUP_KEEP: ${TRITRACK_BACKUP_KEEP:-30}
+      # How often the loop wakes to ask. Hourly: the grace period is measured
+      # in days, and a tighter loop would spend a database connection for
+      # nothing.
+      TRITRACK_PROJECT_DESTRUCTION_CHECK_SECONDS: ${TRITRACK_PROJECT_DESTRUCTION_CHECK_SECONDS:-3600}
+      # How far past its date a scheduled deletion may survive before that is
+      # a fault. Two hours: the loop wakes hourly, so a check with no grace
+      # would be red for most of every hour and would therefore be ignored.
+      TRITRACK_PROJECT_DESTRUCTION_GRACE_HOURS: ${TRITRACK_PROJECT_DESTRUCTION_GRACE_HOURS:-2}
+    healthcheck:
+      # A shell form, not the binary alone, so the finding reaches the health
+      # log: Docker records the command's combined output, and the last line
+      # this prints is always the verdict (task 11.69's rule about an
+      # instrument's last words).
+      test: ["CMD-SHELL", "/app/bin/tritrack-project-destruction --check 2>&1"]
+      interval: 15m
+      timeout: 60s
+      retries: 1
+      # A fresh database has nothing scheduled, so this needs only long enough
+      # for the first connection to succeed.
+      start_period: 1m
+
+  # Something purges deleted records the server has held for the whole
+  # retention window, and something says whether any is overdue (task
+  # 11.291).
+  #
+  # ## Why this service exists
+  #
+  # A deleted record survives on the server as a "tombstone" — a row marked
+  # deleted — so that a device which was away can be told what to delete.
+  # Task 10.11 wrote the purge that removes tombstones after 24 months, and
+  # the refusal that stops a device away longer than that from bringing a
+  # deleted record back. **The refusal was real and tested; the purge was
+  # called from nowhere for seven weeks**, so every server's purge floor was
+  # zero and the security model described a control that had never run. This
+  # is `audit-retention` above, one table over, and deliberately the same
+  # shape: started by `docker compose up`, a loop that decides by the rows,
+  # and a healthcheck that measures THE ROWS, never this container.
+  #
+  # ## What the first run does — decided, not left to fall out
+  #
+  # A tombstone's age is measured on the server's own clock (`received_at`,
+  # when this server accepted the delete), never on the device's deletion
+  # stamp. So the first sweep on any server purges only deletes the server
+  # has itself held for 24 months, and can refuse only a device that has not
+  # synced that project in 24 months. On a server younger than that the
+  # first sweep purges nothing and refuses nobody. The reasoning is in
+  # `server/lib/src/sync/tombstone_retention_service.dart`'s header.
+  #
+  # ## The healthcheck measures the promise, not the process
+  #
+  # `--check` reads how long the oldest purgeable tombstone has been past the
+  # window — a row the sweep should have deleted and has not — and prints
+  # what the next sweep would purge and **how many devices it would refuse**.
+  # A wedged loop, a stopped container and a database the sweep cannot write
+  # to all go red. `docker compose ps` shows it and
+  # `scripts/tombstone_retention_status.sh` prints the sentence
+  # (`scripts/operator_status.sh` names it as a question it does not ask).
+  tombstone-retention:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    entrypoint: ["/app/bin/tritrack-tombstone-retention"]
+    command: ["--schedule"]
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env — see .env.example}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env — see .env.example}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env — see .env.example}
+      # How often the loop wakes to ask. Hourly: the window is measured in
+      # years, and a tighter loop would spend a database connection for
+      # nothing.
+      TRITRACK_TOMBSTONE_RETENTION_CHECK_SECONDS: ${TRITRACK_TOMBSTONE_RETENTION_CHECK_SECONDS:-3600}
+      # How far past the window a purgeable row may survive before that is a
+      # fault. 48h, for the reason the audit sweep gives above: between hourly
+      # cycles a row legitimately sits a little past its window, and a check
+      # with no grace would be red for part of every day and be ignored.
+      TRITRACK_TOMBSTONE_RETENTION_GRACE_HOURS: ${TRITRACK_TOMBSTONE_RETENTION_GRACE_HOURS:-48}
+    healthcheck:
+      # A shell form, not the binary alone, so the finding reaches the health
+      # log: Docker records the command's combined output, and the last line
+      # this prints is always the verdict (task 11.69's rule about an
+      # instrument's last words).
+      test: ["CMD-SHELL", "/app/bin/tritrack-tombstone-retention --check 2>&1"]
+      interval: 15m
+      timeout: 60s
+      retries: 1
+      # A fresh database holds nothing past the window, so this needs only
+      # long enough for the first connection to succeed.
+      start_period: 1m
+
+volumes:
+  tritrack_postgres_data:
+  # Task 11.129 — the server's own durable state. Exactly one file lives here:
+  # the degradation record. See the `server` service's `volumes:` for why it is
+  # named rather than bound to a host directory.
+  tritrack_server_state:

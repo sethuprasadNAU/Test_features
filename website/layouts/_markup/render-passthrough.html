@@ -1,0 +1,21 @@
+{{- /*
+  Mathematics on this site: $...$ inline and $$...$$ on its own lines.
+
+  Rendered once, when Hugo builds the site, by the KaTeX that is compiled into
+  the Hugo binary (`transform.ToMath`). The page receives MathML, which every
+  current browser draws itself. So there is no script, no stylesheet, no font
+  and no third-party CDN: nothing is fetched when somebody reads the page, and
+  nothing new is pinned in this repository beyond the Hugo version already
+  pinned in .github/workflows/website.yml.
+
+  A formula KaTeX cannot parse fails the build, naming the page and line, the
+  same way the shot and diagram shortcodes refuse a missing file.
+*/ -}}
+{{- $opts := dict "output" "mathml" "displayMode" (eq .Type "block") "throwOnError" true -}}
+{{- with try (transform.ToMath .Inner $opts) -}}
+  {{- with .Err -}}
+    {{- errorf "could not render the formula at %s: %s" $.Position . -}}
+  {{- else -}}
+    {{- .Value -}}
+  {{- end -}}
+{{- end -}}

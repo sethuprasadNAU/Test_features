@@ -1,0 +1,31 @@
+{{- /*
+  {{< shot "join-waiting" "What the person who asked to join sees next." >}}
+  {{< shot "record" "The record screen." "ipad-13" >}}
+
+  One screenshot from the harness in `integration_test/screenshots/`, with a
+  caption. The default profile is the phone, because the guide is the phone.
+
+  **It refuses to render an image that is not there.** A screen renamed in the
+  harness, or a name typed wrongly here, is a failed build rather than a
+  broken image somebody notices in six months — which is the same reason the
+  app shortcode next door exists. Hugo has no other check on an <img> src.
+
+  No screenshot may be added by hand. See website/README.md.
+*/ -}}
+{{- $name := .Get 0 -}}
+{{- $caption := .Get 1 -}}
+{{- $profile := or (.Get 2) "iphone-6.9" -}}
+{{- if not $name -}}
+  {{- errorf "the shot shortcode needs a screen name, e.g. {{< shot \"join-waiting\" \"caption\" >}} — in %s" .Page.Path -}}
+{{- end -}}
+{{- if not $caption -}}
+  {{- errorf "the shot shortcode needs a caption; an uncaptioned screenshot makes the reader guess what they are looking at (%s, screen %s)" .Page.Path $name -}}
+{{- end -}}
+{{- $file := printf "static/screens/%s/%s.png" $profile $name -}}
+{{- if not (os.FileExists $file) -}}
+  {{- errorf "no screenshot called %s in the %s profile (looked for %s), used in %s. Screenshots come from integration_test/screenshots/ and are never added by hand." $name $profile $file .Page.Path -}}
+{{- end -}}
+<figure class="shot">
+<img src="{{ printf "screens/%s/%s.png" $profile $name | relURL }}" alt="{{ $caption }}" loading="lazy">
+<figcaption>{{ $caption }}</figcaption>
+</figure>

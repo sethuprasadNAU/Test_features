@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TriTrack server — host and network boundaries</title>
+<style>
+  @page { size: letter; margin: 0.42in 0.5in; }
+  :root{
+    --ink:#111827;
+    --muted:#5b6472;
+    --line:#c8ced8;
+    --host:#f4f6f9;
+    --net:#eef4fb;
+    --edge:#1f3a5f;
+    --accent:#0b5c8a;
+    --warn:#8a4b0b;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-size:9.2pt;
+    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    color:var(--ink);
+    font-size:9.4pt;
+    line-height:1.42;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+  header{border-bottom:1.5px solid var(--edge);padding-bottom:6px;margin-bottom:7px}
+  h1{font-size:15pt;margin:0 0 3px;letter-spacing:-.2px}
+  .sub{color:var(--muted);font-size:9.2pt;margin:0}
+  .sub strong{color:var(--ink)}
+  img.diagram{display:block;width:81%;max-width:100%;height:auto;margin:0 auto 7px}
+  h2{font-size:9.4pt;text-transform:uppercase;letter-spacing:.7px;margin:7px 0 4px;color:var(--edge)}
+  table{width:100%;border-collapse:collapse;font-size:8.2pt}
+  th{text-align:left;font-weight:600;border-bottom:1px solid var(--edge);padding:3px 6px 3px 0;color:var(--edge)}
+  td{border-bottom:1px solid var(--line);padding:2.8px 6px 2.8px 0;vertical-align:top}
+  td:first-child{font-weight:600;white-space:nowrap}
+  code{font-family:"SFMono-Regular",Menlo,Consolas,monospace;font-size:8pt}
+  .cols{display:flex;gap:22px;margin-top:4px}
+  .cols>div{flex:1}
+  ul{margin:3px 0 0;padding-left:15px}
+  li{margin-bottom:1.5px}
+  footer{margin-top:6px;padding-top:4px;border-top:1px solid var(--line);
+         color:var(--muted);font-size:7.6pt;display:flex;justify-content:space-between;gap:12px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>TriTrack research server &mdash; host and network boundaries</h1>
+  <p class="sub">One Linux host &middot; seven long-running containers &middot; <strong>two inbound TCP ports, 443 and 80</strong> &middot; one outbound service dependency, a mail relay</p>
+</header>
+
+<!-- The diagram lives in TriTrack-server-architecture.svg so this page and
+     TriTrack-server-deployment.html show the same one. Keep the .svg beside
+     this file when printing or moving either document. -->
+<img class="diagram" src="TriTrack-server-architecture.svg"
+     alt="Architecture diagram of the TriTrack server">
+
+<h2>The seven containers</h2>
+<table>
+  <tr><th style="width:20%">Container</th><th style="width:23%">Image</th><th style="width:23%">Reachable from</th><th>What it does</th></tr>
+  <tr>
+    <td>proxy</td><td><code>caddy:2-alpine</code></td>
+    <td><strong>Host ports 443 and 80</strong></td>
+    <td>Terminates TLS and obtains its own certificate. Port 80 serves the ACME challenge only. The single entry point.</td>
+  </tr>
+  <tr>
+    <td>server</td><td>Dart binary on <code>debian:bookworm-slim</code></td>
+    <td>The proxy container only</td>
+    <td>The application: sign-in, sync, project membership. Publishes no host port &mdash; the compose file removes it explicitly. Its one outbound connection is to the mail relay, to send sign-in links.</td>
+  </tr>
+  <tr>
+    <td>postgres</td><td><code>postgres:16-alpine</code></td>
+    <td>The other six containers</td>
+    <td>The database. No host port in any configuration, so it is not reachable from the network at all.</td>
+  </tr>
+  <tr>
+    <td>audit-retention</td><td>Same image as <code>server</code></td>
+    <td>Nothing &mdash; it only makes outgoing queries</td>
+    <td>Applies retention windows: a year for sign-in events, 180 days for sync traffic, 30 days for decided join requests.</td>
+  </tr>
+  <tr>
+    <td>backup-scheduler</td><td>Built on <code>postgres:16-alpine</code></td>
+    <td>Nothing &mdash; it only makes outgoing queries</td>
+    <td>One encrypted, signed database dump every 24 hours, into a directory on the host disk.</td>
+  </tr>
+  <tr>
+    <td>project-destruction</td><td>Same image as <code>server</code></td>
+    <td>Nothing &mdash; it only makes outgoing queries</td>
+    <td>Destroys a project on the date its owner scheduled, so no device has to be online for the deletion to happen.</td>
+  </tr>
+  <tr>
+    <td>tombstone-retention</td><td>Same image as <code>server</code></td>
+    <td>Nothing &mdash; it only makes outgoing queries</td>
+    <td>Purges records deleted more than 24 months ago (measured from when this server accepted the delete), so the database does not grow without bound.</td>
+  </tr>
+</table>
+
+<div class="cols">
+  <div>
+    <h2>What crosses the host boundary</h2>
+    <ul>
+      <li><strong>Inbound TCP 443</strong> — field devices syncing. This is the only port anyone uses.</li>
+      <li><strong>Inbound TCP 80</strong> — reachable by Let's Encrypt for the certificate challenge, nothing else.</li>
+      <li><strong>Outbound TCP 443</strong> — the proxy renewing its certificate, roughly every 60 days.</li>
+      <li><strong>Outbound SMTP</strong> — the server handing sign-in links to a mail relay, over TLS, whenever someone signs in. Port 587 with STARTTLS by default; the relay, port and sending address are configuration, and <strong>which relay is a question for NAU</strong>.</li>
+      <li>Nothing else. No telemetry, no package fetching at runtime.</li>
+    </ul>
+  </div>
+  <div>
+    <h2>What it stores</h2>
+    <ul>
+      <li>Researchers' names and email addresses.</li>
+      <li>Field records — coordinates, times, and radio frequencies of collared animals.</li>
+      <li>Sensitive in a conservation sense (locations of protected species); not FERPA, not HIPAA, no student data, no payment data.</li>
+      <li>Backups stay on this host. Where a second copy may live is one of our questions.</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <span>TriTrack &mdash; Dynamic and Active Systems Lab, NAU</span>
+  <span>From <code>docker-compose.yml</code> + <code>docker-compose.tls.yml</code> &middot; 2026-09-20</span>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,29 @@
+{{- /*
+  {{< anim name="hill-build" alt="What the animation shows." caption="What to notice." >}}
+
+  An animated figure (static/figures/<name>.svg, CSS keyframes inside the SVG,
+  no script) and its still version (<name>-steps.svg), both drawn by
+  website/tools/theory_figures.dart. The still version stands in for the
+  animation when the page is printed or made into a PDF, for a reader whose
+  device asks for reduced motion, and when the reader ticks the box above it,
+  which is also how to stop the movement. See style.css, "Theory figures".
+*/ -}}
+{{- $name := .Get "name" -}}
+{{- $alt := .Get "alt" -}}
+{{- $caption := .Get "caption" -}}
+{{- if not (and $name $alt $caption) -}}
+  {{- errorf "the anim shortcode needs name, alt and caption (%s)" .Page.Path -}}
+{{- end -}}
+{{- $live := printf "static/figures/%s.svg" $name -}}
+{{- $still := printf "static/figures/%s-steps.svg" $name -}}
+{{- range slice $live $still -}}
+  {{- if not (os.FileExists .) -}}
+    {{- errorf "no figure file %s, used in %s. Run `dart website/tools/theory_figures.dart`." . $.Page.Path -}}
+  {{- end -}}
+{{- end -}}
+<figure class="tfig anim">
+<label class="anim-switch"><input type="checkbox" id="still-{{ $name }}"> Show still pictures instead</label>
+<div class="anim-live" role="img" aria-label="{{ $alt }}">{{ os.ReadFile $live | safeHTML }}</div>
+<div class="anim-still" role="img" aria-label="{{ $alt }}">{{ os.ReadFile $still | safeHTML }}</div>
+<figcaption>{{ $caption }}</figcaption>
+</figure>

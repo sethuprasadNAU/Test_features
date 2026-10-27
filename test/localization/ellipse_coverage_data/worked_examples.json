@@ -1,0 +1,1809 @@
+{
+  "about": "Six single fixes from the simulation behind task 11.323, solved by the app's own solver (LenthSolver, the meters configuration). Written by task 11.336; see README.md for every field and the one command that regenerates this file.",
+  "examples": [
+    {
+      "id": "n3_sd5",
+      "bearings": 3,
+      "bearing_spread_sd_deg": 5.0,
+      "true_kappa": 131.813829,
+      "seed": 11336,
+      "fixes_drawn_before_this_one": 0,
+      "shows": "ellipse misses the animal",
+      "this_cells_coverage_chi_square": 0.4202,
+      "this_cells_coverage_true_kappa": 0.9372,
+      "plane": "meters; x east, y north; the animal is at the origin",
+      "true_point": {
+        "x_m": 0.0,
+        "y_m": 0.0
+      },
+      "stations": [
+        {
+          "number": 1,
+          "x_m": 979.726248,
+          "y_m": 390.672907,
+          "theta_math_rad": -2.896022,
+          "true_bearing_compass_deg": 248.260002,
+          "bearing_compass_deg": 255.929813,
+          "bearing_error_compass_deg": 7.669811,
+          "leftover_angle_deg": 0.882123,
+          "leftover_angle_math_rad": -0.015396
+        },
+        {
+          "number": 2,
+          "x_m": 443.120468,
+          "y_m": -423.819677,
+          "theta_math_rad": 2.436415,
+          "true_bearing_compass_deg": 313.724628,
+          "bearing_compass_deg": 310.403728,
+          "bearing_error_compass_deg": -3.3209,
+          "leftover_angle_deg": -1.284889,
+          "leftover_angle_math_rad": 0.022426
+        },
+        {
+          "number": 3,
+          "x_m": 391.143288,
+          "y_m": -1281.972076,
+          "theta_math_rad": 1.901701,
+          "true_bearing_compass_deg": 343.032496,
+          "bearing_compass_deg": 341.040582,
+          "bearing_error_compass_deg": -1.991914,
+          "leftover_angle_deg": 2.046929,
+          "leftover_angle_math_rad": -0.035726
+        }
+      ],
+      "estimate": {
+        "x_m": -136.655285,
+        "y_m": 92.535081,
+        "distance_from_true_point_m": 165.037596,
+        "iterations": 6,
+        "warnings": []
+      },
+      "solver_path": {
+        "note": "Each step is Lenth's Eq. 2.6 applied at the current point. `shortened` marks a step that was cut back because the whole step made the fit worse; `fraction` is how much of it was taken. `sum_cosine` is Σ cos(θᵢ − μᵢ), the fit being maximized.",
+        "start": {
+          "x_m": -113.890501,
+          "y_m": 97.590695,
+          "sum_cosine": 2.998552
+        },
+        "steps": [
+          {
+            "number": 1,
+            "from": {
+              "x_m": -113.890501,
+              "y_m": 97.590695
+            },
+            "full_step_to": {
+              "x_m": -137.985009,
+              "y_m": 93.102327
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": -137.985009,
+              "y_m": 93.102327
+            },
+            "sum_cosine": 2.998991,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 2,
+            "from": {
+              "x_m": -137.985009,
+              "y_m": 93.102327
+            },
+            "full_step_to": {
+              "x_m": -136.607171,
+              "y_m": 92.540016
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": -136.607171,
+              "y_m": 92.540016
+            },
+            "sum_cosine": 2.998992,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 3,
+            "from": {
+              "x_m": -136.607171,
+              "y_m": 92.540016
+            },
+            "full_step_to": {
+              "x_m": -136.657895,
+              "y_m": 92.536015
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": -136.657895,
+              "y_m": 92.536015
+            },
+            "sum_cosine": 2.998992,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 4,
+            "from": {
+              "x_m": -136.657895,
+              "y_m": 92.536015
+            },
+            "full_step_to": {
+              "x_m": -136.655185,
+              "y_m": 92.535083
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": -136.655185,
+              "y_m": 92.535083
+            },
+            "sum_cosine": 2.998992,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 5,
+            "from": {
+              "x_m": -136.655185,
+              "y_m": 92.535083
+            },
+            "full_step_to": {
+              "x_m": -136.655291,
+              "y_m": 92.535083
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": -136.655291,
+              "y_m": 92.535083
+            },
+            "sum_cosine": 2.998992,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 6,
+            "from": {
+              "x_m": -136.655291,
+              "y_m": 92.535083
+            },
+            "full_step_to": {
+              "x_m": -136.655285,
+              "y_m": 92.535081
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": -136.655285,
+              "y_m": 92.535081
+            },
+            "sum_cosine": 2.998992,
+            "converged": true,
+            "rejected": false
+          }
+        ],
+        "shortened_steps": []
+      },
+      "kappa": {
+        "value": 1488.270742,
+        "mean_cosine": 0.999664,
+        "mean_resultant_length": 0.99971,
+        "note": "kappa is the inverse of the von Mises mean-resultant function applied to mean_cosine, the average of cos(leftover angle) over the bearings. The leftover angles are on each station above."
+      },
+      "covariance_m2": {
+        "xx": 835.85314,
+        "yy": 575.309395,
+        "xy": -387.709449,
+        "standard_error_x_m": 28.911125,
+        "standard_error_y_m": 23.985608,
+        "correlation": -0.559102
+      },
+      "ellipses": {
+        "one_sd": {
+          "scale_k": 1.0,
+          "semi_major_m": 33.385498,
+          "semi_minor_m": 17.221238,
+          "major_axis_rotation_ccw_from_east_deg": -35.713726,
+          "major_axis_compass_bearing_deg": 125.713726
+        },
+        "ninety_five": {
+          "scale_k": 5.991465,
+          "semi_major_m": 81.719248,
+          "semi_minor_m": 42.15323,
+          "major_axis_rotation_ccw_from_east_deg": -35.713726,
+          "major_axis_compass_bearing_deg": 125.713726
+        }
+      },
+      "true_point_mahalanobis_squared": 24.490339,
+      "covered_by_95_ellipse": false
+    },
+    {
+      "id": "n3_sd15",
+      "bearings": 3,
+      "bearing_spread_sd_deg": 15.0,
+      "true_kappa": 15.105536,
+      "seed": 11337,
+      "fixes_drawn_before_this_one": 0,
+      "shows": "ellipse misses the animal",
+      "this_cells_coverage_chi_square": 0.395,
+      "this_cells_coverage_true_kappa": 0.8692,
+      "plane": "meters; x east, y north; the animal is at the origin",
+      "true_point": {
+        "x_m": 0.0,
+        "y_m": 0.0
+      },
+      "stations": [
+        {
+          "number": 1,
+          "x_m": 1196.869004,
+          "y_m": 468.469256,
+          "theta_math_rad": -2.877781,
+          "true_bearing_compass_deg": 248.624014,
+          "bearing_compass_deg": 254.884716,
+          "bearing_error_compass_deg": 6.260702,
+          "leftover_angle_deg": -3.985585,
+          "leftover_angle_math_rad": 0.069562
+        },
+        {
+          "number": 2,
+          "x_m": 1235.789078,
+          "y_m": -801.811185,
+          "theta_math_rad": 2.266377,
+          "true_bearing_compass_deg": 302.976526,
+          "bearing_compass_deg": 320.146178,
+          "bearing_error_compass_deg": 17.169652,
+          "leftover_angle_deg": 3.162538,
+          "leftover_angle_math_rad": -0.055197
+        },
+        {
+          "number": 3,
+          "x_m": 1115.331976,
+          "y_m": 1110.059379,
+          "theta_math_rad": -2.460878,
+          "true_bearing_compass_deg": 225.13575,
+          "bearing_compass_deg": 230.997931,
+          "bearing_error_compass_deg": 5.86218,
+          "leftover_angle_deg": 4.170009,
+          "leftover_angle_math_rad": -0.07278
+        }
+      ],
+      "estimate": {
+        "x_m": 228.33796,
+        "y_m": 277.929616,
+        "distance_from_true_point_m": 359.698618,
+        "iterations": 8,
+        "warnings": []
+      },
+      "solver_path": {
+        "note": "Each step is Lenth's Eq. 2.6 applied at the current point. `shortened` marks a step that was cut back because the whole step made the fit worse; `fraction` is how much of it was taken. `sum_cosine` is Σ cos(θᵢ − μᵢ), the fit being maximized.",
+        "start": {
+          "x_m": 259.434904,
+          "y_m": 310.006735,
+          "sum_cosine": 2.99253
+        },
+        "steps": [
+          {
+            "number": 1,
+            "from": {
+              "x_m": 259.434904,
+              "y_m": 310.006735
+            },
+            "full_step_to": {
+              "x_m": 220.886065,
+              "y_m": 274.247822
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 220.886065,
+              "y_m": 274.247822
+            },
+            "sum_cosine": 2.993391,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 2,
+            "from": {
+              "x_m": 220.886065,
+              "y_m": 274.247822
+            },
+            "full_step_to": {
+              "x_m": 229.242592,
+              "y_m": 278.587332
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 229.242592,
+              "y_m": 278.587332
+            },
+            "sum_cosine": 2.993411,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 3,
+            "from": {
+              "x_m": 229.242592,
+              "y_m": 278.587332
+            },
+            "full_step_to": {
+              "x_m": 228.186709,
+              "y_m": 277.839704
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 228.186709,
+              "y_m": 277.839704
+            },
+            "sum_cosine": 2.993411,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 4,
+            "from": {
+              "x_m": 228.186709,
+              "y_m": 277.839704
+            },
+            "full_step_to": {
+              "x_m": 228.359405,
+              "y_m": 277.943746
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 228.359405,
+              "y_m": 277.943746
+            },
+            "sum_cosine": 2.993411,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 5,
+            "from": {
+              "x_m": 228.359405,
+              "y_m": 277.943746
+            },
+            "full_step_to": {
+              "x_m": 228.334644,
+              "y_m": 277.927543
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 228.334644,
+              "y_m": 277.927543
+            },
+            "sum_cosine": 2.993411,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 6,
+            "from": {
+              "x_m": 228.334644,
+              "y_m": 277.927543
+            },
+            "full_step_to": {
+              "x_m": 228.338438,
+              "y_m": 277.929922
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 228.338438,
+              "y_m": 277.929922
+            },
+            "sum_cosine": 2.993411,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 7,
+            "from": {
+              "x_m": 228.338438,
+              "y_m": 277.929922
+            },
+            "full_step_to": {
+              "x_m": 228.337876,
+              "y_m": 277.929562
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 228.337876,
+              "y_m": 277.929562
+            },
+            "sum_cosine": 2.993411,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 8,
+            "from": {
+              "x_m": 228.337876,
+              "y_m": 277.929562
+            },
+            "full_step_to": {
+              "x_m": 228.33796,
+              "y_m": 277.929616
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 228.33796,
+              "y_m": 277.929616
+            },
+            "sum_cosine": 2.993411,
+            "converged": true,
+            "rejected": false
+          }
+        ],
+        "shortened_steps": []
+      },
+      "kappa": {
+        "value": 227.913128,
+        "mean_cosine": 0.997804,
+        "mean_resultant_length": 0.997994,
+        "note": "kappa is the inverse of the von Mises mean-resultant function applied to mean_cosine, the average of cos(leftover angle) over the bearings. The leftover angles are on each station above."
+      },
+      "covariance_m2": {
+        "xx": 8305.023859,
+        "yy": 3203.629954,
+        "xy": 1784.511342,
+        "standard_error_x_m": 91.131904,
+        "standard_error_y_m": 56.600618,
+        "correlation": 0.345961
+      },
+      "ellipses": {
+        "one_sd": {
+          "scale_k": 1.0,
+          "semi_major_m": 94.166286,
+          "semi_minor_m": 51.394206,
+          "major_axis_rotation_ccw_from_east_deg": 17.488648,
+          "major_axis_compass_bearing_deg": 72.511352
+        },
+        "ninety_five": {
+          "scale_k": 5.991465,
+          "semi_major_m": 230.495228,
+          "semi_minor_m": 125.800004,
+          "major_axis_rotation_ccw_from_east_deg": 17.488648,
+          "major_axis_compass_bearing_deg": 72.511352
+        }
+      },
+      "true_point_mahalanobis_squared": 24.851062,
+      "covered_by_95_ellipse": false
+    },
+    {
+      "id": "n5_sd5",
+      "bearings": 5,
+      "bearing_spread_sd_deg": 5.0,
+      "true_kappa": 131.813829,
+      "seed": 11338,
+      "fixes_drawn_before_this_one": 1,
+      "shows": "ellipse contains the animal",
+      "this_cells_coverage_chi_square": 0.7,
+      "this_cells_coverage_true_kappa": 0.9415,
+      "plane": "meters; x east, y north; the animal is at the origin",
+      "true_point": {
+        "x_m": 0.0,
+        "y_m": 0.0
+      },
+      "stations": [
+        {
+          "number": 1,
+          "x_m": 1798.416049,
+          "y_m": 746.482509,
+          "theta_math_rad": -2.61282,
+          "true_bearing_compass_deg": 247.457749,
+          "bearing_compass_deg": 239.703551,
+          "bearing_error_compass_deg": -7.754198,
+          "leftover_angle_deg": -6.353177,
+          "leftover_angle_math_rad": 0.110884
+        },
+        {
+          "number": 2,
+          "x_m": 1454.702973,
+          "y_m": -482.089007,
+          "theta_math_rad": 2.799439,
+          "true_bearing_compass_deg": 288.335212,
+          "bearing_compass_deg": 289.60395,
+          "bearing_error_compass_deg": 1.268738,
+          "leftover_angle_deg": 4.725681,
+          "leftover_angle_math_rad": -0.082479
+        },
+        {
+          "number": 3,
+          "x_m": 737.739898,
+          "y_m": 1202.588054,
+          "theta_math_rad": -2.097924,
+          "true_bearing_compass_deg": 211.527459,
+          "bearing_compass_deg": 210.202185,
+          "bearing_error_compass_deg": -1.325273,
+          "leftover_angle_deg": -1.734671,
+          "leftover_angle_math_rad": 0.030276
+        },
+        {
+          "number": 4,
+          "x_m": 879.571992,
+          "y_m": 1637.616636,
+          "theta_math_rad": -2.067601,
+          "true_bearing_compass_deg": 208.240465,
+          "bearing_compass_deg": 208.464834,
+          "bearing_error_compass_deg": 0.224369,
+          "leftover_angle_deg": -0.25824,
+          "leftover_angle_math_rad": 0.004507
+        },
+        {
+          "number": 5,
+          "x_m": 198.935277,
+          "y_m": 1254.693082,
+          "theta_math_rad": -1.839124,
+          "true_bearing_compass_deg": 189.009418,
+          "bearing_compass_deg": 195.374071,
+          "bearing_error_compass_deg": 6.364653,
+          "leftover_angle_deg": 4.334672,
+          "leftover_angle_math_rad": -0.075654
+        }
+      ],
+      "estimate": {
+        "x_m": -61.322967,
+        "y_m": -79.321317,
+        "distance_from_true_point_m": 100.261546,
+        "iterations": 7,
+        "warnings": []
+      },
+      "solver_path": {
+        "note": "Each step is Lenth's Eq. 2.6 applied at the current point. `shortened` marks a step that was cut back because the whole step made the fit worse; `fraction` is how much of it was taken. `sum_cosine` is Σ cos(θᵢ − μᵢ), the fit being maximized.",
+        "start": {
+          "x_m": -31.069303,
+          "y_m": -95.566867,
+          "sum_cosine": 4.98635
+        },
+        "steps": [
+          {
+            "number": 1,
+            "from": {
+              "x_m": -31.069303,
+              "y_m": -95.566867
+            },
+            "full_step_to": {
+              "x_m": -58.458501,
+              "y_m": -77.308355
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": -58.458501,
+              "y_m": -77.308355
+            },
+            "sum_cosine": 4.987127,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 2,
+            "from": {
+              "x_m": -58.458501,
+              "y_m": -77.308355
+            },
+            "full_step_to": {
+              "x_m": -61.35347,
+              "y_m": -79.523654
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": -61.35347,
+              "y_m": -79.523654
+            },
+            "sum_cosine": 4.98713,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 3,
+            "from": {
+              "x_m": -61.35347,
+              "y_m": -79.523654
+            },
+            "full_step_to": {
+              "x_m": -61.307573,
+              "y_m": -79.299431
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": -61.307573,
+              "y_m": -79.299431
+            },
+            "sum_cosine": 4.98713,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 4,
+            "from": {
+              "x_m": -61.307573,
+              "y_m": -79.299431
+            },
+            "full_step_to": {
+              "x_m": -61.324054,
+              "y_m": -79.323612
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": -61.324054,
+              "y_m": -79.323612
+            },
+            "sum_cosine": 4.98713,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 5,
+            "from": {
+              "x_m": -61.324054,
+              "y_m": -79.323612
+            },
+            "full_step_to": {
+              "x_m": -61.322829,
+              "y_m": -79.321077
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": -61.322829,
+              "y_m": -79.321077
+            },
+            "sum_cosine": 4.98713,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 6,
+            "from": {
+              "x_m": -61.322829,
+              "y_m": -79.321077
+            },
+            "full_step_to": {
+              "x_m": -61.322982,
+              "y_m": -79.321346
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": -61.322982,
+              "y_m": -79.321346
+            },
+            "sum_cosine": 4.98713,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 7,
+            "from": {
+              "x_m": -61.322982,
+              "y_m": -79.321346
+            },
+            "full_step_to": {
+              "x_m": -61.322967,
+              "y_m": -79.321317
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": -61.322967,
+              "y_m": -79.321317
+            },
+            "sum_cosine": 4.98713,
+            "converged": true,
+            "rejected": false
+          }
+        ],
+        "shortened_steps": []
+      },
+      "kappa": {
+        "value": 194.507035,
+        "mean_cosine": 0.997426,
+        "mean_resultant_length": 0.997429,
+        "note": "kappa is the inverse of the von Mises mean-resultant function applied to mean_cosine, the average of cos(leftover angle) over the bearings. The leftover angles are on each station above."
+      },
+      "covariance_m2": {
+        "xx": 5693.895573,
+        "yy": 8336.851517,
+        "xy": 3029.220034,
+        "standard_error_x_m": 75.457906,
+        "standard_error_y_m": 91.306361,
+        "correlation": 0.439668
+      },
+      "ellipses": {
+        "one_sd": {
+          "scale_k": 1.0,
+          "semi_major_m": 101.588832,
+          "semi_minor_m": 60.913515,
+          "major_axis_rotation_ccw_from_east_deg": 56.784465,
+          "major_axis_compass_bearing_deg": 33.215535
+        },
+        "ninety_five": {
+          "scale_k": 5.991465,
+          "semi_major_m": 248.663742,
+          "semi_minor_m": 149.100863,
+          "major_axis_rotation_ccw_from_east_deg": 56.784465,
+          "major_axis_compass_bearing_deg": 33.215535
+        }
+      },
+      "true_point_mahalanobis_squared": 0.984683,
+      "covered_by_95_ellipse": true
+    },
+    {
+      "id": "n5_sd15",
+      "bearings": 5,
+      "bearing_spread_sd_deg": 15.0,
+      "true_kappa": 15.105536,
+      "seed": 11339,
+      "fixes_drawn_before_this_one": 0,
+      "shows": "ellipse contains the animal",
+      "this_cells_coverage_chi_square": 0.683,
+      "this_cells_coverage_true_kappa": 0.8988,
+      "plane": "meters; x east, y north; the animal is at the origin",
+      "true_point": {
+        "x_m": 0.0,
+        "y_m": 0.0
+      },
+      "stations": [
+        {
+          "number": 1,
+          "x_m": 305.667106,
+          "y_m": 947.990651,
+          "theta_math_rad": -1.861442,
+          "true_bearing_compass_deg": 197.871233,
+          "bearing_compass_deg": 196.652798,
+          "bearing_error_compass_deg": -1.218435,
+          "leftover_angle_deg": -1.981995,
+          "leftover_angle_math_rad": 0.034592
+        },
+        {
+          "number": 2,
+          "x_m": 71.771708,
+          "y_m": 555.202816,
+          "theta_math_rad": -1.782026,
+          "true_bearing_compass_deg": 187.365842,
+          "bearing_compass_deg": 192.102567,
+          "bearing_error_compass_deg": 4.736725,
+          "leftover_angle_deg": 1.014592,
+          "leftover_angle_math_rad": -0.017708
+        },
+        {
+          "number": 3,
+          "x_m": 624.059493,
+          "y_m": 478.273209,
+          "theta_math_rad": -2.529049,
+          "true_bearing_compass_deg": 232.533791,
+          "bearing_compass_deg": 234.903862,
+          "bearing_error_compass_deg": 2.370071,
+          "leftover_angle_deg": 7.683197,
+          "leftover_angle_math_rad": -0.134097
+        },
+        {
+          "number": 4,
+          "x_m": 1741.785323,
+          "y_m": -8.389081,
+          "theta_math_rad": 3.260517,
+          "true_bearing_compass_deg": 270.275955,
+          "bearing_compass_deg": 263.186109,
+          "bearing_error_compass_deg": -7.089847,
+          "leftover_angle_deg": -1.932732,
+          "leftover_angle_math_rad": 0.033733
+        },
+        {
+          "number": 5,
+          "x_m": 1112.264748,
+          "y_m": 1160.504665,
+          "theta_math_rad": -2.082862,
+          "true_bearing_compass_deg": 223.78407,
+          "bearing_compass_deg": 209.339202,
+          "bearing_error_compass_deg": -14.444868,
+          "leftover_angle_deg": -12.409606,
+          "leftover_angle_math_rad": 0.216588
+        }
+      ],
+      "estimate": {
+        "x_m": -68.982829,
+        "y_m": -163.026858,
+        "distance_from_true_point_m": 177.020867,
+        "iterations": 7,
+        "warnings": []
+      },
+      "solver_path": {
+        "note": "Each step is Lenth's Eq. 2.6 applied at the current point. `shortened` marks a step that was cut back because the whole step made the fit worse; `fraction` is how much of it was taken. `sum_cosine` is Σ cos(θᵢ − μᵢ), the fit being maximized.",
+        "start": {
+          "x_m": 27.043916,
+          "y_m": -167.834818,
+          "sum_cosine": 4.950081
+        },
+        "steps": [
+          {
+            "number": 1,
+            "from": {
+              "x_m": 27.043916,
+              "y_m": -167.834818
+            },
+            "full_step_to": {
+              "x_m": -73.66108,
+              "y_m": -165.082184
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": -73.66108,
+              "y_m": -165.082184
+            },
+            "sum_cosine": 4.96631,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 2,
+            "from": {
+              "x_m": -73.66108,
+              "y_m": -165.082184
+            },
+            "full_step_to": {
+              "x_m": -68.882776,
+              "y_m": -163.261158
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": -68.882776,
+              "y_m": -163.261158
+            },
+            "sum_cosine": 4.966335,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 3,
+            "from": {
+              "x_m": -68.882776,
+              "y_m": -163.261158
+            },
+            "full_step_to": {
+              "x_m": -68.999087,
+              "y_m": -163.062914
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": -68.999087,
+              "y_m": -163.062914
+            },
+            "sum_cosine": 4.966335,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 4,
+            "from": {
+              "x_m": -68.999087,
+              "y_m": -163.062914
+            },
+            "full_step_to": {
+              "x_m": -68.983948,
+              "y_m": -163.03194
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": -68.983948,
+              "y_m": -163.03194
+            },
+            "sum_cosine": 4.966335,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 5,
+            "from": {
+              "x_m": -68.983948,
+              "y_m": -163.03194
+            },
+            "full_step_to": {
+              "x_m": -68.983035,
+              "y_m": -163.02758
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": -68.983035,
+              "y_m": -163.02758
+            },
+            "sum_cosine": 4.966335,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 6,
+            "from": {
+              "x_m": -68.983035,
+              "y_m": -163.02758
+            },
+            "full_step_to": {
+              "x_m": -68.982853,
+              "y_m": -163.026949
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": -68.982853,
+              "y_m": -163.026949
+            },
+            "sum_cosine": 4.966335,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 7,
+            "from": {
+              "x_m": -68.982853,
+              "y_m": -163.026949
+            },
+            "full_step_to": {
+              "x_m": -68.982829,
+              "y_m": -163.026858
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": -68.982829,
+              "y_m": -163.026858
+            },
+            "sum_cosine": 4.966335,
+            "converged": true,
+            "rejected": false
+          }
+        ],
+        "shortened_steps": []
+      },
+      "kappa": {
+        "value": 74.513177,
+        "mean_cosine": 0.993267,
+        "mean_resultant_length": 0.993617,
+        "note": "kappa is the inverse of the von Mises mean-resultant function applied to mean_cosine, the average of cos(leftover angle) over the bearings. The leftover angles are on each station above."
+      },
+      "covariance_m2": {
+        "xx": 7905.171485,
+        "yy": 20104.724939,
+        "xy": 8477.968651,
+        "standard_error_x_m": 88.911031,
+        "standard_error_y_m": 141.791131,
+        "correlation": 0.672492
+      },
+      "ellipses": {
+        "one_sd": {
+          "scale_k": 1.0,
+          "semi_major_m": 156.362527,
+          "semi_minor_m": 59.671237,
+          "major_axis_rotation_ccw_from_east_deg": 62.867237,
+          "major_axis_compass_bearing_deg": 27.132763
+        },
+        "ninety_five": {
+          "scale_k": 5.991465,
+          "semi_major_m": 382.73588,
+          "semi_minor_m": 146.060082,
+          "major_axis_rotation_ccw_from_east_deg": 62.867237,
+          "major_axis_compass_bearing_deg": 27.132763
+        }
+      },
+      "true_point_mahalanobis_squared": 1.321979,
+      "covered_by_95_ellipse": true
+    },
+    {
+      "id": "n10_sd5",
+      "bearings": 10,
+      "bearing_spread_sd_deg": 5.0,
+      "true_kappa": 131.813829,
+      "seed": 11340,
+      "fixes_drawn_before_this_one": 0,
+      "shows": "ellipse contains the animal",
+      "this_cells_coverage_chi_square": 0.856,
+      "this_cells_coverage_true_kappa": 0.954,
+      "plane": "meters; x east, y north; the animal is at the origin",
+      "true_point": {
+        "x_m": 0.0,
+        "y_m": 0.0
+      },
+      "stations": [
+        {
+          "number": 1,
+          "x_m": 892.283974,
+          "y_m": 1155.489444,
+          "theta_math_rad": -2.233323,
+          "true_bearing_compass_deg": 217.675787,
+          "bearing_compass_deg": 217.960006,
+          "bearing_error_compass_deg": 0.284219,
+          "leftover_angle_deg": 0.039797,
+          "leftover_angle_math_rad": -0.000695
+        },
+        {
+          "number": 2,
+          "x_m": 1373.588793,
+          "y_m": 367.197904,
+          "theta_math_rad": -2.856346,
+          "true_bearing_compass_deg": 255.033245,
+          "bearing_compass_deg": 253.65659,
+          "bearing_error_compass_deg": -1.376656,
+          "leftover_angle_deg": -1.941864,
+          "leftover_angle_math_rad": 0.033892
+        },
+        {
+          "number": 3,
+          "x_m": 737.247413,
+          "y_m": -1131.504858,
+          "theta_math_rad": 1.93627,
+          "true_bearing_compass_deg": 326.913197,
+          "bearing_compass_deg": 339.059917,
+          "bearing_error_compass_deg": 12.14672,
+          "leftover_angle_deg": 11.639727,
+          "leftover_angle_math_rad": -0.203152
+        },
+        {
+          "number": 4,
+          "x_m": 782.833948,
+          "y_m": -135.70611,
+          "theta_math_rad": 2.886153,
+          "true_bearing_compass_deg": 279.834622,
+          "bearing_compass_deg": 284.635624,
+          "bearing_error_compass_deg": 4.801002,
+          "leftover_angle_deg": 3.640642,
+          "leftover_angle_math_rad": -0.063541
+        },
+        {
+          "number": 5,
+          "x_m": 1144.647837,
+          "y_m": -1136.553622,
+          "theta_math_rad": 2.387085,
+          "true_bearing_compass_deg": 314.796703,
+          "bearing_compass_deg": 313.230081,
+          "bearing_error_compass_deg": -1.566622,
+          "leftover_angle_deg": -2.062497,
+          "leftover_angle_math_rad": 0.035997
+        },
+        {
+          "number": 6,
+          "x_m": 1288.731758,
+          "y_m": 744.402838,
+          "theta_math_rad": -2.477291,
+          "true_bearing_compass_deg": 239.988224,
+          "bearing_compass_deg": 231.938304,
+          "bearing_error_compass_deg": -8.04992,
+          "leftover_angle_deg": -8.490761,
+          "leftover_angle_math_rad": 0.148192
+        },
+        {
+          "number": 7,
+          "x_m": 261.190366,
+          "y_m": -586.781873,
+          "theta_math_rad": 2.051923,
+          "true_bearing_compass_deg": 336.005033,
+          "bearing_compass_deg": 332.433479,
+          "bearing_error_compass_deg": -3.571554,
+          "leftover_angle_deg": -4.463847,
+          "leftover_angle_math_rad": 0.077909
+        },
+        {
+          "number": 8,
+          "x_m": 323.694337,
+          "y_m": 584.882353,
+          "theta_math_rad": -2.140808,
+          "true_bearing_compass_deg": 208.961675,
+          "bearing_compass_deg": 212.659287,
+          "bearing_error_compass_deg": 3.697612,
+          "leftover_angle_deg": 3.361075,
+          "leftover_angle_math_rad": -0.058662
+        },
+        {
+          "number": 9,
+          "x_m": 645.140389,
+          "y_m": 246.908503,
+          "theta_math_rad": -2.799389,
+          "true_bearing_compass_deg": 249.057123,
+          "bearing_compass_deg": 250.3932,
+          "bearing_error_compass_deg": 1.336077,
+          "leftover_angle_deg": 0.240668,
+          "leftover_angle_math_rad": -0.0042
+        },
+        {
+          "number": 10,
+          "x_m": 1558.537997,
+          "y_m": 465.685838,
+          "theta_math_rad": -2.798994,
+          "true_bearing_compass_deg": 253.364034,
+          "bearing_compass_deg": 250.370545,
+          "bearing_error_compass_deg": -2.993489,
+          "leftover_angle_deg": -3.478731,
+          "leftover_angle_math_rad": 0.060715
+        }
+      ],
+      "estimate": {
+        "x_m": 4.233246,
+        "y_m": 15.567765,
+        "distance_from_true_point_m": 16.133062,
+        "iterations": 5,
+        "warnings": []
+      },
+      "solver_path": {
+        "note": "Each step is Lenth's Eq. 2.6 applied at the current point. `shortened` marks a step that was cut back because the whole step made the fit worse; `fraction` is how much of it was taken. `sum_cosine` is Σ cos(θᵢ − μᵢ), the fit being maximized.",
+        "start": {
+          "x_m": 77.987786,
+          "y_m": -9.191484,
+          "sum_cosine": 9.939676
+        },
+        "steps": [
+          {
+            "number": 1,
+            "from": {
+              "x_m": 77.987786,
+              "y_m": -9.191484
+            },
+            "full_step_to": {
+              "x_m": 3.494536,
+              "y_m": 16.639574
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 3.494536,
+              "y_m": 16.639574
+            },
+            "sum_cosine": 9.958624,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 2,
+            "from": {
+              "x_m": 3.494536,
+              "y_m": 16.639574
+            },
+            "full_step_to": {
+              "x_m": 4.252494,
+              "y_m": 15.573703
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 4.252494,
+              "y_m": 15.573703
+            },
+            "sum_cosine": 9.95863,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 3,
+            "from": {
+              "x_m": 4.252494,
+              "y_m": 15.573703
+            },
+            "full_step_to": {
+              "x_m": 4.233032,
+              "y_m": 15.568091
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 4.233032,
+              "y_m": 15.568091
+            },
+            "sum_cosine": 9.95863,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 4,
+            "from": {
+              "x_m": 4.233032,
+              "y_m": 15.568091
+            },
+            "full_step_to": {
+              "x_m": 4.233252,
+              "y_m": 15.567767
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 4.233252,
+              "y_m": 15.567767
+            },
+            "sum_cosine": 9.95863,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 5,
+            "from": {
+              "x_m": 4.233252,
+              "y_m": 15.567767
+            },
+            "full_step_to": {
+              "x_m": 4.233246,
+              "y_m": 15.567765
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 4.233246,
+              "y_m": 15.567765
+            },
+            "sum_cosine": 9.95863,
+            "converged": true,
+            "rejected": false
+          }
+        ],
+        "shortened_steps": []
+      },
+      "kappa": {
+        "value": 121.111974,
+        "mean_cosine": 0.995863,
+        "mean_resultant_length": 0.995867,
+        "note": "kappa is the inverse of the von Mises mean-resultant function applied to mean_cosine, the average of cos(leftover angle) over the bearings. The leftover angles are on each station above."
+      },
+      "covariance_m2": {
+        "xx": 1660.952328,
+        "yy": 1386.679767,
+        "xy": 205.591235,
+        "standard_error_x_m": 40.754783,
+        "standard_error_y_m": 37.238149,
+        "correlation": 0.135468
+      },
+      "ellipses": {
+        "one_sd": {
+          "scale_k": 1.0,
+          "semi_major_m": 42.082631,
+          "semi_minor_m": 35.730719,
+          "major_axis_rotation_ccw_from_east_deg": 28.147688,
+          "major_axis_compass_bearing_deg": 61.852312
+        },
+        "ninety_five": {
+          "scale_k": 5.991465,
+          "semi_major_m": 103.007626,
+          "semi_minor_m": 87.459754,
+          "major_axis_rotation_ccw_from_east_deg": 28.147688,
+          "major_axis_compass_bearing_deg": 61.852312
+        }
+      },
+      "true_point_mahalanobis_squared": 0.177047,
+      "covered_by_95_ellipse": true
+    },
+    {
+      "id": "n10_sd15",
+      "bearings": 10,
+      "bearing_spread_sd_deg": 15.0,
+      "true_kappa": 15.105536,
+      "seed": 11341,
+      "fixes_drawn_before_this_one": 0,
+      "shows": "ellipse contains the animal",
+      "this_cells_coverage_chi_square": 0.8261,
+      "this_cells_coverage_true_kappa": 0.9191,
+      "plane": "meters; x east, y north; the animal is at the origin",
+      "true_point": {
+        "x_m": 0.0,
+        "y_m": 0.0
+      },
+      "stations": [
+        {
+          "number": 1,
+          "x_m": 759.520045,
+          "y_m": 496.478265,
+          "theta_math_rad": -2.269324,
+          "true_bearing_compass_deg": 236.828411,
+          "bearing_compass_deg": 220.02266,
+          "bearing_error_compass_deg": -16.805751,
+          "leftover_angle_deg": -2.786191,
+          "leftover_angle_math_rad": 0.048628
+        },
+        {
+          "number": 2,
+          "x_m": 922.004923,
+          "y_m": 373.459376,
+          "theta_math_rad": -2.956757,
+          "true_bearing_compass_deg": 247.949523,
+          "bearing_compass_deg": 259.409697,
+          "bearing_error_compass_deg": 11.460174,
+          "leftover_angle_deg": 21.66308,
+          "leftover_angle_math_rad": -0.378092
+        },
+        {
+          "number": 3,
+          "x_m": 651.889598,
+          "y_m": -271.816346,
+          "theta_math_rad": 2.916882,
+          "true_bearing_compass_deg": 292.634518,
+          "bearing_compass_deg": 282.874965,
+          "bearing_error_compass_deg": -9.759553,
+          "leftover_angle_deg": -16.82216,
+          "leftover_angle_math_rad": 0.293602
+        },
+        {
+          "number": 4,
+          "x_m": 1789.723188,
+          "y_m": -335.967005,
+          "theta_math_rad": 3.21749,
+          "true_bearing_compass_deg": 280.631837,
+          "bearing_compass_deg": 265.651419,
+          "bearing_error_compass_deg": -14.980418,
+          "leftover_angle_deg": -15.04452,
+          "leftover_angle_math_rad": 0.262576
+        },
+        {
+          "number": 5,
+          "x_m": 583.994083,
+          "y_m": -1531.434734,
+          "theta_math_rad": 1.262438,
+          "true_bearing_compass_deg": 339.126256,
+          "bearing_compass_deg": 17.667638,
+          "bearing_error_compass_deg": 38.541383,
+          "leftover_angle_deg": 30.098457,
+          "leftover_angle_math_rad": -0.525317
+        },
+        {
+          "number": 6,
+          "x_m": 787.535182,
+          "y_m": -618.894408,
+          "theta_math_rad": 2.224684,
+          "true_bearing_compass_deg": 308.162479,
+          "bearing_compass_deg": 322.534976,
+          "bearing_error_compass_deg": 14.372498,
+          "leftover_angle_deg": 5.375404,
+          "leftover_angle_math_rad": -0.093818
+        },
+        {
+          "number": 7,
+          "x_m": 447.204502,
+          "y_m": 1010.924611,
+          "theta_math_rad": -1.916516,
+          "true_bearing_compass_deg": 203.863245,
+          "bearing_compass_deg": 199.808277,
+          "bearing_error_compass_deg": -4.054969,
+          "leftover_angle_deg": 9.591994,
+          "leftover_angle_math_rad": -0.167412
+        },
+        {
+          "number": 8,
+          "x_m": 424.018076,
+          "y_m": -715.277425,
+          "theta_math_rad": 1.53783,
+          "true_bearing_compass_deg": 329.340442,
+          "bearing_compass_deg": 1.888826,
+          "bearing_error_compass_deg": 32.548384,
+          "leftover_angle_deg": 15.937022,
+          "leftover_angle_math_rad": -0.278154
+        },
+        {
+          "number": 9,
+          "x_m": 1279.673629,
+          "y_m": 635.691868,
+          "theta_math_rad": -2.743015,
+          "true_bearing_compass_deg": 243.583609,
+          "bearing_compass_deg": 247.163187,
+          "bearing_error_compass_deg": 3.579578,
+          "leftover_angle_deg": 10.856333,
+          "leftover_angle_math_rad": -0.189479
+        },
+        {
+          "number": 10,
+          "x_m": 804.817865,
+          "y_m": -189.509737,
+          "theta_math_rad": 2.909871,
+          "true_bearing_compass_deg": 283.250019,
+          "bearing_compass_deg": 283.27665,
+          "bearing_error_compass_deg": 0.026631,
+          "leftover_angle_deg": -1.354709,
+          "leftover_angle_math_rad": 0.023644
+        }
+      ],
+      "estimate": {
+        "x_m": 256.651096,
+        "y_m": -46.402563,
+        "distance_from_true_point_m": 260.812161,
+        "iterations": 17,
+        "warnings": []
+      },
+      "solver_path": {
+        "note": "Each step is Lenth's Eq. 2.6 applied at the current point. `shortened` marks a step that was cut back because the whole step made the fit worse; `fraction` is how much of it was taken. `sum_cosine` is Σ cos(θᵢ − μᵢ), the fit being maximized.",
+        "start": {
+          "x_m": 414.203785,
+          "y_m": -59.065398,
+          "sum_cosine": 9.511762
+        },
+        "steps": [
+          {
+            "number": 1,
+            "from": {
+              "x_m": 414.203785,
+              "y_m": -59.065398
+            },
+            "full_step_to": {
+              "x_m": 199.063173,
+              "y_m": -67.875212
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 199.063173,
+              "y_m": -67.875212
+            },
+            "sum_cosine": 9.622774,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 2,
+            "from": {
+              "x_m": 199.063173,
+              "y_m": -67.875212
+            },
+            "full_step_to": {
+              "x_m": 280.956477,
+              "y_m": -42.251705
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 280.956477,
+              "y_m": -42.251705
+            },
+            "sum_cosine": 9.638286,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 3,
+            "from": {
+              "x_m": 280.956477,
+              "y_m": -42.251705
+            },
+            "full_step_to": {
+              "x_m": 247.385574,
+              "y_m": -48.830957
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 247.385574,
+              "y_m": -48.830957
+            },
+            "sum_cosine": 9.640839,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 4,
+            "from": {
+              "x_m": 247.385574,
+              "y_m": -48.830957
+            },
+            "full_step_to": {
+              "x_m": 260.363286,
+              "y_m": -45.609486
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 260.363286,
+              "y_m": -45.609486
+            },
+            "sum_cosine": 9.641223,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 5,
+            "from": {
+              "x_m": 260.363286,
+              "y_m": -45.609486
+            },
+            "full_step_to": {
+              "x_m": 255.212232,
+              "y_m": -46.752422
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 255.212232,
+              "y_m": -46.752422
+            },
+            "sum_cosine": 9.641283,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 6,
+            "from": {
+              "x_m": 255.212232,
+              "y_m": -46.752422
+            },
+            "full_step_to": {
+              "x_m": 257.22228,
+              "y_m": -46.275639
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 257.22228,
+              "y_m": -46.275639
+            },
+            "sum_cosine": 9.641293,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 7,
+            "from": {
+              "x_m": 257.22228,
+              "y_m": -46.275639
+            },
+            "full_step_to": {
+              "x_m": 256.428671,
+              "y_m": -46.455622
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 256.428671,
+              "y_m": -46.455622
+            },
+            "sum_cosine": 9.641294,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 8,
+            "from": {
+              "x_m": 256.428671,
+              "y_m": -46.455622
+            },
+            "full_step_to": {
+              "x_m": 256.739139,
+              "y_m": -46.382754
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 256.739139,
+              "y_m": -46.382754
+            },
+            "sum_cosine": 9.641294,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 9,
+            "from": {
+              "x_m": 256.739139,
+              "y_m": -46.382754
+            },
+            "full_step_to": {
+              "x_m": 256.616757,
+              "y_m": -46.410686
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 256.616757,
+              "y_m": -46.410686
+            },
+            "sum_cosine": 9.641294,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 10,
+            "from": {
+              "x_m": 256.616757,
+              "y_m": -46.410686
+            },
+            "full_step_to": {
+              "x_m": 256.664687,
+              "y_m": -46.399484
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 256.664687,
+              "y_m": -46.399484
+            },
+            "sum_cosine": 9.641294,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 11,
+            "from": {
+              "x_m": 256.664687,
+              "y_m": -46.399484
+            },
+            "full_step_to": {
+              "x_m": 256.64581,
+              "y_m": -46.403806
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 256.64581,
+              "y_m": -46.403806
+            },
+            "sum_cosine": 9.641294,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 12,
+            "from": {
+              "x_m": 256.64581,
+              "y_m": -46.403806
+            },
+            "full_step_to": {
+              "x_m": 256.653209,
+              "y_m": -46.402082
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 256.653209,
+              "y_m": -46.402082
+            },
+            "sum_cosine": 9.641294,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 13,
+            "from": {
+              "x_m": 256.653209,
+              "y_m": -46.402082
+            },
+            "full_step_to": {
+              "x_m": 256.650297,
+              "y_m": -46.40275
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 256.650297,
+              "y_m": -46.40275
+            },
+            "sum_cosine": 9.641294,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 14,
+            "from": {
+              "x_m": 256.650297,
+              "y_m": -46.40275
+            },
+            "full_step_to": {
+              "x_m": 256.651439,
+              "y_m": -46.402485
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 256.651439,
+              "y_m": -46.402485
+            },
+            "sum_cosine": 9.641294,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 15,
+            "from": {
+              "x_m": 256.651439,
+              "y_m": -46.402485
+            },
+            "full_step_to": {
+              "x_m": 256.650989,
+              "y_m": -46.402588
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 256.650989,
+              "y_m": -46.402588
+            },
+            "sum_cosine": 9.641294,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 16,
+            "from": {
+              "x_m": 256.650989,
+              "y_m": -46.402588
+            },
+            "full_step_to": {
+              "x_m": 256.651166,
+              "y_m": -46.402547
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 256.651166,
+              "y_m": -46.402547
+            },
+            "sum_cosine": 9.641294,
+            "converged": false,
+            "rejected": false
+          },
+          {
+            "number": 17,
+            "from": {
+              "x_m": 256.651166,
+              "y_m": -46.402547
+            },
+            "full_step_to": {
+              "x_m": 256.651096,
+              "y_m": -46.402563
+            },
+            "fraction": 1.0,
+            "shortened": false,
+            "to": {
+              "x_m": 256.651096,
+              "y_m": -46.402563
+            },
+            "sum_cosine": 9.641294,
+            "converged": true,
+            "rejected": false
+          }
+        ],
+        "shortened_steps": []
+      },
+      "kappa": {
+        "value": 14.202871,
+        "mean_cosine": 0.964129,
+        "mean_resultant_length": 0.969023,
+        "note": "kappa is the inverse of the von Mises mean-resultant function applied to mean_cosine, the average of cos(leftover angle) over the bearings. The leftover angles are on each station above."
+      },
+      "covariance_m2": {
+        "xx": 11659.24257,
+        "yy": 6754.287566,
+        "xy": -1569.116762,
+        "standard_error_x_m": 107.977973,
+        "standard_error_y_m": 82.184473,
+        "correlation": -0.17682
+      },
+      "ellipses": {
+        "one_sd": {
+          "scale_k": 1.0,
+          "semi_major_m": 110.082946,
+          "semi_minor_m": 79.34277,
+          "major_axis_rotation_ccw_from_east_deg": -16.305736,
+          "major_axis_compass_bearing_deg": 106.305736
+        },
+        "ninety_five": {
+          "scale_k": 5.991465,
+          "semi_major_m": 269.455182,
+          "semi_minor_m": 194.211014,
+          "major_axis_rotation_ccw_from_east_deg": -16.305736,
+          "major_axis_compass_bearing_deg": 106.305736
+        }
+      },
+      "true_point_mahalanobis_squared": 5.671082,
+      "covered_by_95_ellipse": true
+    }
+  ]
+}

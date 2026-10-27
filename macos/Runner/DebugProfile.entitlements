@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>com.apple.security.app-sandbox</key>
+	<true/>
+	<key>com.apple.security.cs.allow-jit</key>
+	<true/>
+	<key>com.apple.security.network.server</key>
+	<true/>
+	<key>com.apple.security.network.client</key>
+	<true/>
+	<key>com.apple.security.personal-information.location</key>
+	<true/>
+	<!-- Task 11.40. Missing from all four of these files while
+	     `com.apple.security.app-sandbox` was true in all four, so a sandboxed
+	     macOS build got the file panel and then had no permission to read or
+	     write whatever the person picked. Six call sites depend on it:
+	     `data_export_screen.dart` (CSV export, backup save, backup restore)
+	     and `tag_database_screen.dart` (tag CSV import and export).
+	     The keychain entitlement in the `-Signed` pair is the same class,
+	     found by task 11.38 the expensive way.
+
+	     Not split into a `-Signed` variant the way keychain access is.
+	     The keychain one had to be, because its value is
+	     `$(AppIdentifierPrefix)$(PRODUCT_BUNDLE_IDENTIFIER)` and a machine with
+	     no development certificate cannot resolve the prefix, so the build
+	     fails outright — task 11.38 measured that. This entitlement is a bare
+	     boolean naming no team and no identifier, so that failure mode does not
+	     apply to it. **Reasoned from the difference, not measured on a
+	     certificate-less machine** — this checkout has a certificate. If a
+	     clean clone ever fails to build macOS because of this line, that
+	     reasoning was wrong and it belongs in the `-Signed` pair instead.
+
+	     Put in all four files rather than only the base pair, because
+	     `test/platform/macos_keychain_entitlement_test.dart` requires each
+	     `-Signed` file to be byte-identical to its base apart from the keychain
+	     block.
+
+	     **Declared, not verified.** See `CLAUDE_DOCS/RELEASE_CHECKLIST.md`
+	     item H3. -->
+	<key>com.apple.security.files.user-selected.read-write</key>
+	<true/>
+</dict>
+</plist>

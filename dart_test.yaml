@@ -1,0 +1,48 @@
+# Client test config (H-1, TriTrack_Security_Model.md §10.4).
+#
+# Every file under `test/e2e/` (task 10.39) carries `@Tags(['e2e'])`, and one
+# of them — `e2e_coverage_guard_test.dart` — deliberately does NOT self-skip
+# when unconfigured; it fails loudly instead, on purpose, so a missing
+# `TRITRACK_E2E_BASE_URL`/`TRITRACK_E2E_MAGIC_LINK_DIR` can never quietly
+# report a passing e2e suite (that self-skip was G-1, closed by 10.39; do
+# not reintroduce it here). Left unexcluded, that guard fires on every plain
+# `flutter test`, which contradicts Phase 10 invariant 5 and README.md's
+# promise that the default suite is green with no server and no network.
+#
+# `exclude_tags: e2e` was tried first and rejected: `package:test` treats a
+# config-level tag exclusion as a floor `--tags` cannot lift (include/exclude
+# selectors combine, they don't override), so
+# `flutter test test/e2e --tags e2e` would report "no tests match tag
+# selectors" forever — not just for the guard, for every real e2e run,
+# configured or not. `paths:` was tried second and also rejected: `flutter
+# test` enumerates `test/` itself and always hands the underlying `dart test`
+# an explicit file list, so it never falls back to `paths`' default-when-no-
+# path-given behavior — the guard still loaded and fired.
+#
+# What actually works: `tags: e2e: skip:` skips e2e-tagged tests by default
+# (bare `flutter test` stays green) without touching the include/exclude
+# selectors, so `--tags e2e` can still select them. The tradeoff is that an
+# explicit run now also needs `--run-skipped` to force execution instead of
+# reporting "all tests skipped" with exit 0:
+#
+#   flutter test test/e2e --tags e2e --run-skipped
+#
+# (README.md and e2e_coverage_guard_test.dart's doc comment are updated to
+# match.) The server's analogous guard, `database_coverage_guard_test.dart`
+# (task 10.31), is NOT given this treatment — there, a no-database
+# `dart test` failing by default is the intended behavior, not a bug.
+#
+# `network` (task 11.134) gets the same treatment for the same reason and with
+# the same caveat. `test/network/tile_credit_freshness_test.dart` asks three
+# tile providers whether they still publish the credit strings this app is
+# hard-coding, which is a licence condition — but it is a question about the
+# outside world, not about this commit, so it must never be able to redden a
+# push or fail on a laptop in the field. It runs on a schedule
+# (`.github/workflows/tile-credit-freshness.yml`) and on demand with:
+#
+#   flutter test test/network --tags network --run-skipped
+tags:
+  e2e:
+    skip: "e2e suite requires a configured server; run it with: scripts/run_e2e_tests.sh"
+  network:
+    skip: "network checks reach third-party services; run them with: flutter test test/network --tags network --run-skipped"

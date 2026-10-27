@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 706" role="img" aria-label="Architecture diagram of the TriTrack server: one host, seven containers">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f3a5f"/>
+    </marker>
+    <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#0b5c8a"/>
+    </marker>
+  </defs>
+
+  <style>
+    .bx{fill:#fff;stroke:#1f3a5f;stroke-width:1.6}
+    .nm{font:600 15px "Helvetica Neue",Helvetica,Arial;fill:#111827}
+    .im{font:11.5px "SFMono-Regular",Menlo,Consolas,monospace;fill:#5b6472}
+    .ds{font:12.5px "Helvetica Neue",Helvetica,Arial;fill:#374151}
+    .lb{font:600 12px "Helvetica Neue",Helvetica,Arial;fill:#0b5c8a}
+    .zn{font:600 13px "Helvetica Neue",Helvetica,Arial;fill:#5b6472;letter-spacing:.6px}
+    .zs{font:12px "Helvetica Neue",Helvetica,Arial;fill:#7a828f}
+    .ex{fill:#f4f6f9;stroke:#8f98a6;stroke-width:1.4;stroke-dasharray:5 4}
+    .flow{stroke:#1f3a5f;stroke-width:2;fill:none}
+    .flow2{stroke:#0b5c8a;stroke-width:2;fill:none;stroke-dasharray:6 4}
+  </style>
+
+  <!-- external -->
+  <rect class="ex" x="16" y="8" width="238" height="58" rx="6"/>
+  <text class="nm" x="135" y="32" text-anchor="middle">Field devices</text>
+  <text class="ds" x="135" y="51" text-anchor="middle">iPhone / Android, out in the field</text>
+
+  <rect class="ex" x="300" y="8" width="264" height="58" rx="6"/>
+  <text class="nm" x="432" y="32" text-anchor="middle">Let's Encrypt</text>
+  <text class="ds" x="432" y="51" text-anchor="middle">certificate issue and renewal</text>
+
+  <rect class="ex" x="610" y="8" width="264" height="58" rx="6"/>
+  <text class="nm" x="742" y="32" text-anchor="middle">Mail relay</text>
+  <text class="ds" x="742" y="51" text-anchor="middle">carries sign-in links; NAU names it</text>
+
+  <!-- host -->
+  <rect x="18" y="112" width="964" height="586" rx="8" fill="#f4f6f9" stroke="#1f3a5f" stroke-width="2"/>
+  <text class="zn" x="964" y="692" text-anchor="end">NAU-HOSTED LINUX HOST <tspan class="zs" style="letter-spacing:0">· one virtual machine — the only machine involved</tspan></text>
+
+  <!-- host boundary port callouts -->
+  <rect x="150" y="99" width="120" height="26" rx="4" fill="#fff" stroke="#1f3a5f" stroke-width="1.4"/>
+  <text class="lb" x="210" y="117" text-anchor="middle">TCP 443 in</text>
+  <rect x="446" y="99" width="156" height="26" rx="4" fill="#fff" stroke="#0b5c8a" stroke-width="1.4"/>
+  <text class="lb" x="524" y="117" text-anchor="middle">TCP 80 in · 443 out</text>
+  <rect x="682" y="99" width="120" height="26" rx="4" fill="#fff" stroke="#0b5c8a" stroke-width="1.4"/>
+  <text class="lb" x="742" y="117" text-anchor="middle">SMTP out</text>
+
+  <!-- docker network -->
+  <rect x="48" y="188" width="904" height="374" rx="7" fill="#eef4fb" stroke="#8f98a6" stroke-width="1.4" stroke-dasharray="6 5"/>
+  <text class="zn" x="934" y="213" text-anchor="end">PRIVATE DOCKER NETWORK</text>
+  <text class="zs" x="934" y="231" text-anchor="end">172.31.242.0/24 — not routable from outside this host</text>
+
+  <!-- containers -->
+  <rect class="bx" x="68" y="250" width="204" height="92" rx="6"/>
+  <text class="nm" x="170" y="277" text-anchor="middle">proxy</text>
+  <text class="im" x="170" y="296" text-anchor="middle">caddy:2-alpine</text>
+  <text class="ds" x="170" y="317" text-anchor="middle">terminates TLS</text>
+  <text class="ds" x="170" y="333" text-anchor="middle">the only container with host ports</text>
+
+  <rect class="bx" x="330" y="250" width="204" height="92" rx="6"/>
+  <text class="nm" x="432" y="277" text-anchor="middle">server</text>
+  <text class="im" x="432" y="296" text-anchor="middle">Dart on debian-slim</text>
+  <text class="ds" x="432" y="317" text-anchor="middle">the application</text>
+  <text class="ds" x="432" y="333" text-anchor="middle">publishes no host port</text>
+
+  <rect class="bx" x="620" y="250" width="204" height="92" rx="6"/>
+  <text class="nm" x="722" y="277" text-anchor="middle">postgres</text>
+  <text class="im" x="722" y="296" text-anchor="middle">postgres:16-alpine</text>
+  <text class="ds" x="722" y="317" text-anchor="middle">publishes no host port</text>
+  <text class="ds" x="722" y="333" text-anchor="middle">unreachable from any network</text>
+
+  <rect class="bx" x="68" y="428" width="204" height="86" rx="6"/>
+  <text class="nm" x="170" y="455" text-anchor="middle">project-destruction</text>
+  <text class="ds" x="170" y="477" text-anchor="middle">destroys a project</text>
+  <text class="ds" x="170" y="493" text-anchor="middle">on its owner's scheduled date</text>
+
+  <rect class="bx" x="290" y="428" width="204" height="86" rx="6"/>
+  <text class="nm" x="392" y="455" text-anchor="middle">audit-retention</text>
+  <text class="ds" x="392" y="477" text-anchor="middle">deletes expired log rows</text>
+  <text class="ds" x="392" y="493" text-anchor="middle">on a timer</text>
+
+  <rect class="bx" x="512" y="428" width="204" height="86" rx="6"/>
+  <text class="nm" x="614" y="455" text-anchor="middle">tombstone-retention</text>
+  <text class="ds" x="614" y="477" text-anchor="middle">purges records deleted</text>
+  <text class="ds" x="614" y="493" text-anchor="middle">more than 24 months ago</text>
+
+  <rect class="bx" x="734" y="428" width="204" height="86" rx="6"/>
+  <text class="nm" x="836" y="455" text-anchor="middle">backup-scheduler</text>
+  <text class="ds" x="836" y="477" text-anchor="middle">one encrypted dump</text>
+  <text class="ds" x="836" y="493" text-anchor="middle">every 24 hours</text>
+
+  <!-- host disk -->
+  <rect x="560" y="596" width="392" height="80" rx="6" fill="#fff" stroke="#8a4b0b" stroke-width="1.6"/>
+  <text class="nm" x="756" y="623" text-anchor="middle">Host filesystem — backup directory</text>
+  <text class="ds" x="756" y="644" text-anchor="middle">age-encrypted, minisign-signed archives</text>
+  <text class="ds" x="756" y="661" text-anchor="middle">no copy leaves this host today</text>
+
+  <!-- note panel -->
+  <rect x="48" y="596" width="480" height="80" rx="6" fill="#fff" stroke="#c8ced8" stroke-width="1.3"/>
+  <text class="ds" x="68" y="622">• Outbound: the proxy renewing its certificate, and the server</text>
+  <text class="ds" x="68" y="642">   sending sign-in links to one mail relay over TLS. Nothing else.</text>
+  <text class="ds" x="68" y="662">• No LDAP, no SSO, no campus storage, no external database.</text>
+
+  <!-- flows -->
+  <path class="flow" d="M135,68 L135,250" marker-end="url(#ar)"/>
+  <text class="lb" x="86" y="170">HTTPS</text>
+
+  <path class="flow2" d="M215,250 L215,172 L432,172 L432,68" marker-end="url(#ar2)"/>
+  <text class="lb" x="300" y="165">ACME</text>
+
+  <path class="flow2" d="M480,250 L480,150 L742,150 L742,68" marker-end="url(#ar2)"/>
+  <text class="lb" x="560" y="143">SMTP over TLS</text>
+
+  <path class="flow" d="M272,296 L330,296" marker-end="url(#ar)"/>
+  <text class="lb" x="301" y="286" text-anchor="middle">HTTPS</text>
+  <text class="im" x="301" y="317" text-anchor="middle">:8080</text>
+
+  <path class="flow" d="M534,296 L620,296" marker-end="url(#ar)"/>
+  <text class="lb" x="577" y="286" text-anchor="middle">SQL</text>
+  <text class="im" x="577" y="317" text-anchor="middle">:5432</text>
+
+  <path class="flow" d="M170,428 L170,404 L812,404 L812,342" marker-end="url(#ar)"/>
+  <path class="flow" d="M392,428 L392,390 L776,390 L776,342" marker-end="url(#ar)"/>
+  <path class="flow" d="M614,428 L614,376 L740,376 L740,342" marker-end="url(#ar)"/>
+  <path class="flow" d="M836,428 L836,320 L824,320" marker-end="url(#ar)"/>
+
+  <path class="flow" d="M836,514 L836,596" marker-end="url(#ar)"/>
+  <text class="lb" x="848" y="560">writes</text>
+</svg>

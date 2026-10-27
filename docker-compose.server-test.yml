@@ -1,0 +1,54 @@
+# Override for the server's own `dart test` suite (task 10.15's "server
+# suite green in Docker from a clean checkout" acceptance criterion).
+#
+#   docker compose -f docker-compose.yml -f docker-compose.server-test.yml \
+#     up -d postgres
+#
+# The base file deliberately never publishes Postgres's port (see its own
+# comment) — a real deployment has no reason to reach it from the host, and
+# an exposed database port is exactly what an opportunistic scanner looks
+# for. The server's Postgres-backed tests (`server/test/integration/`,
+# parts of `server/test/authz/` and `server/test/diagnostics/`) run from the
+# host via a plain `dart test`, though, and need a reachable port to do it.
+# Kept in its own file, bound to loopback only, and never merged into the
+# base compose file, so the production-shaped default never gains one.
+services:
+  postgres:
+    # Task 10.47 / Security Model §10.7.3: `!override` even though the base
+    # `postgres` service declares no `ports:` today, so there is nothing to
+    # merge with yet. Compose concatenates sequence-typed keys like `ports:`
+    # rather than replacing them — this file's own comment above ("bound to
+    # loopback only") reads as a replacement guarantee it does not enforce.
+    # The day the base file gains a Postgres `ports:` entry, an un-tagged key
+    # here would silently publish both mappings instead of just this one —
+    # G-2's exact class.
+    ports: !override
+      - "127.0.0.1:${SERVER_TEST_POSTGRES_PORT:-55432}:5432"
+
+  # Task 10.57, finding I-9 (Security Model §11.8's I-8). This file never touched
+  # `server:` at all, so the merged config's `server.ports` fell straight
+  # through to the base file's `${SERVER_PUBLISH_ADDRESS:-127.0.0.1}` —
+  # exactly the class `docker-compose.e2e.yml` already closed for itself
+  # (task 10.32/10.38, G-2/E-2): an operator who had opted into the LAN
+  # walkthrough (`SERVER_PUBLISH_ADDRESS=0.0.0.0` in `.env`) and then brought
+  # this override up alongside the base file got `server: 0.0.0.0:8080:8080`
+  # in the rendered config, this file's own header comment notwithstanding.
+  # Latent only — the documented invocation is `up -d postgres`, so nothing
+  # ever actually serves on it — and it is the one instance 10.47's sweep did
+  # not tag, because that sweep read source rather than rendering merged
+  # config the way this fix was verified (`docker compose -f docker-compose.yml
+  # -f docker-compose.server-test.yml config`). Hardcoded to loopback,
+  # deliberately not reading `SERVER_PUBLISH_ADDRESS`, so no `.env` value can
+  # change it — the same reasoning as the e2e file's identical line.
+  server:
+    ports: !override
+      - "127.0.0.1:${SERVER_PORT:-8080}:8080"
+    # Task 10.62 / §4.4.2 — the same fix as the line above, for the variable
+    # that mirrors it. TRITRACK_PUBLISH_ADDRESS falls through from the base
+    # file following SERVER_PUBLISH_ADDRESS, so a `.env` opted into the LAN
+    # walkthrough would tell this service it is exposed while the port above
+    # says otherwise, and it would refuse to start. Enumerated here rather
+    # than fixed only where it reproduced: every override that pins `ports:`
+    # has to pin this too, and there are exactly three.
+    environment:
+      TRITRACK_PUBLISH_ADDRESS: 127.0.0.1

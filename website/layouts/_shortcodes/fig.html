@@ -1,0 +1,27 @@
+{{- /*
+  {{< fig name="coverage-by-bearings" alt="What the picture shows." caption="What to notice." >}}
+
+  A figure on the theory page, drawn by website/tools/theory_figures.dart from
+  the app's own numbers (test/localization/ellipse_coverage_data/) into
+  static/figures/<name>.svg. Inlined, like the diagrams, so the site's light
+  and dark CSS colors it (style.css, "Theory figures"); the file carries no
+  color of its own.
+
+  alt is for a reader who cannot see the picture: what it shows. caption is
+  for everybody: one sentence on what to notice. Both are required, and a
+  figure that has not been drawn fails the build.
+*/ -}}
+{{- $name := .Get "name" -}}
+{{- $alt := .Get "alt" -}}
+{{- $caption := .Get "caption" -}}
+{{- if not (and $name $alt $caption) -}}
+  {{- errorf "the fig shortcode needs name, alt and caption (%s)" .Page.Path -}}
+{{- end -}}
+{{- $file := printf "static/figures/%s.svg" $name -}}
+{{- if not (os.FileExists $file) -}}
+  {{- errorf "no figure called %s (looked for %s), used in %s. Run `dart website/tools/theory_figures.dart`." $name $file .Page.Path -}}
+{{- end -}}
+<figure class="tfig">
+<div role="img" aria-label="{{ $alt }}">{{ os.ReadFile $file | safeHTML }}</div>
+<figcaption>{{ $caption }}</figcaption>
+</figure>

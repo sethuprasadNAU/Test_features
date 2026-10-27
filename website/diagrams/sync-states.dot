@@ -1,0 +1,30 @@
+# Source for website/static/diagrams/sync-states.svg.
+# Rendered by website/tools/render_diagrams.sh — do not hand-edit the SVG.
+#
+# For sync.md: a record's three possible destinations after "Waiting to
+# sync". Deliberately not exhaustive of every icon and color on that page
+# (see "The four things the color can mean") — this is the shape of the
+# state machine, not a restatement of every sentence describing it.
+digraph SyncStates {
+  rankdir=TB;
+  bgcolor="transparent";
+  graph [fontname="Helvetica,Arial,sans-serif", fontsize=12, margin=0,
+         nodesep=0.35, ranksep=0.6];
+  node [fontname="Helvetica,Arial,sans-serif", fontsize=13, shape=box,
+        style="rounded", margin="0.2,0.14"];
+  edge [fontname="Helvetica,Arial,sans-serif", fontsize=11];
+
+  device [label="Recorded\non this device"];
+  waiting [label="Waiting\nto sync"];
+  stored [label="Stored on\nthe server", class="good"];
+  refused [label="Refused —\nheld on this device", class="bad"];
+  held [label="Held back —\noffline, unreadable, or\nyou're off the project",
+        class="wait"];
+
+  device -> waiting;
+  waiting -> stored [label="the ordinary case"];
+  stored -> refused [style=invis];
+  refused -> held [style=invis];
+  waiting -> refused [label="the server\nwon't accept it", constraint=false];
+  waiting -> held [label="something else\nis stopping it", constraint=false];
+}

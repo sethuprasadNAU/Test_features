@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TriTrack server — what it takes to stand one up</title>
+<style>
+  @page { size: letter; margin: 0.45in 0.55in; }
+  :root{
+    --ink:#111827; --muted:#5b6472; --line:#c8ced8;
+    --edge:#1f3a5f; --accent:#0b5c8a; --warn:#8a4b0b; --warnbg:#fdf6ec;
+    --panel:#f4f6f9;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;color:var(--ink);
+       font-size:9.4pt;line-height:1.45;
+       -webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  header{border-bottom:1.5px solid var(--edge);padding-bottom:7px;margin-bottom:9px}
+  h1{font-size:15pt;margin:0 0 3px;letter-spacing:-.2px}
+  .sub{color:var(--muted);font-size:9.2pt;margin:0}
+  .sub strong{color:var(--ink)}
+  h2{font-size:9.4pt;text-transform:uppercase;letter-spacing:.7px;
+     margin:11px 0 5px;color:var(--edge);border-top:1px solid var(--line);padding-top:7px}
+  h2:first-of-type{border-top:none;padding-top:0}
+  h3{font-size:9.6pt;margin:8px 0 2px}
+  p{margin:0 0 5px}
+  table{width:100%;border-collapse:collapse;font-size:8.4pt;margin:3px 0 6px}
+  th{text-align:left;font-weight:600;border-bottom:1px solid var(--edge);
+     padding:3px 8px 3px 0;color:var(--edge)}
+  td{border-bottom:1px solid var(--line);padding:3.2px 8px 3.2px 0;vertical-align:top}
+  td:first-child{font-weight:600;white-space:nowrap}
+  code{font-family:"SFMono-Regular",Menlo,Consolas,monospace;font-size:8.1pt;
+       background:var(--panel);padding:0 2px;border-radius:2px}
+  pre{font-family:"SFMono-Regular",Menlo,Consolas,monospace;font-size:8.1pt;
+      background:var(--panel);border-left:2px solid var(--accent);
+      padding:5px 8px;margin:4px 0 6px;overflow-x:auto;line-height:1.35}
+  ul,ol{margin:3px 0 6px;padding-left:16px}
+  li{margin-bottom:2.5px}
+  .flag{background:var(--warnbg);border-left:3px solid var(--warn);
+        padding:7px 10px;margin:6px 0 8px}
+  .flag h3{margin-top:0;color:var(--warn)}
+  .cols{display:flex;gap:24px}
+  .cols>div{flex:1}
+  .lead{font-size:10pt;margin-bottom:7px}
+  footer{margin-top:10px;padding-top:5px;border-top:1px solid var(--line);
+         color:var(--muted);font-size:7.6pt;display:flex;justify-content:space-between;gap:12px}
+  img.diagram{display:block;width:88%;max-width:100%;height:auto;margin:2px auto 4px}
+  .diagcap{text-align:center;font-size:7.6pt;color:var(--muted);margin:0 0 8px}
+  .pagebreak{page-break-before:always}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>TriTrack server &mdash; what it takes to stand one up</h1>
+  <p class="sub">One Linux host &middot; Docker Compose &middot; seven containers &middot; <strong>two inbound ports, 443 and 80</strong>
+     &middot; for the engineer doing the install</p>
+</header>
+
+<p class="lead">This is the companion to <strong>TriTrack-server-architecture.html</strong>, which
+answers <em>&ldquo;is this safe on our network?&rdquo;</em> This one answers <em>&ldquo;what do I
+install, what do I need from Michael, and how do I know it worked?&rdquo;</em></p>
+
+<div class="flag">
+  <h3>Read this before scheduling the work</h3>
+  <p><strong>Sign-in needs a mail relay, and that is a decision for NAU.</strong> TriTrack
+  authenticates by emailing a one-time link. The code that sends it is built and tested against a
+  local relay; what it does not have is a relay to send through. <strong>A production server refuses
+  to start until one is configured</strong>, deliberately &mdash; the alternative was a server that
+  accepted every sign-in request, answered <code>202</code>, and delivered nothing.</p>
+  <p style="margin-bottom:0"><strong>What is needed:</strong> which relay (hostname and port), from
+  what sending address, whether it needs a username and password, and whether NAU will relay mail
+  for a research service. Any relay works &mdash; a campus relay or a commercial sending service.
+  <strong>Settle it in the same conversation as the host.</strong> A server can be stood up and
+  checked without it; people just cannot log in until it is in place, and one test message to a
+  real inbox is how you know it is.</p>
+</div>
+
+<h2>What you are installing</h2>
+
+<!-- One copy of this diagram, shared with TriTrack-server-architecture.html.
+     Keep TriTrack-server-architecture.svg beside this file when printing or
+     moving it, or the picture will not appear. -->
+<img class="diagram" src="TriTrack-server-architecture.svg"
+     alt="Architecture diagram: one Linux host, seven containers on a private Docker network, two inbound ports">
+<p class="diagcap">The same diagram as <b>TriTrack-server-architecture.html</b>, drawn from the
+compose files. Ports, images and the private network below are what those files actually say.</p>
+
+<p>A Dart web service and a PostgreSQL database, run by Docker Compose behind a Caddy reverse proxy
+that gets and renews its own TLS certificate. <strong>The only outbound connection the application
+makes is to a mail relay</strong>, to send sign-in links. No LDAP, no SSO, no campus storage, no
+external database.</p>
+
+<table>
+  <tr><th>Container</th><th>Image</th><th>Host ports</th><th>What it does</th></tr>
+  <tr><td>proxy</td><td>caddy:2-alpine</td><td>443, 80</td>
+      <td>Terminates TLS and obtains its own certificate. Port 80 serves the ACME challenge only.
+          The single entry point.</td></tr>
+  <tr><td>server</td><td>Dart on debian-slim</td><td>none</td>
+      <td>The application: sign-in, sync, project membership. The compose file removes its host port
+          explicitly.</td></tr>
+  <tr><td>postgres</td><td>postgres:16-alpine</td><td>none</td>
+      <td>The database. No host port in any configuration, so nothing on the network reaches it.</td></tr>
+  <tr><td>audit-retention</td><td>same as server</td><td>none</td>
+      <td>Deletes expired log rows on a timer. A year for sign-in events, 180 days for sync traffic,
+          30 days for decided join requests.</td></tr>
+  <tr><td>backup-scheduler</td><td>on postgres:16-alpine</td><td>none</td>
+      <td>One encrypted, signed database dump every 24 hours into a directory on the host disk.</td></tr>
+  <tr><td>project-destruction</td><td>same as server</td><td>none</td>
+      <td>Destroys a project on the date its owner scheduled, so no device has to be online for the
+          deletion to happen.</td></tr>
+  <tr><td>tombstone-retention</td><td>same as server</td><td>none</td>
+      <td>Purges records deleted more than 24 months ago, measured from when this server accepted
+          the delete, so the database does not grow without bound.</td></tr>
+</table>
+
+<p>A seventh service, <code>backup</code>, sits behind a Compose profile and runs on demand. It is
+not a running container.</p>
+
+<h2>What the host needs</h2>
+
+<ul>
+  <li><strong>Linux with Docker Engine and the Compose plugin.</strong> No other runtime, no language
+      toolchain, no web server. The images are built on the host from this repository.</li>
+  <li><strong>A publicly resolvable DNS name pointing at the host</strong>, and <strong>inbound 443
+      and 80 open to the internet</strong>. Port 80 is used only by Let&rsquo;s Encrypt to answer the
+      certificate challenge. If 80 cannot be opened, say so early: Caddy needs a different challenge
+      method and that changes the configuration.</li>
+  <li><strong>Outbound 443</strong>, so the proxy can renew its certificate roughly every 60 days.</li>
+  <li><strong>Outbound to the mail relay</strong> &mdash; port 587 with STARTTLS by default, or 465
+      if the relay only speaks TLS from the first byte. The server checks the relay at every start and
+      writes the result to its log, and <code>docker compose run --rm --no-deps server
+      --send-test-email you@nau.edu</code> sends one test message so you can watch it arrive.</li>
+  <li><strong>Disk for the database and for backups.</strong> Field records are small: coordinates,
+      timestamps and radio frequencies. Tens of gigabytes is plenty.</li>
+  <li><strong>A regular user account to own the deployment.</strong> The containers do not need root,
+      and the backup directory and signing key belong to that user.</li>
+</ul>
+
+<h2>What Michael provides</h2>
+
+<ul>
+  <li>The repository, and a walk through <code>.env</code> with you.</li>
+  <li><strong>The backup signing key</strong> and the age recipients the dumps are encrypted to.
+      These are secrets; they are generated on the host and never committed.</li>
+  <li><strong>An origin certificate for the <code>server</code> container.</strong> This is a second,
+      separate certificate from the public one, generated once on the host with <code>openssl</code>.
+      It authenticates nothing to the proxy; its only job is to satisfy the application&rsquo;s own
+      refusal to speak cleartext outside loopback. <code>server/README.md</code> has the exact
+      command.</li>
+</ul>
+
+<h2>The install, in the order it happens</h2>
+
+<ol>
+  <li><strong>Clone the repository</strong> onto the host as the deployment user.</li>
+  <li><strong>Write <code>.env</code></strong> from <code>.env.example</code>. The values that matter
+      for a real deployment are the Postgres credentials, <code>TRITRACK_ENV=production</code>,
+      <code>TRITRACK_TLS_DOMAIN</code> (the public name), the two origin-certificate paths, and the
+      backup directory, recipients and signing key.</li>
+  <li><strong>Generate the origin certificate</strong> outside the repository tree, per
+      <code>server/README.md</code>.</li>
+  <li><strong>Bring the stack up with the TLS overlay:</strong>
+<pre>docker compose -f docker-compose.yml -f docker-compose.tls.yml up --build -d</pre>
+      The overlay sets <code>TRITRACK_ENV=production</code> for you and removes the application&rsquo;s
+      host port, so the proxy is the only way in.</li>
+  <li><strong>Watch Caddy get its certificate.</strong> First start reaches Let&rsquo;s Encrypt over
+      port 80. If that port is closed, this is where it stops.</li>
+</ol>
+
+<h2>How you know it worked</h2>
+
+<p><strong>One command reports the state of the deployment:</strong></p>
+<pre>scripts/operator_status.sh</pre>
+<p>It asks the three questions an operator would otherwise have to remember separately, and prints
+one report. Run it after the first start and after any change.</p>
+
+<table>
+  <tr><th>Check</th><th>What it tells you</th></tr>
+  <tr><td><code>/health</code></td><td>The process is up. It does not mean the database is reachable.</td></tr>
+  <tr><td><code>/ready</code></td><td>The service can actually serve. This is the one to watch.</td></tr>
+  <tr><td><code>scripts/verify_tls_termination.sh</code></td>
+      <td>Brings the TLS overlay up under a throwaway project, checks termination, and tears itself
+          down. It never touches a real deployment&rsquo;s data.</td></tr>
+  <tr><td><code>scripts/backup_status.sh</code></td><td>Whether a recent backup exists and is signed.</td></tr>
+</table>
+
+<p><strong><code>/health</code> and <code>/ready</code> answering differently is the normal way this
+service tells you the database is gone.</strong> A container that is up and not ready is the
+expected shape of that failure, not a bug.</p>
+
+<h2>Questions for NAU, worth settling while you are in the room</h2>
+
+<ol>
+  <li><strong>Mail relay.</strong> See the box at the top. Which relay and port, which sending
+      address, whether it needs credentials, and will NAU relay for this service? Nothing else blocks
+      people logging in.</li>
+  <li><strong>Where a second copy of the backup lives.</strong> Encrypted, signed dumps are written to
+      the host disk every 24 hours and <strong>no copy leaves that host today</strong>. A backup that
+      only exists on the machine it protects is not a backup. This is an open question, not an
+      oversight.</li>
+  <li><strong>Who holds the signing and encryption keys</strong>, and what happens when the person
+      holding them leaves.</li>
+  <li><strong>Whether port 80 can be open</strong> for the certificate challenge.</li>
+  <li><strong>Patching and restarts.</strong> The stack survives a reboot if Docker starts on boot.
+      Who applies host updates, and on what schedule.</li>
+</ol>
+
+<h2>What you do not need to worry about</h2>
+
+<ul>
+  <li><strong>Scale.</strong> Teams are small and sync in bursts when devices come back into signal.
+      This is a low-traffic service. One modest VM is the right size.</li>
+  <li><strong>Campus integration.</strong> There is none, by design, and adding some is not pending.</li>
+  <li><strong>Student or health data.</strong> The records are researchers&rsquo; names and email
+      addresses, and the coordinates, times and radio frequencies of collared animals. Sensitive in a
+      conservation sense, because they locate protected species. Not FERPA, not HIPAA, no payment
+      data.</li>
+</ul>
+
+<footer>
+  <span>TriTrack &mdash; Dynamic and Active Systems Lab, Northern Arizona University</span>
+  <span>Companion to TriTrack-server-architecture.html &middot; from the compose files and server/README.md &middot; 2026-09-20</span>
+</footer>
+
+</body>
+</html>

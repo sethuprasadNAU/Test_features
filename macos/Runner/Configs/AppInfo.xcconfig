@@ -1,0 +1,41 @@
+// Application-level settings for the Runner target.
+//
+// This may be replaced with something auto-generated from metadata (e.g., pubspec.yaml) in the
+// future. If not, the values below would default to using the project name when this becomes a
+// 'flutter create' template.
+
+// The application's name. By default this is also the title of the Flutter window.
+PRODUCT_NAME = TriTrack
+
+// The application's bundle identifier
+PRODUCT_BUNDLE_IDENTIFIER = edu.nau.tritrack
+
+// The copyright displayed in application information
+PRODUCT_COPYRIGHT = Copyright © 2026 com.example. All rights reserved.
+
+// Which entitlements files the Runner target is built with (task 11.38).
+//
+// Empty by default, selecting `Runner/DebugProfile.entitlements` and
+// `Runner/Release.entitlements` — the pair that builds on any Mac, signed or
+// not. `Signing.xcconfig` sets this to `-Signed` to select the variants that
+// additionally declare `keychain-access-groups`.
+//
+// **This exists because the two cannot be one file.** Xcode refuses to build
+// an entitlements file containing `keychain-access-groups` unless a
+// development signing certificate is configured ("Runner has entitlements
+// that require signing with a development certificate"), so putting the
+// entitlement in the base file would stop the Mac app compiling for anyone
+// who has not set signing up. Measured, not assumed — see task 11.38.
+TRITRACK_ENTITLEMENTS_SUFFIX =
+
+// Local code-signing identity, if you have set one up. **Optional include**
+// (`#include?`, not `#include`) — the project still builds when the file is
+// absent, it just signs ad hoc and cannot reach the keychain, which means
+// sign-in cannot work. See `Signing.xcconfig.example` beside this file, and
+// README.md's "Signing the macOS build" section. Task 11.38.
+//
+// This is the *target's* base configuration, so what it sets beats anything
+// in the project-level build settings — which is the point: it is what lets
+// a real identity override the ad-hoc default without editing
+// `project.pbxproj` and dirtying a tracked file.
+#include? "Signing.xcconfig"

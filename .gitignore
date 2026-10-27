@@ -1,0 +1,156 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Claude Code local session/settings state (personal, machine-specific —
+# NOT the same as .claude/settings.json or .claude/commands/, which ARE
+# tracked on purpose: they're the shared project convention + task-command
+# scaffolding described in CLAUDE_DOCS/DEVELOPMENT_PLAN.md)
+.claude/settings.local.json
+.claude/*.local.json
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# packages/* are reusable Dart packages, not apps — per Dart convention their
+# lockfile isn't committed (consumers resolve their own); the root app's
+# pubspec.lock above this line is intentionally still tracked.
+packages/*/pubspec.lock
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Large WMM reference PDF — not needed at runtime (see README); download separately
+CLAUDE_DOCS/WMM2025/noaa_71569_DS1.pdf
+
+# Microsoft Office temp/lock files (created while a .docx/.xlsx/.pptx is open)
+~$*
+
+# Invention disclosure / IP documents — kept out of version control on purpose;
+# stored separately (OneDrive), not on GitHub.
+INVENTION_DISCLOSURE/
+
+# Secrets (task 10.3 / Security Model §4.6) — .env holds real credentials for
+# the local Docker Compose stack (Postgres password, later SMTP creds);
+# .env.example is the committed, empty-valued template. Never commit a real
+# secret, key, or credential file, whatever it happens to be named.
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.crt
+secrets*
+
+# Server build artifacts (task 10.3): `dart compile exe`'s output binary and
+# the server package's own pub state; the app's .dart_tool/ rule above
+# doesn't cover this nested package. server/pubspec.lock IS committed
+# (unlike packages/*/pubspec.lock above) — the server is a deployable
+# application, not a reusable library, so its lockfile should pin exactly
+# what Docker builds and runs.
+server/.dart_tool/
+server/bin/server
+
+# Development magic-link drop directory (task 10.6). FileEmailSender writes
+# live sign-in tokens here so a developer can use them without the token ever
+# reaching a log (Security Model §4.7 has no development exemption). These are
+# working credentials — never commit them.
+server/.dev_magic_links/
+
+# The end-to-end suite's captured output (task 11.130). A red run's failure
+# messages are the diagnosis — `magic_link_reader.dart` queries the server's
+# own audit log and prints a verdict for every link that did not arrive — and
+# on 2026-09-02 six of them scrolled past and were gone. This file is where
+# they survive. **Never commit it and never upload it:** a test that fails
+# while asserting about a response body can print one, and §4.7's never-log
+# list is about the artifact as much as the log line.
+.e2e_last_run.log
+
+# Same reason, for the end-to-end integration suite (task 10.17): the e2e
+# compose override bind-mounts this so the test can read real magic-link
+# tokens off the host filesystem.
+.e2e_magic_links/
+
+# Same reason again, for the LAN multi-device walkthrough (task 11.35):
+# docker-compose.dev-lan.yml bind-mounts this so a person signing a phone in
+# over the network can read the link. Live tokens; never commit them.
+.dev_magic_links/
+
+# Dart test runner scratch inside the shared package.
+packages/tritrack_sync/build/
+
+# Encrypted database backups (task 10.24 / Security Model §4.9). Every archive
+# is a full copy of the highest-ranked asset in the system. It is ciphertext,
+# so committing one would not immediately expose anything — but it would put a
+# permanent copy in every clone of the repository forever, decryptable by
+# anyone who ever obtains a backup key. Never in git.
+backups/
+*.age
+*.age.part
+# age private keys, wherever someone happens to run age-keygen. §4.9.1 says
+# these live in ~/.config/tritrack/ and on paper, never in the repo — this is
+# the belt to that braces.
+*backup-identity*.txt
+
+# Codex/ChatGPT working files. Not TriTrack sources: AGENTS.md is a parallel
+# instruction file and .agents/skills/ mirrors .claude/commands/. Untracked so
+# they cannot drift into being a second source of truth for this repo.
+AGENTS.md
+.agents/
+
+# Local macOS code-signing identity (task 11.38). A Team ID belongs to one
+# Apple Developer account, so each person creates their own from
+# macos/Runner/Configs/Signing.xcconfig.example. The .example file IS tracked.
+#
+# Because it is untracked it is also per-checkout: a fresh clone, a second Mac
+# or a new worktree starts unsigned, and the only symptom is that sign-in
+# refuses on macOS while everything else works. README.md's "Signing the macOS
+# build" has the one command that regenerates it.
+macos/Runner/Configs/Signing.xcconfig
+
+# Task 11.325: the nightly check's reports and logs (scripts/nightly_check.sh). Ignored so that
+# the repository's own scans of "every file git knows about" do not read a night's logs.
+Claude outputs/local-ci/
+
+# Copyrighted reference books and manuals kept beside the planning documents for reading only
+# (Michael, 2026-10-07). Never committed: the repository is on GitHub. White & Garrott (1990)
+# chapter PDFs, the LOAS manual, Lenth (1981), and any other PDF dropped directly into CLAUDE_DOCS/.
+# (PDFs in CLAUDE_DOCS/ subfolders that ARE tracked, such as WMM2025's test values, are unaffected.)
+CLAUDE_DOCS/analysis_of_wildlife_radio_tracking_data/
+CLAUDE_DOCS/*.pdf

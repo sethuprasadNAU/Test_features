@@ -1,0 +1,34 @@
+{{- /*
+  {{< diagram "join-request" "Asking to join and what happens next." >}}
+
+  A generated diagram — a Graphviz .dot source in website/diagrams/, rendered
+  to SVG by website/tools/render_diagrams.sh into static/diagrams/. See
+  website/README.md, "The diagrams", for why: the same rule as the
+  screenshots (nothing on this site is drawn by hand), applied to a picture
+  that isn't a capture of the app.
+
+  The SVG is inlined into the page rather than loaded as an <img>, so its
+  shapes and text can be styled by this site's own light/dark CSS variables
+  in style.css instead of carrying a second copy of the palette. See the
+  ".diagram" rules there.
+
+  It refuses to render a diagram that hasn't been rendered yet, the same way
+  the shot shortcode refuses a screenshot that doesn't exist — run
+  website/tools/render_diagrams.sh first.
+*/ -}}
+{{- $name := .Get 0 -}}
+{{- $caption := .Get 1 -}}
+{{- if not $name -}}
+  {{- errorf "the diagram shortcode needs a name, e.g. {{< diagram \"join-request\" \"caption\" >}} — in %s" .Page.Path -}}
+{{- end -}}
+{{- if not $caption -}}
+  {{- errorf "the diagram shortcode needs a caption; an uncaptioned diagram makes the reader guess what they are looking at (%s, diagram %s)" .Page.Path $name -}}
+{{- end -}}
+{{- $file := printf "static/diagrams/%s.svg" $name -}}
+{{- if not (os.FileExists $file) -}}
+  {{- errorf "no rendered diagram called %s (looked for %s), used in %s. Run website/tools/render_diagrams.sh — its source is website/diagrams/%s.dot." $name $file .Page.Path $name -}}
+{{- end -}}
+<figure class="diagram">
+<div class="diagram-inner" role="img" aria-label="{{ $caption }}">{{ os.ReadFile $file | safeHTML }}</div>
+<figcaption>{{ $caption }}</figcaption>
+</figure>

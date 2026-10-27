@@ -1,0 +1,73 @@
+{
+  "_what_this_is": [
+    "Every test the offline suite (a bare `flutter test` from the repository root)",
+    "is allowed to skip, and why. Read by `scripts/assert_suite_scope.py",
+    "--declared-skips`, which is run by `scripts/run_offline_suite.sh` on every",
+    "push. A skipped test that matches nothing here fails the run, and a rule here",
+    "that matches nothing in the run fails it too.",
+    "",
+    "Task 11.156. The alternative was to assert how many tests are skipped, and a",
+    "count is the defect rather than the fix: it is a number somebody chose, it",
+    "stops describing anything the moment the population changes, and it cannot",
+    "tell 'one legitimate skip removed and one illegitimate skip added' from",
+    "'nothing happened'. These skips are nameable, so they are named.",
+    "",
+    "`test` is the test's name as the JSON reporter gives it. `(suite)` is what",
+    "package:test calls a whole file skipped before any of its tests were reached",
+    "-- which is what a `skip:` in `dart_test.yaml`'s `tags:` block produces. It is",
+    "written here deliberately: it means these rules declare *whole files skipped",
+    "by their tag* and nothing else, so a `skip:` added to one individual test in",
+    "the same directory is still an undeclared skip and still fails the run.",
+    "",
+    "Scope this file does not cover: a run on Windows. Two tests in",
+    "test/documentation/dev_stack_host_prerequisites_test.dart carry",
+    "`skip: Platform.isWindows ? 'needs a POSIX shell' : null`, which is null on",
+    "macOS and Linux, so they do not skip here and must not be declared -- a rule",
+    "matching nothing is a failure. On Windows those two would be reported as",
+    "undeclared skips. Nobody develops or runs CI for this project on Windows, and",
+    "a loud red there is a better answer than a rule that is allowed to match",
+    "nothing.",
+    "",
+    "`runs_under_tz` (task 11.326): a test that skips itself unless the process",
+    "started under one zone. The suite runs under TZ=UTC by default and, at",
+    "night, under one zone east and one west of UTC; under the named zone the",
+    "rule is not in force and the test must run (the scope check is told the",
+    "zone with --tz). Everywhere else it is an ordinary declared skip."
+  ],
+  "skips": [
+    {
+      "suite_prefix": "e2e/",
+      "test": "(suite)",
+      "reason": "dart_test.yaml skips the `e2e` tag by default so that a bare `flutter test` needs no server -- that is Phase 10 invariant 5 and README.md's promise. These files run under `scripts/run_e2e_tests.sh`, which passes `--tags e2e --run-skipped`. Two files in this directory are NOT tagged and do run here (suite_coverage_test.dart and publish_corpus_test.dart, which analyse the e2e suite rather than talking to a server); they are covered by no rule because they are not skipped."
+    },
+    {
+      "suite": "network/tile_credit_freshness_test.dart",
+      "test": "(suite)",
+      "reason": "dart_test.yaml skips the `network` tag by default. This file asks three tile providers whether they still publish the credit strings the app is legally required to show -- a question about the outside world, not about this commit, so it must never redden a push or fail on a laptop in the field. It runs weekly from .github/workflows/tile-credit-freshness.yml with `--tags network --run-skipped`, where the same scope check runs with --no-skips."
+    },
+    {
+      "suite": "features/more/animals_screen_test.dart",
+      "test": "clock matrix — fixed clocks for date-boundary logic (task 11.271) 11.269's picker: OK on the pre-filled day keeps the swap time — just after local midnight, America/Phoenix (UTC-7)",
+      "runs_under_tz": "America/Phoenix",
+      "reason": "Needs the process's own zone to be America/Phoenix (UTC-7), which `clock_matrix_test.sh` supplies (`TZ=America/Phoenix`); `run_offline_suite.sh` defaults to `TZ=UTC` so that this suite skips the same four tests on every machine, instead of three on a Phoenix Mac, four anywhere else. Under `TZ=America/Phoenix` (the night's west-of-UTC run, task 11.326) `runs_under_tz` takes this rule out of force and the test must run."
+    },
+    {
+      "suite": "features/more/animals_screen_test.dart",
+      "test": "clock matrix — fixed clocks for date-boundary logic (task 11.271) 11.269's picker: OK on the pre-filled day keeps the swap time — just before local midnight, America/Phoenix (UTC-7)",
+      "runs_under_tz": "America/Phoenix",
+      "reason": "Needs the process's own zone to be America/Phoenix (UTC-7), which `clock_matrix_test.sh` supplies (`TZ=America/Phoenix`); `run_offline_suite.sh` defaults to `TZ=UTC` so that this suite skips the same four tests on every machine, instead of three on a Phoenix Mac, four anywhere else. Under `TZ=America/Phoenix` (the night's west-of-UTC run, task 11.326) `runs_under_tz` takes this rule out of force and the test must run."
+    },
+    {
+      "suite": "features/more/animals_screen_test.dart",
+      "test": "clock matrix — fixed clocks for date-boundary logic (task 11.271) 11.269's picker: OK on the pre-filled day keeps the swap time — shortly after local midnight, Asia/Tokyo (UTC+9)",
+      "runs_under_tz": "Asia/Tokyo",
+      "reason": "Needs the process's own zone to be Asia/Tokyo (UTC+9), which `clock_matrix_test.sh` supplies (`TZ=Asia/Tokyo`); `run_offline_suite.sh` defaults to `TZ=UTC` so that this suite skips the same four tests on every machine. Under `TZ=Asia/Tokyo` `runs_under_tz` takes this rule out of force and the test must run; the night's east-of-UTC run is Pacific/Auckland, where it skips."
+    },
+    {
+      "suite": "features/more/animals_screen_test.dart",
+      "test": "clock matrix — fixed clocks for date-boundary logic (task 11.271) 11.273's same-day swap: fixed to just after local midnight, the clamp keeps a collar taken off Kea an hour ago on today, and the swap still gets its time",
+      "runs_under_tz": "America/Phoenix",
+      "reason": "Needs the process's own zone to be America/Phoenix (UTC-7), which `clock_matrix_test.sh` supplies (`TZ=America/Phoenix`); `run_offline_suite.sh` defaults to `TZ=UTC` so that this suite skips the same four tests on every machine, instead of three on a Phoenix Mac, four anywhere else. Under `TZ=America/Phoenix` (the night's west-of-UTC run, task 11.326) `runs_under_tz` takes this rule out of force and the test must run."
+    }
+  ]
+}

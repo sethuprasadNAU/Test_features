@@ -1,0 +1,13 @@
+# Waivers for website/tools/check_app_quotes.dart, rules 2 and 3.
+#
+# Format: the exact text, a TAB, then why it is not an app quote.
+#
+# A waiver here means "these quotation marks or this bold are not the app
+# speaking." Anything the app actually says belongs in {{< app "..." >}}
+# instead, so that it is checked.
+#
+# The check errors on a duplicate entry and on an entry nothing uses, so this
+# list cannot quietly rot into a list of things somebody once needed.
+#
+# Empty for now. Rule 2 and rule 3 have not yet cost anybody a legitimate
+# sentence, and an empty escape hatch is the right starting state.

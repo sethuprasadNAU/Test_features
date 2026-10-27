@@ -1,0 +1,23 @@
+# Source for website/static/diagrams/join-request.svg.
+# Rendered by website/tools/render_diagrams.sh — do not hand-edit the SVG.
+#
+# For joining-a-project.md, under "Asking is not joining": two parties and
+# the waiting gap between them. The middle node is the whole point of that
+# heading — nothing changes on your device between asking and the owner's
+# answer.
+digraph JoinRequest {
+  rankdir=TB;
+  bgcolor="transparent";
+  graph [fontname="Helvetica,Arial,sans-serif", fontsize=12, margin=0,
+         nodesep=0.4, ranksep=0.5];
+  node [fontname="Helvetica,Arial,sans-serif", fontsize=13, shape=box,
+        style="rounded", margin="0.2,0.14"];
+  edge [fontname="Helvetica,Arial,sans-serif", fontsize=11];
+
+  ask [label="You\nask with the code"];
+  waiting [label="Nothing on your device\nchanges yet", class="wait"];
+  decide [label="An owner\napproves or rejects"];
+  arrive [label="Your device finds out,\nnext time it checks"];
+
+  ask -> waiting -> decide -> arrive;
+}

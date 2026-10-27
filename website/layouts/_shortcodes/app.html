@@ -1,0 +1,17 @@
+{{- /*
+  {{< app "Join a project" >}}
+
+  Renders a string that is quoted verbatim from the app's own source. Every
+  use of this shortcode is verified against `lib/` by
+  website/tools/check_app_quotes.dart, which runs in CI. That is the whole
+  point: the guide cannot claim the app says something it no longer says.
+
+  Do not use this for a paraphrase, for an operating-system label, or for a
+  string the app does not contain. Those go in website/quote-waivers.txt with
+  a reason.
+*/ -}}
+{{- $s := .Get 0 -}}
+{{- if not $s -}}
+  {{- errorf "the app shortcode needs the exact string, e.g. {{< app \"Join a project\" >}} — in %s" .Page.Path -}}
+{{- end -}}
+<b class="app-string">{{ $s }}</b>

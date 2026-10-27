@@ -1,0 +1,39 @@
+{{- /*
+  {{< video "take-on-map" "What the clip shows, and what to notice." >}}
+  {{< video "take-on-map" "Caption." "take-on-map-released" >}}
+
+  A short screen recording (/w-35): static/videos/<name>.mp4, made by
+  integration_test/screenshots/record_video.sh and never by hand, for the same
+  reason no screenshot is (website/README.md, "The video").
+
+  Muted, looping, with controls and no autoplay, so nothing moves or plays
+  until the reader asks. The poster, shown before it plays and in place of the
+  video when the page is printed, is a screenshot from the same harness:
+  static/screens/iphone-6.9/<poster>.png, where <poster> defaults to <name>
+  (the clip begins on exactly that screen).
+
+  **It refuses a file that is not there**, like the shot shortcode: a missing
+  video or poster is a failed build, not a gray box somebody notices later.
+*/ -}}
+{{- $name := .Get 0 -}}
+{{- $caption := .Get 1 -}}
+{{- $poster := or (.Get 2) $name -}}
+{{- if not $name -}}
+  {{- errorf "the video shortcode needs a name, e.g. {{< video \"take-on-map\" \"caption\" >}} — in %s" .Page.Path -}}
+{{- end -}}
+{{- if not $caption -}}
+  {{- errorf "the video shortcode needs a caption; an uncaptioned clip makes the reader guess what they are watching (%s, video %s)" .Page.Path $name -}}
+{{- end -}}
+{{- $file := printf "static/videos/%s.mp4" $name -}}
+{{- if not (os.FileExists $file) -}}
+  {{- errorf "no video called %s (looked for %s), used in %s. Videos come from integration_test/screenshots/record_video.sh and are never added by hand." $name $file .Page.Path -}}
+{{- end -}}
+{{- $posterFile := printf "static/screens/iphone-6.9/%s.png" $poster -}}
+{{- if not (os.FileExists $posterFile) -}}
+  {{- errorf "no poster screenshot %s for video %s (looked for %s), used in %s." $poster $name $posterFile .Page.Path -}}
+{{- end -}}
+<figure class="shot video">
+<video src="{{ printf "videos/%s.mp4" $name | relURL }}" poster="{{ printf "screens/iphone-6.9/%s.png" $poster | relURL }}" muted loop playsinline controls preload="none" aria-label="{{ $caption }}"></video>
+<img class="video-poster" src="{{ printf "screens/iphone-6.9/%s.png" $poster | relURL }}" alt="{{ $caption }}" loading="lazy">
+<figcaption>{{ $caption }}</figcaption>
+</figure>

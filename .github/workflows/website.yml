@@ -1,0 +1,254 @@
+# The website lane (task /w-01).
+#
+# Two jobs, and the order matters. The first asks whether the site still
+# quotes the app correctly; the second publishes. A site that has drifted
+# from the app is not published, because "copy describing a mechanism the
+# code does not have" is the defect this project has spent the most time
+# removing and the website will accumulate it faster than `lib/` did.
+#
+# It runs on `lib/**` and `packages/**` as well as `website/**` on purpose.
+# Drift is almost always caused by the *app* changing, not the site, so a push
+# that renames a button must be the push that goes red. `packages/**` is there
+# because the role names and the record-type buttons are enum labels in
+# `packages/tritrack_sync/lib/`, not in `lib/` — the check went blind to them
+# until `/w-06`, and a widened check on a narrower trigger would go red one
+# push late.
+#
+# What a green tick here does not mean is in website/README.md, under
+# "What the drift check does not catch". Read it before trusting one.
+name: Website
+
+# NARROWED 2026-10-02 (task 11.325): this workflow's automatic runs are narrowed to pushes that change
+# `website/**`, which publish the site. Michael is making many commits a day and GitHub's
+# minutes are limited, so the check of the app's wording (which used to run on every push
+# touching `lib/**` or `packages/**`) now runs in the local batch: `scripts/nightly_check.sh`.
+# TO RESTORE: replace the `on:` block below with the one saved in the comment under it,
+# and delete this notice. `CLAUDE_DOCS/RELEASE_CHECKLIST.md` says when: before a release,
+# or when development slows. `test/documentation/ci_pause_test.dart` fails if this notice
+# and the real triggers disagree.
+on:
+  push:
+    paths:
+      - 'website/**'
+  workflow_dispatch:
+#
+# Saved triggers, exactly as they were:
+# on:
+#   push:
+#     paths:
+#       - 'website/**'
+#       - 'lib/**'
+#       - 'packages/**'
+#       - '.github/workflows/website.yml'
+#   pull_request:
+#     paths:
+#       - 'website/**'
+#       - 'lib/**'
+#       - 'packages/**'
+#       - '.github/workflows/website.yml'
+#   workflow_dispatch:
+
+concurrency:
+  group: website-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Keep in step with the version recorded in website/README.md.
+  HUGO_VERSION: '0.165.0'
+  HUGO_SHA256: '5c3a37a5450b3e386e5b75a87a790fea2d04a796d75e171216c80ef48a32b432'
+  # The app's SDK, from `pubspec.yaml`'s `sdk: ^3.12.2`. The plain Dart SDK
+  # rather than Flutter: website/tools has its own dependency-free pubspec so
+  # that a check on the website's prose never waits on the app's package tree.
+  DART_VERSION: '3.12.2'
+
+jobs:
+  drift-check:
+    name: Does the site still quote the app correctly?
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # **A one-commit checkout, deliberately (task 11.155's audit).**
+      # `check_app_quotes.dart` reads `website/content/`, `lib/` and every
+      # `packages/*/lib/` **as they are at HEAD** — the question it asks is
+      # whether the site quotes this commit correctly, not what any earlier
+      # commit said. No git history is involved.
+      #
+      # **It is also already guarded against the vacuity 11.150 found**, and
+      # by more than a threshold: the checker exits 2 — "could not run", which
+      # CI must treat as failure and not as a pass — when an app root is
+      # missing, when an app root holds no Dart, when the content root is
+      # missing, when `packages/` exists but no package has a `lib/`, and when
+      # the app root declares no enum storage values for rule 4 to refuse.
+      # `website/tools/selftest.sh` runs immediately below and watches each of
+      # those go red on every run of this job.
+      - uses: actions/checkout@v4
+
+      # Installed from the Dart archive at an exact version rather than
+      # through a marketplace action, for the same reason the offline suite
+      # clones Flutter at an exact tag: a marketplace action is a dependency
+      # that runs with the repository's token, and the pinning rule does not
+      # stop at the edge of `pubspec.yaml`.
+      - name: Cache the Dart SDK
+        id: dart-cache
+        uses: actions/cache@v4
+        with:
+          path: /opt/dart-sdk
+          key: dart-${{ env.DART_VERSION }}-${{ runner.os }}
+
+      - name: Install Dart ${{ env.DART_VERSION }}
+        if: steps.dart-cache.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          url="https://storage.googleapis.com/dart-archive/channels/stable/release/${DART_VERSION}/sdk/dartsdk-linux-x64-release.zip"
+          curl -fsSL -o /tmp/dart.zip "$url"
+          unzip -q /tmp/dart.zip -d /opt
+          /opt/dart-sdk/bin/dart --version
+
+      - name: Put Dart on PATH
+        run: echo "/opt/dart-sdk/bin" >> "$GITHUB_PATH"
+
+      # This step prints a "version solving failed" warning about
+      # `flutter_native_splash` before it succeeds — task 11.191 traced it:
+      # the standalone Dart SDK installed above notices `website/tools` sits
+      # inside a Flutter app, probes the app's root `pubspec.yaml` as part of
+      # that check, and reports the (expected) failure to solve the app's
+      # Flutter-only dependency with a plain Dart SDK — then resolves
+      # `website/tools`'s own (dependency-free) pubspec correctly regardless.
+      # It is noise, not a fault in this step; do not chase it as one.
+      - name: Resolve website/tools's own (dependency-free) pubspec
+        run: dart pub get --directory website/tools
+
+      - name: Analyze the website's own tools
+        run: dart analyze website/tools
+
+      # First: is the drift check itself still capable of failing? Every case
+      # in here asserts an exit code against a fixture — six that must go red
+      # and seven that must refuse to run rather than report success. A check
+      # nobody has watched fail is not a check, and this is how that stays
+      # true after the day somebody watched it.
+      - name: Can the drift check still fail?
+        run: website/tools/selftest.sh
+
+      # Then the real question, against the real app.
+      - name: Does the site still quote the app correctly?
+        run: dart run website/tools/check_app_quotes.dart
+
+      # The theory page's figures (task /w-36): drawn from the app's own
+      # numbers in test/localization/ellipse_coverage_data/, and committed.
+      # This fails if the script's copy of the method no longer reproduces
+      # those numbers, or if a committed figure is not what the script draws.
+      - name: Are the theory page's figures still the app's?
+        run: dart website/tools/theory_figures.dart --check
+
+  publish:
+    name: Build and publish the site
+    needs: drift-check
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # **A one-commit checkout, deliberately (task 11.155's audit).** Hugo
+      # would need history for `enableGitInfo` — `.GitInfo` and git-derived
+      # `lastmod` — and `website/hugo.toml` sets neither, so the build reads
+      # only the content at HEAD. The `git` commands further down create a
+      # fresh single-commit repository inside `website/public` to publish
+      # from; they never read this repository's history.
+      #
+      # **What this job reads from its environment is a secret and the
+      # network**, and both already say so: a missing `SITE_DEPLOY_KEY` is an
+      # explicit `exit 1` with a sentence rather than an empty push, the Hugo
+      # download is checked against a pinned SHA-256 and refuses to build
+      # otherwise, and the last line of each of the two steps prints the
+      # number of files built and the number published.
+      - uses: actions/checkout@v4
+
+      - name: Install Hugo ${{ env.HUGO_VERSION }}
+        run: |
+          set -euo pipefail
+          url="https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_${HUGO_VERSION}_linux-amd64.tar.gz"
+          curl -fsSL -o /tmp/hugo.tar.gz "$url"
+          echo "${HUGO_SHA256}  /tmp/hugo.tar.gz" | sha256sum --check --status \
+            || { echo "Hugo ${HUGO_VERSION} did not match the pinned checksum — refusing to build with it."; exit 1; }
+          tar -xzf /tmp/hugo.tar.gz -C /usr/local/bin hugo
+          hugo version
+
+      # Diagrams are Graphviz (.dot) source, committed as text under
+      # website/diagrams/; the rendered SVG is build output and is not
+      # committed (website/.gitignore), so it has to exist before Hugo runs.
+      # See website/README.md, "The diagrams". Unlike Hugo and Dart above,
+      # this is an unpinned apt package — graphviz's SVG output for the
+      # plain shapes and text this site's diagrams use is stable across the
+      # versions Ubuntu has shipped, and the cost of a version drifting is a
+      # cosmetic diagram, not a security control, which is why this one
+      # dependency does not get the curl+checksum treatment the others do.
+      - name: Install Graphviz
+        run: sudo apt-get update && sudo apt-get install -y graphviz
+
+      - name: Render diagrams
+        run: website/tools/render_diagrams.sh
+
+      - name: Build
+        run: |
+          set -euo pipefail
+          hugo --source website --destination public --cleanDestinationDir --minify
+          # GitHub Pages runs Jekyll over anything without this, which eats
+          # files and directories whose names begin with an underscore.
+          touch website/public/.nojekyll
+          echo "built $(find website/public -type f | wc -l) files"
+
+      # **Two checks on the built pages, before anything is published**
+      # (`/w-35`): every internal link resolves (five were broken for two days
+      # and nobody was told), and no TeX is printed as text outside a formula
+      # (Michael found one by reading). They read the HTML Hugo just wrote, so
+      # they belong after the build; `selftest.sh` in the job above watches
+      # both go red on broken fixtures. Plain Dart, installed the same way the
+      # drift check's job installs it.
+      - name: Cache the Dart SDK
+        id: dart-cache
+        uses: actions/cache@v4
+        with:
+          path: /opt/dart-sdk
+          key: dart-${{ env.DART_VERSION }}-${{ runner.os }}
+
+      - name: Install Dart ${{ env.DART_VERSION }}
+        if: steps.dart-cache.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          url="https://storage.googleapis.com/dart-archive/channels/stable/release/${DART_VERSION}/sdk/dartsdk-linux-x64-release.zip"
+          curl -fsSL -o /tmp/dart.zip "$url"
+          unzip -q /tmp/dart.zip -d /opt
+          /opt/dart-sdk/bin/dart --version
+
+      - name: Do the built pages' links resolve, with no raw TeX?
+        run: /opt/dart-sdk/bin/dart website/tools/check_built_site.dart website/public
+
+      # The private repository is the source; only rendered HTML crosses into
+      # the public one. A fresh history each time, force-pushed, so the public
+      # repository holds the current site and no record of anything else.
+      - name: Publish to the public site repository
+        env:
+          DEPLOY_KEY: ${{ secrets.SITE_DEPLOY_KEY }}
+          SITE_REPO: dynamic-and-active-systems-lab/tritrack-site
+        run: |
+          set -euo pipefail
+          if [ -z "${DEPLOY_KEY}" ]; then
+            echo "SITE_DEPLOY_KEY is not set on this repository, so the built site has nowhere to go."
+            exit 1
+          fi
+          mkdir -p ~/.ssh
+          printf '%s\n' "${DEPLOY_KEY}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
+          cd website/public
+          git init -q -b main
+          git config user.name  'TriTrack site builder'
+          git config user.email 'noreply@users.noreply.github.com'
+          git add -A
+          git commit -q -m "Site built from ${GITHUB_REPOSITORY}@${GITHUB_SHA}"
+          git remote add origin "git@github.com:${SITE_REPO}.git"
+          GIT_SSH_COMMAND='ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes' \
+            git push -q --force origin main
+          echo "published $(git ls-files | wc -l) files to ${SITE_REPO}; the site is https://dynamic-and-active-systems-lab.github.io/tritrack-site/"

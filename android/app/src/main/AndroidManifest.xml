@@ -1,0 +1,116 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Pre-existing gap found while wiring task 10.4's local-network config:
+         this was declared only in src/debug and src/profile's manifests (the
+         stock `flutter create` template's assumption that a fresh project has
+         no network feature), so a release build had NO network access at
+         all — map tiles, DEM fetches, and any future server sync would all
+         silently fail. Belongs here, in every build type, not layered
+         per-variant like the network-security-config below. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- Task 11.40. **The same gap as the comment above, found again, and this
+         time it had been live since Phase 3.** `lib/core/providers/gps_provider.dart`
+         calls `Geolocator.requestPermission()` and nothing on Android had ever
+         declared a location permission, so Android denied it **without showing
+         a dialog** — `requestPermission()` returns `denied` immediately, the
+         provider throws `LocationPermissionDeniedException`, and the app shows
+         its own tidy "location was denied" message. A person would read that as
+         having been asked and having said no. It is the shape task 11.38 found
+         in the macOS keychain: the OS refuses, the app has a graceful path for
+         the refusal, and the graceful path is exactly what hides the fact that
+         nobody was ever asked.
+
+         The comment above fixed the INTERNET instance in task 10.4 and did not
+         derive the class, which is why this one survived. What derives it now
+         is `test/platform/capability_matrix_test.dart` — every capability the
+         app's Dart code requests must have a row in
+         `CLAUDE_DOCS/CAPABILITY_MATRIX.md` naming where it is declared.
+
+         COARSE as well as FINE: an Android 12+ user may grant only approximate
+         location from the system dialog, and a bearing recorded from an
+         approximate fix is still worth more than no observation. `LocationAccuracy.high`
+         asks for the precise one; this pair is what makes the dialog appear at all.
+
+         **Declared, not verified.** Nobody has run this app on an Android
+         device. See `CLAUDE_DOCS/RELEASE_CHECKLIST.md` item H2. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <application
+        android:label="TriTrack"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher">
+        <!-- Task 10.79, finding L-10, turned Android Auto Backup off: with no
+             `allowBackup` attribute it defaulted to true, so the whole app
+             sandbox — including `tri_track.db` and every coordinate in it —
+             was copied to the user's Google account on its own schedule, with
+             no TriTrack decision involved. That reasoning was sound as far as
+             it went, but it traded away Auto Backup's safety net without
+             asking whether the trade was worth it.
+
+             Task 11.215 put it back, on Michael's decision, 2026-09-10: a
+             phone lost in a canyon is far likelier than a stolen cloud
+             account, and the records at risk are the same set either way —
+             the ones not yet on the server. For a field app used for days at
+             a time with no signal, that redundancy is worth more than the
+             exposure, for essentially every project. L-10 in
+             `TriTrack_Security_Model.md` records this as an accepted risk,
+             not a closed one, along with the remedy for the rare project that
+             cannot accept it: a person can turn backup off for this app alone
+             in the phone's own settings (iOS has always had this; Android
+             gained it in the June 2026 per-app backup control rollout). Do
+             not re-add `allowBackup="false"` without re-reading that
+             finding. -->
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+            <!-- Specifies an Android theme to apply to this Activity as soon as
+                 the Android process has started. This theme is visible to the user
+                 while the Flutter UI initializes. After that, this theme continues
+                 to determine the Window background behind the Flutter UI. -->
+            <meta-data
+              android:name="io.flutter.embedding.android.NormalTheme"
+              android:resource="@style/NormalTheme"
+              />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <!-- Task 10.77 (finding K-3): the activity above is exported
+                 (required to launch at all), and an exported activity is
+                 startable by any app on the device with an explicit
+                 component intent regardless of intent-filters — Flutter's
+                 embedding then reads that intent's `route` extra
+                 unconditionally and hands it to go_router as the initial
+                 route, bypassing splash_screen.dart's identity gate. This
+                 stops the embedding from honoring that extra at all;
+                 app_router.dart's `overridePlatformDefaultLocation` is the
+                 second, platform-independent layer. -->
+            <meta-data
+                android:name="flutter_deeplinking_enabled"
+                android:value="false" />
+        </activity>
+        <!-- Don't delete the meta-data below.
+             This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+    </application>
+    <!-- Required to query activities that can process text, see:
+         https://developer.android.com/training/package-visibility and
+         https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
+
+         In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT"/>
+            <data android:mimeType="text/plain"/>
+        </intent>
+    </queries>
+</manifest>

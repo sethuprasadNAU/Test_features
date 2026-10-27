@@ -1,0 +1,90 @@
+# Development override for multi-device testing on a LAN (task 11.35).
+#
+#   . scripts/lib/host_user.sh   # task 11.69 — see below, and that file
+#   docker compose -f docker-compose.yml -f docker-compose.dev-lan.yml up --build -d
+#
+# **What this is for.** Anything that needs two devices — one person leaving a
+# project on their second device (task 11.28's acceptance), two accounts on one
+# project, a phone and a laptop disagreeing and converging — needs two sign-ins,
+# and a sign-in needs the magic link. The base file deliberately has no way to
+# retrieve one: `resolveEmailSender` falls back to `NullEmailSender`, which
+# discards it silently. So on a LAN-reachable stack nobody could sign in at all,
+# and the whole class of multi-device testing was blocked.
+#
+# `docker-compose.e2e.yml` already turns the file sender on and could not be
+# used for this: it pins `ports:` back to loopback (tasks 10.32 and 10.38,
+# findings E-2 and G-2), which is correct for a test suite running on the host
+# and useless from a phone.
+#
+# **What this file does and does not touch.** It sets the magic-link directory
+# and mounts it. It says nothing about `ports:` and nothing about
+# `TRITRACK_PUBLISH_ADDRESS` — both fall through from the base file, where they
+# follow `SERVER_PUBLISH_ADDRESS` together. That is the whole point: the
+# exposure decision stays exactly where task 10.22 put it, in one `.env` line
+# that the operator makes deliberately, and this file cannot widen it or
+# contradict it. It is also why this file must never grow a `ports:` key — see
+# `server/test/security/shipped_defaults_test.dart`, which now enumerates every
+# compose file in the repository rather than a list somebody has to remember to
+# extend.
+#
+# **The production guard is untouched and still the thing that matters.**
+# `resolveEmailSender` throws if `TRITRACK_DEV_MAGIC_LINK_DIR` is set while
+# `TRITRACK_ENV=production` — a development convenience that still works in
+# production is how prototypes ship with a hole in them. Layering this file onto
+# a production stack does not weaken that; it makes the server refuse to start,
+# which is the intended outcome. Nothing here sets `TRITRACK_ENV`.
+#
+# **Read `README.md` §4 before using this.** Publishing this server past
+# loopback requires a host whose publish path preserves caller addresses, and
+# the server refuses to start until you have measured that. Docker Desktop on a
+# Mac is not such a host. This file makes sign-in possible on a LAN stack; it
+# does not make a LAN stack permissible, and it deliberately cannot.
+services:
+  server:
+    # Task 11.69. Runs as the invoking user rather than root, so the magic
+    # link this override exists to hand out is readable by the person who
+    # asked for it.
+    #
+    # The file is still written mode 600 — that is `FileEmailSender`, it is
+    # deliberate, and it is unchanged. What changed is ownership. On a Linux
+    # host a bind mount passes ownership through unaltered, so a root-owned
+    # 0600 file in a directory the developer owns is a credential nobody on
+    # the host can read; on Docker Desktop the same write is remapped to the
+    # host user, which is why this was invisible until the workflows first ran
+    # on a Linux runner and eleven gate instruments died on `Errno 13`.
+    #
+    # `scripts/lib/host_user.sh` is the one place that sets these two
+    # variables, and every script that brings this stack up sources it. The
+    # `0:0` fallback is today's behaviour for anyone running the raw compose
+    # line by hand.
+    #
+    # **Development and end-to-end shapes only.** `docker-compose.yml` — the
+    # file a real deployment's configuration resembles — declares no `user:`
+    # on any service, retrieves no token at all (`NullEmailSender`), and is
+    # not touched by this. `server/test/security/shipped_defaults_test.dart`
+    # asserts both halves rather than leaving it to this comment.
+    user: "${TRITRACK_DEV_UID:-0}:${TRITRACK_DEV_GID:-0}"
+    environment:
+      # The same affordance `server/.dev_magic_links/` gives a bare-metal
+      # `dart run`, and the same one the e2e override uses. Written as a
+      # `.link` file per address, mode 600; `.gitignore` covers the host
+      # directory below.
+      TRITRACK_DEV_MAGIC_LINK_DIR: /dev_magic_links
+    # `!override` for the reason task 10.47 gives on the e2e file: Compose
+    # merges sequence-typed keys by concatenation, so an un-tagged key here
+    # would keep this mount alongside the base file's rather than replacing
+    # it. This used to be a no-op, tagged only against the day a mount landed
+    # on the base service — that day was task 11.129 (2026-09-02), and this
+    # file silently dropped the durable-degradation-record volume for weeks
+    # before task 11.223's sweep found it (finding G-2's exact class, the
+    # same defect fixed in `docker-compose.tls.yml`).
+    #
+    # **Mounted, not omitted — task 11.228.** This is a developer's stack on
+    # a real network, not a throwaway one: a degradation record that dies on
+    # every `--build` is the same loss production would suffer, just at
+    # lower stakes, and there is no reason for this file to behave
+    # differently from the deployment it is meant to resemble for everything
+    # except sign-in delivery.
+    volumes: !override
+      - ./.dev_magic_links:/dev_magic_links
+      - tritrack_server_state:/var/lib/tritrack

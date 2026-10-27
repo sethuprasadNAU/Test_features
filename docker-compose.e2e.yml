@@ -1,0 +1,112 @@
+# Override for task 10.17's end-to-end integration suite. Layer this on top
+# of the base compose file rather than editing it:
+#
+#   scripts/run_e2e_tests.sh
+#
+# This file used to spell the raw `docker compose -f ... -f ... up` line
+# here, without the `-p tritrack-e2e` that finding M-12 makes
+# load-bearing — `e2e_coverage_guard_test.dart` checks the container
+# answering the port belongs to *that* project. A copy that omits the
+# part which makes it correct is worse than no copy. The script owns it.
+#
+# The base file is the thing a real deployment's config resembles, and it
+# deliberately has no way to retrieve a magic-link token — `resolveEmailSender`
+# falls back to `NullEmailSender` (drops silently) unless
+# `TRITRACK_DEV_MAGIC_LINK_DIR` is set. This override sets it and bind-mounts
+# the directory so the test suite can read a real token off the host
+# filesystem, exactly the affordance `server/.dev_magic_links/` already
+# provides for a bare-metal `dart run`. Kept in a separate file so the
+# production-shaped base compose never gains a token-retrieval path by
+# accident.
+services:
+  server:
+    # Task 11.69. Runs as the invoking user rather than root, so the magic
+    # link this override exists to hand out is readable by the person who
+    # asked for it.
+    #
+    # The file is still written mode 600 — that is `FileEmailSender`, it is
+    # deliberate, and it is unchanged. What changed is ownership. On a Linux
+    # host a bind mount passes ownership through unaltered, so a root-owned
+    # 0600 file in a directory the developer owns is a credential nobody on
+    # the host can read; on Docker Desktop the same write is remapped to the
+    # host user, which is why this was invisible until the workflows first ran
+    # on a Linux runner and eleven gate instruments died on `Errno 13`.
+    #
+    # `scripts/lib/host_user.sh` is the one place that sets these two
+    # variables, and every script that brings this stack up sources it. The
+    # `0:0` fallback is today's behaviour for anyone running the raw compose
+    # line by hand.
+    #
+    # **Development and end-to-end shapes only.** `docker-compose.yml` — the
+    # file a real deployment's configuration resembles — declares no `user:`
+    # on any service, retrieves no token at all (`NullEmailSender`), and is
+    # not touched by this. `server/test/security/shipped_defaults_test.dart`
+    # asserts both halves rather than leaving it to this comment.
+    user: "${TRITRACK_DEV_UID:-0}:${TRITRACK_DEV_GID:-0}"
+    environment:
+      TRITRACK_DEV_MAGIC_LINK_DIR: /e2e_magic_links
+      # Task 10.26: Docker's port proxy collapses every e2e client's source
+      # address into the same one, so §4.4's per-source magic-link/redemption
+      # limits — a real control against a real botnet — trip on a single
+      # well-behaved suite run instead. See `RateLimitPolicy.fromEnvironment`
+      # for why this is refused outside a compose override like this one.
+      TRITRACK_RATE_LIMIT_PER_SOURCE_DISABLED: "1"
+      # Task 10.62 / §4.4.2. Hardcoded to loopback for the same reason — and
+      # by the same class of bug — as the `ports: !override` below: this value
+      # falls through from the base file, where it follows
+      # SERVER_PUBLISH_ADDRESS, so an operator with `SERVER_PUBLISH_ADDRESS=
+      # 0.0.0.0` in `.env` would hand this suite a publish address that
+      # contradicts the loopback port it actually gets, and the server would
+      # refuse to start. `environment:` merges by key rather than by
+      # concatenation, so plain assignment replaces the base value here; the
+      # rendered config is what proves it, not this comment.
+      TRITRACK_PUBLISH_ADDRESS: 127.0.0.1
+    # Task 10.32 / Security Model E-2: without this override, `ports:` fell
+    # through to the base file's `${SERVER_PUBLISH_ADDRESS:-127.0.0.1}`. An
+    # operator who had already opted into the LAN walkthrough
+    # (`SERVER_PUBLISH_ADDRESS=0.0.0.0` in `.env`) and then brought up this
+    # override for the e2e suite got that address back, plus the per-source
+    # rate limit disabled above and a live magic-link token mount — the exact
+    # combination C-3 (10.22) was written to prevent, reopened by a file that
+    # never touches `SERVER_PUBLISH_ADDRESS` at all. Hardcoded to loopback
+    # here, deliberately not reading the variable, so no `.env` value can
+    # change it.
+    #
+    # Task 10.38 / Security Model G-2: Compose merges sequence-typed keys
+    # like `ports:` by concatenation, not replacement. Without `!override`,
+    # the base file's `${SERVER_PUBLISH_ADDRESS:-127.0.0.1}:...` mapping was
+    # still present alongside this loopback one, so a `.env` opted into
+    # `SERVER_PUBLISH_ADDRESS=0.0.0.0` still published to every interface —
+    # this file's comment already claimed the fix without the tag that makes
+    # it real. Verified by rendering the merged config (`docker compose
+    # config`), not by reading this file — that is the check G-2 itself was
+    # missed by, twice.
+    ports: !override
+      - "127.0.0.1:${SERVER_PORT:-8080}:8080"
+    # Task 10.47 / Security Model §10.7.3: `!override` here, because Compose
+    # concatenates sequence-typed keys like `volumes:` rather than replacing
+    # them — an un-tagged key would add this mount alongside the base file's
+    # rather than in place of it. That moment already arrived: the base
+    # `server` service gained the durable-degradation-record volume (task
+    # 11.129, 2026-09-02), and this comment used to say "there is nothing to
+    # override yet" until task 11.223's sweep found that sentence had gone
+    # false three weeks earlier and this file had silently stopped mounting
+    # it — the same defect 11.223 fixed in `docker-compose.tls.yml`.
+    #
+    # **Kept, not dropped — task 11.228 checked the throwaway-stack argument
+    # against it and it does not apply here.** A named volume that outlived a
+    # run could carry state between separate invocations of this suite, which
+    # is a real concern in general; it is not one for *this* record. Nothing
+    # in `test/e2e/` ever makes Postgres unreachable, so nothing ever writes
+    # to `tritrack_server_state` during a green e2e run, and there is nothing
+    # to carry over. On a red run, this script's own `cleanup` (task 11.130)
+    # deliberately leaves the stack standing rather than tearing it down with
+    # `-v`, precisely so evidence of what went wrong survives — the record
+    # this volume covers is exactly that kind of evidence, for the one
+    # scenario (Postgres genuinely unreachable) where it would ever hold
+    # anything. A green run always tears down with `down -v`, which deletes
+    # this volume same as the Postgres one, so nothing leaks into the next
+    # clean run either way.
+    volumes: !override
+      - ./.e2e_magic_links:/e2e_magic_links
+      - tritrack_server_state:/var/lib/tritrack

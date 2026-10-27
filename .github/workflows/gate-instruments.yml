@@ -1,0 +1,191 @@
+# The eighteen committed gate instruments, run without anybody remembering
+# (task 11.40, closing what task 11.49 found).
+#
+# ## Why this is a workflow rather than a note in a document
+#
+# Task 11.49 found three defects in the gate's own instruments and reported
+# that **all three had one root: these instruments only run when somebody
+# remembers.** `verify_11_24_attribution.py` had been in neither of
+# `gate_smoke_test.sh`'s lists since it landed, so the closure of the
+# attribution finding had no automated re-run at all; and
+# `gate_smoke_test.sh` itself was red for a day and nobody ran it. A guard
+# that only runs when remembered is a hand-maintained list one layer up, and
+# this project has now found that shape in its instruments three times.
+#
+# ## What a red run here means, and what it does not
+#
+# `gate_smoke_test.sh` reports **each instrument's own exit code, verbatim.**
+# An instrument that finds a genuine, still-open finding exits non-zero and is
+# reported FAIL — that is the instrument working, not the instrument broken.
+# So a red run here means *read the log*, not *revert the commit*. The script
+# says the same thing in its own header at more length.
+#
+# Measured 2026-08-29, on this repository at `661d13d`: all eighteen
+# instruments PASS and the script exits 0. That is what makes a plain
+# exit-code check usable as a gate today. If that stops being true and the
+# reason is a real finding rather than a broken tool, this workflow's job is
+# to be the thing that says so on the day rather than at the next gate.
+#
+# ## Not on every commit, and why
+#
+# It builds the server image, brings up four separate compose stacks in
+# sequence and tears each down. Task 11.49 measured the sixteen-instrument
+# version at 3 min 21 s locally with warm images; there are eighteen now and a
+# CI runner builds cold. Putting that on every push to every branch would make
+# people wait on it for a documentation typo. So: every push that touches
+# anything it actually measures, plus nightly, plus a button.
+name: Gate instruments
+
+# PAUSED 2026-10-02 (task 11.325): this workflow now starts only when somebody presses
+# "Run workflow". Michael is making many commits a day and GitHub's minutes are limited, so
+# the checks run as one batch on his own machines instead: `scripts/nightly_check.sh`.
+# TO RESTORE: replace the `on:` block below with the one saved in the comment under it,
+# and delete this notice. **Also restore the self-test step's `if:` (marked below), which
+# had `schedule` taken out with the schedule.** `CLAUDE_DOCS/RELEASE_CHECKLIST.md` says when: before a release,
+# or when development slows. `test/documentation/ci_pause_test.dart` fails if this notice
+# and the real triggers disagree.
+on:
+  workflow_dispatch:
+#
+# Saved triggers, exactly as they were:
+# on:
+#   push:
+#     paths:
+#       - 'server/**'
+#       - 'packages/**'
+#       - 'scripts/**'
+#       - 'proxy/**'
+#       - 'docker-compose*.yml'
+#       - '.github/workflows/gate-instruments.yml'
+#   pull_request:
+#     paths:
+#       - 'server/**'
+#       - 'packages/**'
+#       - 'scripts/**'
+#       - 'proxy/**'
+#       - 'docker-compose*.yml'
+#       - '.github/workflows/gate-instruments.yml'
+#   # **The nightly is back on** (task 11.318 item 1, checklist C1). It was switched
+#   # off on 2026-09-10 (task 11.221, Michael's decision) because the last ~150
+#   # minutes of that month's Actions balance were being spent twenty minutes a night
+#   # on a question nobody was waiting on; the quota reset on 1 October 2026. The
+#   # reason for the nightly still holds — an instrument can rot without anybody
+#   # touching it: a base image moving under it, a dependency, a Docker Compose
+#   # behavior change. **If minutes run short again, comment this block out with a
+#   # dated note rather than deleting it**: a deleted schedule cannot be told apart
+#   # from one that never existed.
+#   schedule:
+#     # 04:00 UTC daily.
+#     - cron: '0 4 * * *'
+#   workflow_dispatch:
+
+concurrency:
+  group: gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate-instruments:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      # **A one-commit checkout, deliberately (task 11.155's audit).** Every
+      # instrument this job runs reads the working tree at HEAD and talks to a
+      # compose stack built from that same tree; **none of them asks git
+      # anything about history.** The two `git` calls in
+      # `scripts/gate_smoke_test.sh` are `git checkout -- scripts/gate_wire.py`
+      # and `git diff --quiet` on that one file, both of which restore from the
+      # index and work identically in a shallow clone. So a full clone here
+      # would cost time on every push and buy nothing.
+      #
+      # **What this job does depend on, and how each one fails:** Docker and
+      # Docker Compose (the stack's health loop gives up after 60 seconds and
+      # exits 1, printing the server's last 40 log lines), the network to pull
+      # the Postgres image (same loop) and, for `verify_smtp_delivery.sh`, one
+      # test-only mail-catcher image pinned by digest (task 11.318 — it FAILS
+      # saying "COULD NOT PULL" rather than passing if it cannot be had), and
+      # `scripts/*.py` being present — the
+      # wire-instrument set is *derived* from that directory rather than typed,
+      # and an empty derivation is an explicit FAIL rather than full coverage
+      # of nothing. **Every one of those is loud.** The class 11.150 found is a
+      # narrowing that is *silent*, and this job does not have one.
+      #
+      # The script now ends by printing how many instruments it ran and the
+      # commit it ran them against, so a run that quietly covered less says so
+      # in the last lines CI keeps.
+      - uses: actions/checkout@v4
+
+      # Python 3 and Docker are both already on `ubuntu-latest`. Nothing here
+      # needs Flutter or Dart — every instrument is Python or shell, and the
+      # server it attacks is built as a container.
+      - name: Record the toolchain this ran against
+        run: |
+          python3 --version
+          docker --version
+          docker compose version
+
+      # POSTGRES_* only. **The instruments provision everything else
+      # themselves** — `backup_restore_drill.sh` generates its own `age` and
+      # `minisign` key pairs inside the backup image, and
+      # `verify_i1_source_identity.sh` generates its own self-signed origin
+      # certificate and exports it over whatever `.env` holds. That is what
+      # makes them runnable unattended at all, and it was checked by running
+      # the whole suite from a fresh clone with exactly these three lines in
+      # `.env` (2026-08-29) rather than inferred from reading them.
+      - name: Write a throwaway .env
+        run: |
+          {
+            echo "POSTGRES_USER=ci"
+            echo "POSTGRES_PASSWORD=$(openssl rand -hex 24)"
+            echo "POSTGRES_DB=tritrack_ci"
+          } > .env
+
+      - name: Gate instruments
+        id: gate_instruments
+        run: scripts/gate_smoke_test.sh
+
+      # Task 11.88. gate_smoke_test.sh's own console output now greps a
+      # failing instrument's log for its conclusion rather than printing a
+      # fixed tail, but that excerpt is still somebody's choice of what
+      # mattered. The full per-instrument log — every one of them, not just
+      # the failing one — is kept at $GATE_SMOKE_OUT_DIR for the length of
+      # the job; upload it so the next reader has the whole thing rather
+      # than a console excerpt chosen in advance.
+      - name: Upload instrument logs (gate run)
+        if: always() && steps.gate_instruments.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate-instrument-logs
+          path: ${{ env.GATE_SMOKE_OUT_DIR }}
+          if-no-files-found: warn
+
+      # The self-test proves the instruments can still *fail*: it forces a
+      # stale schema major and requires every wire-speaking instrument to
+      # abort loudly. Without it, "all eighteen passed" and "all eighteen
+      # aborted before running a single control" look identical from here —
+      # which is exactly what happened in task 10.40, and is this project's
+      # standing finding in its purest form. It is a second full stack
+      # bring-up, so it runs nightly and on demand rather than on every push.
+      #
+      # **Nightly and on demand** (task 11.318 item 1). Task 11.221 took
+      # `schedule` out of the condition below along with the schedule itself
+      # (a test in server/test/security/shipped_defaults_test.dart refuses a
+      # condition naming a trigger the `on:` block does not declare); the
+      # schedule is back, so it is back here, and the same test now requires it.
+      - name: Instrument self-test (can they still fail?)
+        id: gate_selftest
+        # **Paused with the schedule, 2026-10-02 (task 11.325).** The same rule as
+        # 2026-09-10: a condition may not name a trigger the `on:` block does not
+        # declare. TO RESTORE with the schedule, put
+        # `github.event_name == 'schedule' || ` back in front of the dispatch test.
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GATE_SMOKE_SELFTEST: '1'
+        run: scripts/gate_smoke_test.sh
+
+      - name: Upload instrument logs (self-test run)
+        if: always() && steps.gate_selftest.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate-instrument-logs-selftest
+          path: ${{ env.GATE_SMOKE_OUT_DIR }}
+          if-no-files-found: warn

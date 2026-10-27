@@ -1,0 +1,200 @@
+# The server's Postgres suite, on every commit (task 11.40) — and, since task
+# 11.173, the gate's instrument-coverage derivation alongside it, in a second
+# job that runs no instrument at all. See that job's own header, near the
+# bottom of this file, for why it lives here rather than in
+# `gate-instruments.yml`.
+#
+# ~724 tests against a real database. Postgres in Docker is ordinary for CI,
+# and `scripts/run_server_tests_docker.sh` already does the whole dance —
+# bring up a throwaway loopback-only Postgres, wait for its healthcheck, point
+# `dart test` at it, tear it down whatever happens.
+#
+# **Why not `cd server && dart test`.** That is a second, quieter invocation
+# that exists in the tree, and it skips every `@Tags(['postgres'])` test —
+# which is most of what this suite is for. The script is the owner of this
+# step; see `CLAUDE_DOCS/SETUP_OWNERSHIP.md`.
+name: Server suite
+
+# PAUSED 2026-10-02 (task 11.325): this workflow now starts only when somebody presses
+# "Run workflow". Michael is making many commits a day and GitHub's minutes are limited, so
+# the checks run as one batch on his own machines instead: `scripts/nightly_check.sh`.
+# TO RESTORE: replace the `on:` block below with the one saved in the comment under it,
+# and delete this notice. `CLAUDE_DOCS/RELEASE_CHECKLIST.md` says when: before a release,
+# or when development slows. `test/documentation/ci_pause_test.dart` fails if this notice
+# and the real triggers disagree.
+on:
+  # Task 11.69: a button. This task could not be closed without re-running a
+  # workflow against an unchanged tree — "green on a developer's Mac" is not
+  # evidence about a runner, which is the whole subject of the task — and the
+  # only way to re-run this one was to invent a commit. The gate and
+  # broken-control workflows already had one.
+  workflow_dispatch:
+#
+# Saved triggers, exactly as they were:
+# on:
+#   push:
+#   pull_request:
+
+concurrency:
+  group: server-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  server-suite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # **A one-commit checkout, deliberately (task 11.155's audit).** Nothing
+      # under `server/test/` reads git history; the suite talks to a throwaway
+      # Postgres and to the server's own source at HEAD.
+      #
+      # **The narrowing this job did have was not clone depth.** Measured on
+      # 2026-09-04: `dart test` **exits 0 when every test it loaded was
+      # skipped, and when it loaded only some of the files it should have.**
+      # (Loading nothing at all is loud — an empty package exits 79.) So until
+      # this task the entire evidence that the server suite had run its 55
+      # files was an exit code that a run of eleven of them produces too. That
+      # is 11.150's class with no shallow clone anywhere in it.
+      #
+      # `scripts/run_server_tests_docker.sh` now writes a JSON report and hands
+      # it to `scripts/assert_suite_scope.py`, which asserts that **every**
+      # `*_test.dart` on disk under `server/test/` was loaded, that at least
+      # one test ran, and prints both counts on every run — green or red.
+      # Neither number is one a person chose; both are derived from the
+      # filesystem.
+      - uses: actions/checkout@v4
+
+      # Same pinned SDK as the offline job, and the same cache key so the two
+      # jobs share one download. `run_server_tests_docker.sh` calls `dart`,
+      # which the Flutter SDK bundles at the version `server/pubspec.yaml`
+      # requires (3.12.2) — one toolchain rather than two.
+      - name: Cache the Flutter SDK
+        id: flutter-cache
+        uses: actions/cache@v4
+        with:
+          path: /opt/flutter
+          key: flutter-3.44.6-${{ runner.os }}
+
+      - name: Install Flutter 3.44.6
+        if: steps.flutter-cache.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch 3.44.6 https://github.com/flutter/flutter.git /opt/flutter
+          /opt/flutter/bin/flutter --version
+          /opt/flutter/bin/flutter precache --universal
+
+      - name: Put Dart on PATH
+        run: |
+          echo "/opt/flutter/bin" >> "$GITHUB_PATH"
+          echo "/opt/flutter/bin/cache/dart-sdk/bin" >> "$GITHUB_PATH"
+
+      - name: Confirm the toolchain is the pinned one
+        run: dart --version
+
+      # A per-run password, so a leaked workflow log is not a credential and
+      # two concurrent runs cannot pass each other's. The database never
+      # leaves the runner and is destroyed with `down -v` by the script's own
+      # EXIT trap.
+      - name: Write a throwaway .env
+        run: |
+          {
+            echo "POSTGRES_USER=ci"
+            echo "POSTGRES_PASSWORD=$(openssl rand -hex 24)"
+            echo "POSTGRES_DB=tritrack_ci"
+          } > .env
+
+      - name: Server suite in Docker
+        run: scripts/run_server_tests_docker.sh
+
+  # ## Task 11.173 — "is the gate still running all 22 of its instruments?",
+  # asked on every push.
+  #
+  # `scripts/gate_smoke_test.sh` derives, from its own source, which lines run
+  # something and which script declares each of those names with a
+  # `# gate-instrument:` comment. That derivation is the only thing in this
+  # repository that notices a `run_instrument` line quietly disappearing — and
+  # until now it could only be exercised by the twenty-minute Docker run in
+  # `gate-instruments.yml`, which is nightly and on pushes touching `scripts/`.
+  # A check whose own failure modes nobody watches is task 11.172's finding;
+  # `GATE_SMOKE_COVERAGE_ONLY=1` is the mode it built to answer that question
+  # with no Docker, no stack and no instrument, in about a second.
+  #
+  # **It lives here rather than in `gate-instruments.yml` because that workflow
+  # is path-filtered** — `server/**`, `packages/**`, `scripts/**`, `proxy/**` —
+  # so a commit that deletes a run line while touching nothing else would not
+  # start it. This workflow runs on every push, and it is also the workflow
+  # that runs `server/test/security/shipped_defaults_test.dart`, whose group
+  # *the gate's coverage derivation is still invoked on every push* guards the
+  # step below. The step and the guard on the step go red in the same run.
+  #
+  # **Its own job, not a step in `server-suite`,** so it answers in under a
+  # minute rather than behind a Flutter install and a Postgres container, and
+  # so a red here names itself in the checks list instead of arriving as
+  # "Server suite failed".
+  #
+  # **The name says what it did not do, on purpose.** A green tick beside the
+  # word "gate" on a run that exercised no control is the lying-instrument
+  # class arriving by a new door, which is the whole reason 11.172 made this
+  # mode print "NOTHING WAS RUN. No instrument executed, no server was reached
+  # and no control was exercised" instead of a verdict. That sentence is in
+  # the job's name, in the step's name, in the console log, and in the run
+  # summary — the four places a person actually looks.
+  #
+  # **What it costs.** 1.35 s on a developer Mac and **195 ms in a bare
+  # `ubuntu:24.04` container with no Docker, no Python and no network**
+  # (measured 2026-09-05) — which is also the evidence that this job needs
+  # nothing but bash, grep and the checkout. Neither number is a runner
+  # number, so the step below measures itself on every run and prints the
+  # milliseconds into the run summary; the first push is what turns the
+  # estimate into a measurement.
+  gate-coverage:
+    name: Gate instrument coverage (nothing is executed)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # **A one-commit checkout, deliberately (task 11.155's audit).** The
+      # coverage derivation reads `scripts/` at HEAD and asks git nothing.
+      #
+      # **What it reads from its environment: bash, grep and `scripts/*` being
+      # present — nothing else.** No Docker, no network, no Dart, no Python.
+      # And the derivation refuses an empty result rather than reporting full
+      # coverage of nothing: no wire-speaking instrument derived is an explicit
+      # FAIL, as is a run line no script claims.
+      - uses: actions/checkout@v4
+
+      - name: Gate instrument coverage only — NOTHING IS RUN
+        id: gate_coverage
+        env:
+          GATE_SMOKE_COVERAGE_ONLY: '1'
+        run: |
+          # The timing is recorded whether the derivation passes or fails, and
+          # the script's own exit code is what leaves this step. A red run is
+          # the one whose cost is most worth knowing, and `bash -eo pipefail`
+          # would otherwise skip the arithmetic on exactly that path.
+          start_ns=$(date +%s%N)
+          scripts/gate_smoke_test.sh && status=0 || status=$?
+          end_ns=$(date +%s%N)
+          echo "GATE_COVERAGE_MS=$(( (end_ns - start_ns) / 1000000 ))" >> "$GITHUB_ENV"
+          exit "$status"
+
+      # Task 11.173 measures what this costs, every run, rather than once in a
+      # report — it runs on every push and the number is the reason anybody
+      # would accept that. Printed where a person sees it without opening a
+      # log, beside the sentence saying nothing was exercised.
+      - name: Say plainly that nothing was exercised, and what that cost
+        if: always()
+        run: |
+          {
+            echo "### Gate instrument coverage — task 11.173"
+            echo
+            echo "**NOTHING WAS RUN.** No instrument executed, no server was reached"
+            echo "and no control was exercised by this job. It says only that"
+            echo "\`scripts/gate_smoke_test.sh\`'s lines that run something are still"
+            echo "there and still claimed by a \`# gate-instrument:\` declaration."
+            echo
+            echo "The gate itself — the run that reaches a server and exercises"
+            echo "controls — is \`Gate instruments\`, nightly and on pushes touching"
+            echo "\`server/\`, \`packages/\`, \`scripts/\`, \`proxy/\` or the compose files."
+            echo
+            echo "Runner cost of this job's check: **${GATE_COVERAGE_MS:-unknown} ms**."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "Gate coverage check took ${GATE_COVERAGE_MS:-unknown} ms. NOTHING WAS RUN."

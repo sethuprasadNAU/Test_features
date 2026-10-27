@@ -1,0 +1,170 @@
+# **Task 11.134 item 2 — the scheduled half of the map-credit freshness check.**
+#
+# ## What it is for
+#
+# This app draws its basemaps from three third-party tile services, and showing
+# each provider's credit is a **condition of the licence the tiles are used
+# under**, not decoration. Those credits are `const` strings in
+# `lib/features/map/services/tile_sources.dart`, and one of them was already
+# wrong when task 11.134 started: it named **Maxar**, a company since renamed
+# **Vantor**, while the Esri service it credits had been publishing the new
+# name for some time. **Nothing in the app or the suite would ever have said
+# so** — a stale credit is a breach that looks exactly like a correct one.
+#
+# Esri's own instruction is to read `copyrightText` from the service and to
+# "frequently verify names as data source providers can change". A `const`
+# can do neither. This is what does it instead.
+#
+# ## Why a schedule and not a runtime fetch
+#
+# The full reasoning — and what this design costs compared to fetching the
+# credit in the app — is in `test/support/tile_credit_probes.dart`. The short
+# version: fetching at runtime would put a network call behind a licence
+# condition on a device that is offline as its normal condition, would let a
+# third-party response decide what text appears on the map, and would cover
+# only the one provider that publishes a machine-readable field. A check
+# catches drift in days instead of never and cannot break the app.
+#
+# **The cost, stated: drift is caught when this runs and somebody reads the
+# red.** Weekly is the interval that buys.
+#
+# ## Why it is on its own, and why a red here blocks nothing
+#
+# It reaches three third-party hosts. Put in the offline suite it would make
+# every push depend on somebody else's uptime, and `run_offline_suite.sh`
+# exists to prove the opposite property. So the tests carry the `network` tag,
+# `dart_test.yaml` skips that tag by default, and only this workflow and a
+# deliberate command run them:
+#
+#   flutter test test/network --tags network --run-skipped
+#
+# **A failure here is not a defect in this commit.** It means a provider
+# changed the credit it requires. Somebody reads the page, updates the probe
+# and the app's `const` together, and ships it.
+#
+# ## Has this ever actually run here? Yes — once, and it passed
+#
+# **Task 11.135 asked, because task 11.88's "never passed in CI" category is
+# where a new scheduled job lives until somebody watches one.** Checked on
+# 2026-09-02: run 33684786148, triggered by the `push` paths filter above (not
+# by the schedule, which had not come round yet), **completed successfully in
+# 52 seconds.** So all three third-party hosts are reachable from a GitHub
+# runner and answer what the probes expect — this job is not in the
+# never-exercised category, and the first Monday run is a repeat rather than a
+# first attempt.
+#
+# ## What a red here means, now that it can say
+#
+# Two different things, and since task 11.135 the run says which:
+#
+#   * **"still publishes the recorded credit" failed with a drift message** —
+#     a provider changed the credit it requires. Read the page, update the
+#     probe and the app's `const` together, ship it.
+#   * **"COULD NOT REACH …"** — nothing came back at all, so the run learned
+#     nothing. The host may be down or the runner may have had no route out.
+#     **Re-run first.** The last lines of the run also carry a `VERDICT:` line
+#     counting the hosts that could not be reached, so a short log tail says
+#     which of the two happened rather than showing three test names that all
+#     read like drift.
+#
+# It also asks one question that is not about credits: **that the contact
+# address the app publishes in its tile `User-Agent` still answers.** The app
+# hands that address to three tile operators on every request as the way to
+# reach whoever runs it; if the page dies, nothing on a phone breaks and a
+# policy the app claims to meet stops being met.
+#
+# The other half of the mechanism — that the app's constants still name
+# everyone the probes recorded — needs no network and runs on **every** commit
+# in the offline suite, as `test/features/map/tile_credit_freshness_test.dart`.
+name: Tile credit freshness
+
+# PAUSED 2026-10-02 (task 11.325): this workflow now starts only when somebody presses
+# "Run workflow". Michael is making many commits a day and GitHub's minutes are limited, so
+# the checks run as one batch on his own machines instead: `scripts/nightly_check.sh`.
+# TO RESTORE: replace the `on:` block below with the one saved in the comment under it,
+# and delete this notice. `CLAUDE_DOCS/RELEASE_CHECKLIST.md` says when: before a release,
+# or when development slows. `test/documentation/ci_pause_test.dart` fails if this notice
+# and the real triggers disagree.
+on:
+  # Task 11.69's button. A check that can only be re-run by inventing a commit
+  # is a check nobody re-runs — and this one is answering a question about the
+  # outside world, which is exactly the kind you want to ask again by hand.
+  workflow_dispatch:
+#
+# Saved triggers, exactly as they were:
+# on:
+#   schedule:
+#     # Mondays, 07:00 UTC. Any weekday would do; what matters is that it is a
+#     # schedule rather than a person remembering.
+#     - cron: '0 7 * * 1'
+#
+#   # Task 11.69's button. A check that can only be re-run by inventing a commit
+#   # is a check nobody re-runs — and this one is answering a question about the
+#   # outside world, which is exactly the kind you want to ask again by hand.
+#   workflow_dispatch:
+#
+#   # The probes are only as good as the file that holds them, and that file is
+#   # edited by hand when a provider changes something. Run on the way in.
+#   push:
+#     paths:
+#       - 'test/support/tile_credit_probes.dart'
+#       - 'test/network/tile_credit_freshness_test.dart'
+#       - 'lib/features/map/services/tile_sources.dart'
+#       - '.github/workflows/tile-credit-freshness.yml'
+
+jobs:
+  tile-credit-freshness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # Same pinning discipline and same version as the offline suite — see
+      # that workflow's comment. Keep the two in step.
+      - name: Cache the Flutter SDK
+        id: flutter-cache
+        uses: actions/cache@v4
+        with:
+          path: /opt/flutter
+          key: flutter-3.44.6-${{ runner.os }}
+
+      - name: Install Flutter 3.44.6
+        if: steps.flutter-cache.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch 3.44.6 https://github.com/flutter/flutter.git /opt/flutter
+          /opt/flutter/bin/flutter --version
+          /opt/flutter/bin/flutter precache --universal
+
+      - name: Put Flutter on PATH
+        run: echo "/opt/flutter/bin" >> "$GITHUB_PATH"
+
+      - run: flutter pub get
+
+      # `--run-skipped` is required as well as `--tags`: `dart_test.yaml` skips
+      # the tag rather than excluding it, so without this the run reports "all
+      # tests skipped" and exit 0 — a green tick over a check that did not
+      # happen. Same trap and same answer as the e2e suite's.
+      # **`--run-skipped` is load-bearing, and dropping it would be silent.**
+      # `dart_test.yaml` skips the `network` tag by default so that a plain
+      # `flutter test` stays green with no network. Without `--run-skipped`
+      # this command therefore skips every test and **exits 0** — measured on
+      # 2026-09-04, and the weekly job would go green having asked nobody
+      # whether the credits this app is legally required to show are still the
+      # ones the providers publish. Task 11.155.
+      - name: Ask the three providers what they publish
+        run: |
+          flutter test test/network --tags network --run-skipped \
+            --file-reporter=json:"$RUNNER_TEMP/tile-credit-report.json"
+
+      # Say what the run actually reached, every time — green or red. The
+      # counts are derived from the files on disk, not from a number anybody
+      # typed, and `--no-skips` is the whole point here: this job exists to
+      # execute exactly the tests the default configuration skips.
+      - name: Did it actually reach all three providers?
+        if: always()
+        run: |
+          python3 scripts/assert_suite_scope.py \
+            --report "$RUNNER_TEMP/tile-credit-report.json" \
+            --test-dir test/network \
+            --no-skips \
+            --label 'tile credit freshness'

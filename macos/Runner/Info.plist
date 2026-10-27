@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIconFile</key>
+	<string></string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(FLUTTER_BUILD_NAME)</string>
+	<key>CFBundleVersion</key>
+	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>$(PRODUCT_COPYRIGHT)</string>
+	<!-- L-13 / task 10.95: same reasoning as ios/Runner/Info.plist. No
+	     CFBundleURLTypes registered here either, so the deep-link receiver is
+	     armed by default (absent = enabled) with no second control the way
+	     Android's app_router.dart `overridePlatformDefaultLocation` provides.
+	     Disabled explicitly now so a future URL type does not silently
+	     re-open route injection past splash_screen.dart's identity gate —
+	     this was the one platform K-3's fix reached iOS and Android but not. -->
+	<key>FlutterDeepLinkingEnabled</key>
+	<false/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>TriTrack uses your location to center the map and record where bearing observations were taken.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>TriTrack can connect to a sync server on your local Wi-Fi network to back up and share observations across your own devices. This is entirely optional — the app works fully offline without it.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<!-- Same reasoning as ios/Runner/Info.plist: permits plain HTTP only to
+		     addresses macOS recognizes as local/private, never a public host.
+		     macOS 15+ also shows its own local-network permission prompt,
+		     which is what NSLocalNetworkUsageDescription above is for. -->
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSMainNibFile</key>
+	<string>MainMenu</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+</dict>
+</plist>

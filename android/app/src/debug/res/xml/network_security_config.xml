@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Task 10.4: debug-only cleartext exemption so a debug build can reach a
+  laptop dev server over plain HTTP on the local network (Android blocks
+  cleartext by default once targetSdkVersion >= 28, which this project's is).
+
+  Broad rather than restricted to specific LAN IPs, because task 10.2 makes
+  the server URL a field the developer types in at runtime — there is no
+  fixed hostname or address to scope a <domain-config> to the way a
+  production TLS domain could be. Bounded instead by *where this file lives*:
+
+  This resource exists ONLY under src/debug/res/xml/, and is referenced ONLY
+  from src/debug/AndroidManifest.xml's android:networkSecurityConfig
+  attribute. A release build's manifest/resource merge has no
+  src/release/res/xml/network_security_config.xml and no reference to this
+  one — it is not merely "unused" in release, the resource reference cannot
+  resolve at all outside a debug build. Task 10.14 builds a structural check
+  against exactly this property; don't move this file or its reference to
+  main/ or profile/ without updating that check.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

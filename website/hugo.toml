@@ -1,0 +1,50 @@
+# TriTrack website — Hugo configuration.
+#
+# Generator choice and its drawback are recorded in website/README.md.
+# Hugo version is pinned in .github/workflows/website.yml; keep the two
+# in step, and see website/README.md for how to install it locally.
+
+baseURL = 'https://dynamic-and-active-systems-lab.github.io/tritrack-site/'
+locale = 'en-us'
+title = 'TriTrack'
+
+# The site is built from a private repository. Nothing here should ever
+# render a path, a hostname, or a name that is not intended to be public.
+enableRobotsTXT = true
+
+# Fail the build on a broken internal link rather than shipping one.
+[markup.goldmark.renderer]
+  unsafe = false
+
+# Mathematics: $...$ inline, $$...$$ as a block. Goldmark passes the text
+# through untouched (so an underscore in a subscript is not read as italics),
+# and layouts/_markup/render-passthrough.html turns it into MathML when the
+# site is built. Nothing is loaded in the reader's browser; see that file.
+[markup.goldmark.extensions.passthrough]
+  enable = true
+  [markup.goldmark.extensions.passthrough.delimiters]
+    block = [['$$', '$$']]
+    inline = [['$', '$']]
+
+[taxonomies]
+  # None. The site is a front page, How it works, the guide, Support and
+  # Privacy, and is meant to stay that small; tags and categories would be
+  # furniture.
+
+[menus]
+  [[menus.main]]
+    name = 'How it works'
+    pageRef = '/how-it-works'
+    weight = 5
+  [[menus.main]]
+    name = 'Guide'
+    pageRef = '/docs'
+    weight = 10
+  [[menus.main]]
+    name = 'Support'
+    pageRef = '/support'
+    weight = 20
+  [[menus.main]]
+    name = 'Privacy'
+    pageRef = '/privacy'
+    weight = 30

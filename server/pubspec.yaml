@@ -1,0 +1,56 @@
+name: tritrack_server
+description: >
+  TriTrack's optional sync server — Dart/shelf, backed by Postgres via Docker
+  Compose. The app works fully offline with none of this ever running (see
+  the client's server-optional configuration seam, task 10.2); this exists
+  to let a project owner sync across their own devices and, later, a team.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.12.2
+
+# **Exact pins, not caret ranges** (task 10.14, Security Model §3.8). The
+# dependency supply chain is the most complete compromise available against
+# this project and the one requiring the least skill against us specifically.
+# A caret range means a fresh `dart pub get` can pull a version nobody reviewed
+# into a process that holds the Postgres credentials and every magic-link
+# token. `pubspec.lock` is committed as well, but the lockfile alone is not the
+# control: it can be regenerated, and `dart pub upgrade` will move a caret
+# range without anyone deciding to.
+#
+# Upgrading is therefore a deliberate edit to this file, reviewed like any
+# other change. To audit before upgrading:
+#
+#     dart pub outdated              # what has moved, and how far
+#     dart pub deps --style=compact  # the full transitive set being trusted
+#
+# `server/README.md` documents this as a step at each review gate. Two
+# dependencies get scrutiny beyond the rest because they sit directly on assets
+# 1–3: `postgres` (handles every row) and whatever sends email (handles
+# magic-link tokens). Prefer the most boring option for both; novelty is not a
+# virtue here.
+dependencies:
+  shelf: 1.4.2
+  shelf_router: 1.1.4
+  # Postgres driver. Trusted with every row of the highest-ranked asset in the
+  # system (TriTrack_Security_Model.md §3.8 asks for this to be justified) —
+  # `postgres` is the long-standing, most widely used Dart driver, and it
+  # supports parameterised statements natively, which the standing security
+  # criteria require without exception.
+  postgres: 3.5.12
+  # SHA-256 for hashing bearer tokens at rest (Security Model §4.2). The
+  # Dart-team-maintained `crypto` package — trusted only with hashing, no key
+  # material and no randomness (that comes from `Random.secure()` directly).
+  crypto: 3.0.7
+  tritrack_sync:
+    path: ../packages/tritrack_sync
+
+# Pinned for the same reason, with one extra: a test dependency runs in CI with
+# the repository checked out, so a compromised one reads the source and any
+# credentials the environment holds. "It's only a dev dependency" is not a
+# smaller trust decision, just a less obvious one.
+dev_dependencies:
+  test: 1.31.2
+  lints: 5.1.1
+  http: 1.6.0

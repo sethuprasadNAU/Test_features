@@ -1,0 +1,50 @@
+# Source for website/static/diagrams/trash-delete-permanently.svg.
+# Rendered by website/tools/render_diagrams.sh — do not hand-edit the SVG.
+#
+# For projects-members-and-roles.md, "Deleting permanently" (/w-35 item 11).
+# Checked against the code, not the guide (2026-10-10):
+# - On a published project, Delete permanently… is the owner's request to the
+#   server (M11): Schedule delete starts the server's countdown
+#   (ProjectDeletionPolicy, 30 days by default = TRITRACK_BACKUP_KEEP); every
+#   member sees it and can export; the owner can cancel. When it runs, the
+#   server removes the project and every member's records
+#   (project_destruction_service.dart); the daily archives that still hold
+#   them age out within the backup window. No phone is emptied: each keeps
+#   its copy, which stops syncing (project_deletion_dialogs.dart: "Each
+#   member's copy on their own device stays, including this one, but stops
+#   syncing.").
+# - On a project this phone does not sync (never published, left, or already
+#   destroyed on the server), Delete permanently… in the Trash removes it and
+#   every record in it from this phone, at once, with no countdown
+#   (ProjectTrash.deletePermanently, PERMISSIONS_MATRIX P8). Nothing is sent.
+digraph TrashDeletePermanently {
+  rankdir=TB;
+  bgcolor="transparent";
+  graph [fontname="Helvetica,Arial,sans-serif", fontsize=12, margin=0,
+         nodesep=0.3, ranksep=0.35];
+  node [fontname="Helvetica,Arial,sans-serif", fontsize=13, shape=box,
+        style="rounded", margin="0.18,0.10"];
+  edge [fontname="Helvetica,Arial,sans-serif", fontsize=11];
+
+  ask [label="On a published project, the owner\ltaps Delete permanently…, then\lSchedule delete\l",
+       class="highlight"];
+  countdown [label="Server: the countdown\l✓ records kept until the date\l   (30 days by default); every\l   member sees it and can export;\l   the owner can cancel\l",
+             class="wait"];
+  gone [label="Server, when it ends\l✗ every member's records removed\l   copies in the server's own daily\l   backups age out over the next\l   30 days (by default)\l",
+        class="bad"];
+  phones [label="Every phone, the owner's too\l✓ its own copy is kept, and\l   stops syncing\l",
+          class="good"];
+  ask -> countdown;
+  countdown -> gone [label="  on the date"];
+  gone -> phones [label="  next sync"];
+
+  local [label="On a project only on this phone,\lDelete permanently…, in the Trash\l",
+         class="highlight"];
+  localPhone [label="This phone\l✗ the project and every record\l   in it removed, at once\l",
+              class="bad"];
+  localServer [label="Server\l   nothing to remove; nothing is sent\l",
+               class="note", shape=note];
+  phones -> local [style=invis];
+  local -> localPhone;
+  localPhone -> localServer [style=invis];
+}

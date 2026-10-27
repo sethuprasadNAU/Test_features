@@ -1,0 +1,30 @@
+# Source for website/static/diagrams/tag-library-copy.svg.
+# Rendered by website/tools/render_diagrams.sh — do not hand-edit the SVG.
+#
+# For managing-your-tags.md, above "a copy is a copy": the library is one
+# device-local list: adding a tag to a project makes a separate row, not a
+# link to the library entry. See CLAUDE_DOCS/TAG_COPY_ON_ADD_DESIGN.md §0
+# and §2.5 — a project's copy and the library entry it came from never point
+# at each other, and each keeps its own edit history from the moment of the
+# copy onward.
+digraph TagLibraryCopy {
+  rankdir=TB;
+  bgcolor="transparent";
+  graph [fontname="Helvetica,Arial,sans-serif", fontsize=12, margin=0,
+         nodesep=0.45, ranksep=0.7];
+  node [fontname="Helvetica,Arial,sans-serif", fontsize=13, shape=box,
+        style="rounded", margin="0.2,0.14"];
+  edge [fontname="Helvetica,Arial,sans-serif", fontsize=11];
+
+  library [label="Tag Library\nyour device's own list — never syncs",
+           class="highlight"];
+  projectA [label="Project A's tag\nits own row, own history"];
+  projectB [label="Project B's tag\nits own row, own history"];
+  note [shape=note, class="note", fontsize=11,
+        label="A copy is a separate row from the\lmoment it's made. Editing the library\lnever reaches a project's copy on its\lown — \"Apply this to your projects?\"\lafter a library edit is asked every\ltime, and only an owner can accept it\lfor their project. Editing a project's\lcopy never reaches the library or any\lother project either way.\l"];
+
+  library -> projectA [label="Copy from library"];
+  projectA -> projectB [style=invis];
+  library -> projectB [label="Copy from library", constraint=false];
+  projectB -> note [style=invis];
+}

@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  body{margin:0;background:#eaeaea;}
+</style>
+</helmet>
+<div style="font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;color:#1a1a1a;background:#eaeaea;min-height:100vh;padding:40px 40px 80px;box-sizing:border-box;">
+
+  <div style="max-width:1200px;margin:0 auto 8px;">
+    <div style="font-size:12px;letter-spacing:0.08em;color:#666;font-weight:700;text-transform:uppercase;">Stage 1 — Wireframes</div>
+    <div style="font-size:34px;font-weight:800;margin-top:4px;">Tri Track — Screen Wireframes</div>
+    <div style="font-size:15px;color:#444;margin-top:6px;max-width:760px;line-height:1.5;">Low-fidelity layout pass for the 5 highest-priority screens. Grayscale, no branding. Orange circled numbers mark judgment calls the design doc didn't specify — see the numbered notes beside each screen.</div>
+  </div>
+
+  <div style="max-width:1200px;margin:20px auto;display:flex;gap:24px;flex-wrap:wrap;">
+    <div style="flex:2;min-width:320px;background:#fff;border:1.5px solid #1a1a1a;border-radius:10px;padding:16px 20px;">
+      <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#c2410c;margin-bottom:8px;">Three open questions (flagged in the brief)</div>
+      <div style="font-size:13.5px;line-height:1.6;color:#1a1a1a;">
+        <div style="margin-bottom:6px;"><b>Observation Logging —</b> scroll wheels grouped together, or placed inline next to their related toggle? See note 2·1.</div>
+        <div style="margin-bottom:6px;"><b>Position Estimation —</b> map/panel split on small phones: shrink further, or make the list an expandable sheet? See note 4·1.</div>
+        <div><b>Compass Calibration —</b> where should the bubble level sit so it doesn't compete with the rose/readouts? See note 3·1.</div>
+      </div>
+    </div>
+    <div style="flex:1;min-width:220px;background:#fff;border:1.5px solid #1a1a1a;border-radius:10px;padding:16px 20px;">
+      <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#666;margin-bottom:8px;">Legend</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><div style="width:22px;height:14px;border:1.5px dashed #999;background:#f5f5f5;flex-shrink:0;"></div><div style="font-size:12.5px;white-space:nowrap;">placeholder content</div></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><div style="width:22px;height:14px;border:1.5px solid #1a1a1a;background:#fff;flex-shrink:0;"></div><div style="font-size:12.5px;">real control</div></div>
+      <div style="display:flex;align-items:center;gap:8px;"><div style="width:16px;height:16px;border-radius:50%;background:#c2410c;color:#fff;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">?</div><div style="font-size:12.5px;">judgment call — see notes</div></div>
+    </div>
+  </div>
+
+  <div style="max-width:1200px;margin:0 auto 40px;background:#fff;border:1.5px solid #1a1a1a;border-radius:10px;padding:14px 20px;">
+    <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#666;margin-bottom:10px;">Assumed navigation flow (not specified in doc — confirm)</div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;font-weight:600;">
+      <div style="border:1.5px dashed #999;border-radius:8px;padding:8px 12px;color:#666;white-space:nowrap;">Project Setup (pre-trip)</div>
+      <div style="color:#999;">→</div>
+      <div style="border:1.5px solid #1a1a1a;border-radius:8px;padding:8px 12px;white-space:nowrap;">1 · Main Map</div>
+      <div style="color:#999;">⇄</div>
+      <div style="border:1.5px solid #1a1a1a;border-radius:8px;padding:8px 12px;white-space:nowrap;">2 · Observation Logging</div>
+      <div style="color:#999;">⇄</div>
+      <div style="border:1.5px solid #1a1a1a;border-radius:8px;padding:8px 12px;white-space:nowrap;">3 · Compass Calibration</div>
+      <div style="color:#999;">·</div>
+      <div style="border:1.5px solid #1a1a1a;border-radius:8px;padding:8px 12px;white-space:nowrap;">4 · Position Estimation</div>
+      <div style="color:#999;white-space:nowrap;">(from Map or History)</div>
+      <div style="color:#999;">·</div>
+      <div style="border:1.5px solid #1a1a1a;border-radius:8px;padding:8px 12px;white-space:nowrap;">6 · Manage Offline Maps</div>
+      <div style="color:#999;white-space:nowrap;">(from More, anytime)</div>
+    </div>
+  </div>
+
+  <!-- SCREEN 1: MAIN MAP -->
+  <div style="max-width:1200px;margin:0 auto 64px;">
+    <div style="font-size:22px;font-weight:800;margin-bottom:2px;">1 · Main Map</div>
+    <div style="font-size:13.5px;color:#666;margin-bottom:20px;">Home / default screen</div>
+    <div style="display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap;">
+
+      <div style="position:relative;width:300px;height:650px;flex-shrink:0;border:3px solid #1a1a1a;border-radius:28px;background:#fff;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:6px;background:#1a1a1a;"></div>
+        <div style="position:absolute;top:6px;left:0;right:0;bottom:0;display:flex;flex-direction:column;">
+          <div style="height:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #ccc;">
+            <div style="display:flex;border:1.5px solid #1a1a1a;border-radius:7px;overflow:hidden;font-size:10px;font-weight:700;">
+              <div style="padding:6px 10px;background:#1a1a1a;color:#fff;">Terrain</div>
+              <div style="padding:6px 10px;border-left:1px solid #1a1a1a;">Street</div>
+              <div style="padding:6px 10px;border-left:1px solid #1a1a1a;">Satellite</div>
+            </div>
+          </div>
+          <div style="flex:1;position:relative;background:repeating-linear-gradient(45deg,#f4f4f4,#f4f4f4 10px,#eee 10px,#eee 20px);">
+            <div style="position:absolute;top:44%;left:38%;width:10px;height:10px;border-radius:50%;background:#1a1a1a;box-shadow:0 0 0 4px rgba(26,26,26,0.15);"></div>
+            <div style="position:absolute;top:44%;left:41%;width:70px;height:1.5px;background:#666;border-top:1.5px dashed #666;transform:rotate(-20deg);transform-origin:left;"></div>
+            <div style="position:absolute;top:44%;left:41%;width:90px;height:1.5px;border-top:1.5px dashed #666;transform:rotate(15deg);transform-origin:left;"></div>
+            <div style="position:absolute;top:30%;left:63%;width:14px;height:14px;border:2px solid #1a1a1a;border-radius:50%;background:#fff;font-size:8px;"></div>
+            <div style="position:absolute;top:27%;left:65%;font-size:8px;font-weight:700;color:#444;">est</div>
+            <div style="position:absolute;top:22%;left:78%;width:12px;height:12px;border:2px solid #1a1a1a;background:#fff;"></div>
+            <div style="position:absolute;top:16%;left:76%;font-size:8px;font-weight:700;color:#444;">Bear 12 · 150.123</div>
+            <div style="position:absolute;top:8%;left:10%;width:80px;height:60px;background:repeating-linear-gradient(-45deg,rgba(0,0,0,0.12),rgba(0,0,0,0.12) 4px,transparent 4px,transparent 8px);border:1px dashed #888;transform:rotate(-8deg);"></div>
+            <div style="position:absolute;top:5%;left:8%;font-size:8px;color:#666;font-weight:700;">viewshed</div>
+            <div style="position:absolute;bottom:14px;left:12px;font-size:8px;font-family:ui-monospace,monospace;color:#444;">34.212, -111.652</div>
+            <div style="position:absolute;bottom:6px;left:12px;width:40px;height:3px;background:#1a1a1a;"></div>
+            <div style="position:absolute;bottom:14px;right:14px;font-size:11px;font-weight:800;">▲N</div>
+            <div style="position:absolute;top:10px;right:10px;width:26px;height:26px;border:1.5px solid #1a1a1a;border-radius:6px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;">≡</div>
+            <div style="position:absolute;bottom:70px;right:16px;width:48px;height:48px;border-radius:50%;background:#1a1a1a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:300;">+</div>
+            <div style="position:absolute;top:10px;right:42px;width:20px;height:20px;border-radius:50%;background:#c2410c;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff;">1</div>
+          </div>
+          <div style="height:58px;flex-shrink:0;border-top:1.5px solid #1a1a1a;display:flex;position:relative;">
+            <div style="position:absolute;top:-24px;right:60px;width:20px;height:20px;border-radius:50%;background:#c2410c;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff;">2</div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;font-weight:800;border-top:2px solid #1a1a1a;margin-top:-1.5px;">Map</div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;color:#888;">Log</div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;color:#888;">Compass</div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;color:#888;">Position</div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;color:#888;">More</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:1;min-width:280px;max-width:420px;">
+        <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#666;margin-bottom:10px;">Judgment calls</div>
+        <div style="font-size:13.5px;line-height:1.6;margin-bottom:14px;"><b style="color:#c2410c;">1 ·</b> FAB is the fastest path into Observation Logging (48×48pt). Doc didn't name a primary map CTA — assumed a floating action button.</div>
+        <div style="font-size:13.5px;line-height:1.6;margin-bottom:14px;"><b style="color:#c2410c;">2 ·</b> App-wide nav structure isn't specified. Assumed a bottom tab bar for the 4 highest-frequency screens; History, Tags, Export, Sharing, Checklist tucked under "More." Confirm this grouping.</div>
+        <div style="font-size:13.5px;line-height:1.6;">Legend toggle (top-right) assumed tap-to-open overlay panel.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: OBSERVATION LOGGING -->
+  <div style="max-width:1200px;margin:0 auto 64px;">
+    <div style="font-size:22px;font-weight:800;margin-bottom:2px;">2 · Observation Logging</div>
+    <div style="font-size:13.5px;color:#666;margin-bottom:20px;">Highest-frequency screen — optimized for minimal taps</div>
+    <div style="display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap;">
+
+      <div style="position:relative;width:300px;height:650px;flex-shrink:0;border:3px solid #1a1a1a;border-radius:28px;background:#fff;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:6px;background:#1a1a1a;"></div>
+        <div style="position:absolute;top:6px;left:0;right:0;bottom:0;display:flex;flex-direction:column;">
+          <div style="flex:1;overflow:hidden;padding:10px 12px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="font-size:9px;font-weight:800;color:#666;">TAG</div>
+              <div style="width:18px;height:18px;border-radius:50%;background:#c2410c;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
+            </div>
+            <div style="position:relative;border:1.5px solid #1a1a1a;border-radius:8px;height:52px;display:flex;flex-direction:column;justify-content:center;">
+              <div style="text-align:center;font-size:9px;color:#bbb;">148.211 · Coyote 04</div>
+              <div style="text-align:center;font-size:13px;font-weight:800;border-top:1px solid #1a1a1a;border-bottom:1px solid #1a1a1a;padding:2px 0;">150.123 · 62bpm · Bear 12</div>
+              <div style="text-align:center;font-size:9px;color:#bbb;">150.123 · 58bpm · Bear 12b</div>
+            </div>
+
+            <div style="display:flex;gap:6px;">
+              <div style="flex:1;display:flex;border:1.5px solid #1a1a1a;border-radius:7px;overflow:hidden;font-size:9px;font-weight:700;">
+                <div style="flex:1;text-align:center;padding:6px 2px;background:#1a1a1a;color:#fff;">Directional</div>
+                <div style="flex:1;text-align:center;padding:6px 2px;border-left:1px solid #1a1a1a;">Omni</div>
+              </div>
+            </div>
+
+            <div style="font-size:9px;font-weight:800;color:#666;margin-top:2px;">BEARING</div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <div style="flex:1;border:1.5px solid #1a1a1a;border-radius:8px;padding:8px;text-align:center;font-size:18px;font-weight:800;">145°</div>
+              <div style="width:34px;height:34px;border:1.5px solid #1a1a1a;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;">✎</div>
+            </div>
+            <div style="display:flex;border:1.5px solid #1a1a1a;border-radius:7px;overflow:hidden;font-size:9px;font-weight:700;">
+              <div style="flex:1;text-align:center;padding:5px 2px;background:#1a1a1a;color:#fff;">Peak</div>
+              <div style="flex:1;text-align:center;padding:5px 2px;border-left:1px solid #1a1a1a;">Null</div>
+            </div>
+
+            <div style="display:flex;border:1.5px solid #1a1a1a;border-radius:7px;overflow:hidden;font-size:9px;font-weight:700;">
+              <div style="flex:1;text-align:center;padding:6px 2px;background:#1a1a1a;color:#fff;">Regular pulse</div>
+              <div style="flex:1;text-align:center;padding:6px 2px;border-left:1px solid #1a1a1a;">Mortality</div>
+            </div>
+
+            <div style="font-size:9px;font-weight:800;color:#666;">SIGNAL STRENGTH</div>
+            <div style="border:1.5px solid #1a1a1a;border-radius:8px;padding:6px;text-align:center;font-size:11px;font-weight:800;">Faint · <u>Weak</u> · <b>Moderate</b> · Strong</div>
+
+            <div style="font-size:9px;font-weight:800;color:#666;position:relative;">QUALITY
+              <div style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:#c2410c;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff;">2</div>
+            </div>
+            <div style="display:flex;gap:5px;">
+              <div style="flex:1;border:1.5px solid #1a1a1a;border-radius:16px;text-align:center;padding:8px 2px;font-size:9px;font-weight:700;background:#1a1a1a;color:#fff;">Good</div>
+              <div style="flex:1;border:1.5px solid #1a1a1a;border-radius:16px;text-align:center;padding:8px 2px;font-size:9px;font-weight:700;">Fair</div>
+              <div style="flex:1;border:1.5px solid #1a1a1a;border-radius:16px;text-align:center;padding:8px 2px;font-size:9px;font-weight:700;">Bounce?</div>
+            </div>
+
+            <div style="border:1.5px dashed #999;border-radius:7px;padding:6px 8px;font-size:9.5px;font-weight:700;color:#666;">▸ Advanced: antenna type, receiver gain</div>
+            <div style="border:1.5px dashed #999;border-radius:7px;padding:8px;font-size:9.5px;color:#999;min-height:20px;">Notes (optional)</div>
+            <div style="font-size:9px;color:#444;display:flex;justify-content:space-between;"><span>📍 34.212, -111.652 ±4m</span><span style="text-decoration:underline;">Manual pin</span></div>
+            <div style="font-size:9px;color:#666;">☐ Attach to triangulation session</div>
+          </div>
+          <div style="flex-shrink:0;padding:10px 12px 16px;border-top:1px solid #ddd;">
+            <div style="text-align:center;font-size:8.5px;color:#999;font-style:italic;margin-bottom:6px;">Draft autosaves</div>
+            <div style="height:44px;background:#1a1a1a;color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;">SAVE OBSERVATION</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:1;min-width:280px;max-width:420px;">
+        <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#666;margin-bottom:10px;">Judgment calls</div>
+        <div style="font-size:13.5px;line-height:1.6;margin-bottom:14px;"><b style="color:#c2410c;">1 ·</b> Open question: Tag wheel is placed first (required before anything else); Signal Strength wheel sits lower near its related toggle. Should scroll-wheel fields cluster together as one visual group instead of interleaving by topic? Your call.</div>
+        <div style="font-size:13.5px;line-height:1.6;margin-bottom:14px;"><b style="color:#c2410c;">2 ·</b> Quality pills drawn ~40px tall to fit 3-across at this width — under the 48pt minimum. Will need to grow (stack 2+1, or full-width list) to hit the touch target spec. Flagging for your input.</div>
+        <div style="font-size:13.5px;line-height:1.6;margin-bottom:14px;">Bearing entry combines a live readout with a pencil icon toggling to manual entry — doc didn't specify how "compass or manual" is presented.</div>
+        <div style="font-size:13.5px;line-height:1.6;">Advanced row (antenna type, receiver gain) collapsed by default to keep the fast path fast, per the doc.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: COMPASS CALIBRATION -->
+  <div style="max-width:1200px;margin:0 auto 64px;">
+    <div style="font-size:22px;font-weight:800;margin-bottom:2px;">3 · Compass Calibration</div>
+    <div style="font-size:13.5px;color:#666;margin-bottom:20px;">Most visually dense screen — dual bearing indicators + bubble level + range wedge</div>
+    <div style="display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap;">
+
+      <div style="position:relative;width:300px;height:650px;flex-shrink:0;border:3px solid #1a1a1a;border-radius:28px;background:#fff;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:6px;background:#1a1a1a;"></div>
+        <div style="position:absolute;top:6px;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;padding:8px 10px;box-sizing:border-box;">
+          <div style="width:100%;border:1.5px dashed #1a1a1a;border-radius:7px;padding:5px 8px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:space-between;background:#f7f7f7;">
+            <span>⚠ Interference detected — step away from metal/vehicle</span><span>✕</span>
+          </div>
+
+          <div style="position:relative;width:220px;height:220px;margin-top:14px;flex-shrink:0;">
+            <div style="width:100%;height:100%;border-radius:50%;border:2px solid #1a1a1a;position:relative;">
+              <div style="position:absolute;top:2px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:800;">N</div>
+              <div style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:800;">S</div>
+              <div style="position:absolute;top:50%;left:2px;transform:translateY(-50%);font-size:10px;font-weight:800;">W</div>
+              <div style="position:absolute;top:50%;right:2px;transform:translateY(-50%);font-size:10px;font-weight:800;">E</div>
+              <div style="position:absolute;top:27.7px;left:157.5px;transform:translate(-50%,-50%);font-size:7px;color:#999;">30°</div>
+              <div style="position:absolute;top:62.5px;left:192.3px;transform:translate(-50%,-50%);font-size:7px;color:#999;">60°</div>
+              <div style="position:absolute;top:157.5px;left:192.3px;transform:translate(-50%,-50%);font-size:7px;color:#999;">120°</div>
+              <div style="position:absolute;top:192.3px;left:157.5px;transform:translate(-50%,-50%);font-size:7px;color:#999;">150°</div>
+              <div style="position:absolute;top:192.3px;left:62.5px;transform:translate(-50%,-50%);font-size:7px;color:#999;">210°</div>
+              <div style="position:absolute;top:157.5px;left:27.7px;transform:translate(-50%,-50%);font-size:7px;color:#999;">240°</div>
+              <div style="position:absolute;top:62.5px;left:27.7px;transform:translate(-50%,-50%);font-size:7px;color:#999;">300°</div>
+              <div style="position:absolute;top:27.7px;left:62.5px;transform:translate(-50%,-50%);font-size:7px;color:#999;">330°</div>
+              <div style="position:absolute;top:50%;left:50%;width:10px;height:100px;background:#1a1a1a;clip-path:polygon(35% 100%,65% 100%,50% 0%);transform:translate(-50%,-100%) rotate(-25deg);transform-origin:bottom center;"></div>
+              <div style="position:absolute;top:16%;left:38%;font-size:9px;font-weight:800;">M</div>
+              <div style="position:absolute;top:50%;left:50%;width:0;height:0;transform:rotate(8deg);transform-origin:0 0;">
+                <div style="position:absolute;top:-78px;left:-1px;width:2px;height:78px;border-left:2px dashed #1a1a1a;"></div>
+                <div style="position:absolute;top:-101px;left:-4.5px;width:9px;height:24px;background:#1a1a1a;clip-path:polygon(30% 100%,70% 100%,50% 0%);"></div>
+              </div>
+              <div style="position:absolute;top:12%;left:58%;font-size:9px;font-weight:800;">T</div>
+              <div style="position:absolute;top:50%;left:50%;width:120px;height:120px;transform:translate(-50%,-50%);border-radius:50%;background:conic-gradient(from -13deg,rgba(0,0,0,0.12) 0deg 33deg,transparent 33deg);"></div>
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:58px;height:58px;border-radius:50%;background:#fff;border:1px solid #ddd;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;">145°</div>
+            </div>
+            <div style="position:absolute;top:0;right:-8px;width:34px;height:34px;border-radius:50%;border:1.5px solid #1a1a1a;background:#fff;display:flex;align-items:center;justify-content:center;">
+              <div style="width:12px;height:12px;border-radius:50%;background:#1a1a1a;"></div>
+            </div>
+            <div style="position:absolute;top:32px;right:-4px;font-size:7px;font-weight:700;color:#666;">LEVEL</div>
+            <div style="position:absolute;top:-14px;right:8px;width:18px;height:18px;border-radius:50%;background:#c2410c;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff;">1</div>
+          </div>
+
+          <div style="display:flex;gap:6px;width:100%;margin-top:12px;">
+            <div style="flex:1;border:1.5px solid #1a1a1a;border-radius:7px;padding:6px;text-align:center;font-size:10.5px;font-weight:700;">Magnetic: 145°</div>
+            <div style="flex:1;border:1.5px solid #1a1a1a;border-radius:7px;padding:6px;text-align:center;font-size:10.5px;font-weight:700;">True North: 137°</div>
+          </div>
+
+          <div style="width:100%;display:flex;border:1.5px solid #1a1a1a;border-radius:7px;overflow:hidden;font-size:9.5px;font-weight:700;margin-top:10px;">
+            <div style="flex:1;text-align:center;padding:6px 2px;">Single Point</div>
+            <div style="flex:1;text-align:center;padding:6px 2px;background:#1a1a1a;color:#fff;border-left:1px solid #1a1a1a;">Range Capture</div>
+          </div>
+          <div style="width:100%;display:flex;gap:6px;margin-top:8px;">
+            <div style="flex:1;border:1.5px solid #1a1a1a;border-radius:7px;padding:6px;text-align:center;font-size:10px;font-weight:800;">● Start</div>
+            <div style="flex:1;border:1.5px solid #1a1a1a;border-radius:7px;padding:6px;text-align:center;font-size:10px;font-weight:800;">▪ End</div>
+          </div>
+          <div style="width:100%;font-family:ui-monospace,monospace;font-size:9px;text-align:center;margin-top:6px;color:#444;">Start:350° End:10° → Bearing:0°±10°</div>
+
+          <div style="margin-top:10px;border:1.5px solid #1a1a1a;border-radius:16px;padding:6px 14px;font-size:9.5px;font-weight:800;white-space:nowrap;">⟲ Calibrate (figure-8)</div>
+          <div style="margin-top:8px;font-size:8.5px;color:#888;font-style:italic;text-align:center;">Point phone at antenna. Align with signal. Range: tap Start, rotate, tap End.</div>
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:0 10px 12px;">
+          <div style="height:42px;background:#1a1a1a;color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:800;">SAVE BEARING</div>
+        </div>
+      </div>
+
+      <div style="flex:1;min-width:280px;max-width:420px;">
+        <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#666;margin-bottom:10px;">Judgment calls</div>
+        <div style="font-size:13.5px;line-height:1.6;margin-bottom:14px;"><b style="color:#c2410c;">1 ·</b> Open question: bubble level placed as a small dial in the rose's top-right corner. Alternative: a wider horizontal strip below the rose (more legible, but competes with the M/T readouts). Which do you want?</div>
+        <div style="font-size:13.5px;line-height:1.6;margin-bottom:14px;">M/T differentiated by line style (solid vs. dashed) and arrowhead shape (filled vs. outline), plus labels — not color alone. Confirm these shapes stay legible at real size/glove distance.</div>
+        <div style="font-size:13.5px;line-height:1.6;margin-bottom:14px;">Range Capture (denser) is drawn here; Single Point mode (spinner + uncertainty slider) replaces that row and isn't drawn separately, to avoid cluttering this frame. Say if you want both states shown.</div>
+        <div style="font-size:13.5px;line-height:1.6;">Center degree readout overlaps the rose center with a white halo for legibility — could move below the rose next to the bearing readouts instead.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: POSITION ESTIMATION -->
+  <div style="max-width:1200px;margin:0 auto 64px;">
+    <div style="font-size:22px;font-weight:800;margin-bottom:2px;">4 · Position Estimation</div>
+    <div style="font-size:13.5px;color:#666;margin-bottom:20px;">Map + observation list, tag-scoped</div>
+    <div style="display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap;">
+
+      <div style="position:relative;width:300px;height:650px;flex-shrink:0;border:3px solid #1a1a1a;border-radius:28px;background:#fff;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:6px;background:#1a1a1a;"></div>
+        <div style="position:absolute;top:6px;left:0;right:0;bottom:0;display:flex;flex-direction:column;">
+          <div style="height:38px;flex-shrink:0;border-bottom:1.5px solid #1a1a1a;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;">TAG: 150.123 · "Bear 12"  ▾</div>
+
+          <div style="height:50%;position:relative;background:repeating-linear-gradient(45deg,#f4f4f4,#f4f4f4 10px,#eee 10px,#eee 20px);">
+            <div style="position:absolute;top:20%;left:15%;width:70%;height:1.5px;border-top:1.5px dashed #666;transform:rotate(10deg);"></div>
+            <div style="position:absolute;top:40%;left:10%;width:75%;height:1.5px;border-top:1.5px dashed #666;transform:rotate(-4deg);"></div>
+            <div style="position:absolute;top:60%;left:12%;width:72%;height:1.5px;border-top:1.5px dashed #999;transform:rotate(20deg);opacity:0.4;"></div>
+            <div style="position:absolute;top:38%;left:52%;width:26px;height:26px;border:2px dashed #444;border-radius:50%;"></div>
+            <div style="position:absolute;top:44%;left:60%;width:12px;height:12px;border:2px solid #1a1a1a;border-radius:50%;background:#fff;"></div>
+            <div style="position:absolute;top:46%;left:74%;font-size:7px;font-weight:800;">MLE</div>
+            <div style="position:absolute;top:8px;right:8px;border:1.5px solid #1a1a1a;border-radius:6px;padding:4px 6px;font-size:8px;font-weight:700;background:#fff;">Show intersections</div>
+            <div style="position:absolute;bottom:8px;left:8px;font-size:8px;color:#666;">↖ tap ray to exclude</div>
+          </div>
+
+          <div style="flex:1;overflow-y:auto;border-top:1.5px solid #1a1a1a;padding:0 10px 8px;display:flex;flex-direction:column;gap:6px;position:relative;">
+            <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:6px 0 4px;cursor:grab;">
+              <div style="width:36px;height:4px;border-radius:2px;background:#bbb;"></div>
+              <div style="font-size:7px;color:#999;margin-top:2px;">drag to resize sheet</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:8px;font-family:ui-monospace,monospace;color:#444;">N=5 · Ellipse:340m · Conf:68% · Span:12min</div>
+              <div style="border:1.5px solid #1a1a1a;border-radius:6px;padding:4px 8px;font-size:9px;font-weight:800;">Recompute</div>
+            </div>
+            <div style="border:1.5px dashed #999;border-radius:6px;padding:4px 6px;font-size:8px;font-weight:700;color:#444;">⚠ Time span 22min &gt; 15min window — animal may have moved</div>
+            <div style="border:1.5px dashed #999;border-radius:6px;padding:4px 6px;font-size:8px;font-weight:700;color:#444;">⚠ Bearings near-parallel — try a different angle</div>
+            <div style="display:flex;align-items:center;gap:6px;border-bottom:1px solid #eee;padding-bottom:4px;"><span>☑</span><span style="font-size:8px;">Obs 1 — Rivera — 14:32 — 142°±10° — Strong — Good</span></div>
+            <div style="display:flex;align-items:center;gap:6px;border-bottom:1px solid #eee;padding-bottom:4px;"><span>☑</span><span style="font-size:8px;">Obs 2 — Chen — 14:38 — 138°±12° — Mod — Good</span></div>
+            <div style="display:flex;align-items:center;gap:6px;"><span>☐</span><span style="font-size:8px;color:#999;">Obs 3 — Rivera — 14:51 — 160°±15° — Weak — Bounce?</span></div>
+            <div style="font-size:8px;color:#999;">↓ 2 more</div>
+          </div>
+          <div style="flex-shrink:0;padding:8px 10px 14px;">
+            <div style="height:40px;background:#1a1a1a;color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;">SAVE POSITION</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:1;min-width:280px;max-width:420px;">
+        <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#666;margin-bottom:10px;">Judgment calls</div>
+        <div style="font-size:13.5px;line-height:1.6;margin-bottom:14px;">Resolved: list is a swipe-up sheet (grab handle at top) rather than a fixed 60/40 split. Drag the handle to cover anywhere from a small preview up to full-screen — works at any phone size, including small ones.</div>
+        <div style="font-size:13.5px;line-height:1.6;margin-bottom:14px;">Both example warning chips are shown together for completeness — in practice only the warnings that apply would appear; confirm they can stack.</div>
+        <div style="font-size:13.5px;line-height:1.6;">The single-bearing case (ray only, no estimate/ellipse) isn't drawn as its own frame — say if you want that as a 6th state.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 5: PROJECT SETUP / EXTENT -->
+  <div style="max-width:1200px;margin:0 auto 20px;">
+    <div style="font-size:22px;font-weight:800;margin-bottom:2px;">5 · Project Setup / Extent</div>
+    <div style="font-size:13.5px;color:#666;margin-bottom:20px;">Pre-trip setup — defines the bounding box that drives tile/DEM downloads</div>
+    <div style="display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap;">
+
+      <div style="position:relative;width:300px;height:650px;flex-shrink:0;border:3px solid #1a1a1a;border-radius:28px;background:#fff;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:6px;background:#1a1a1a;"></div>
+        <div style="position:absolute;top:6px;left:0;right:0;bottom:0;display:flex;flex-direction:column;padding:10px 12px;gap:8px;box-sizing:border-box;">
+          <div style="font-size:14px;font-weight:800;">New Project</div>
+          <div style="border:1.5px dashed #999;border-radius:6px;padding:6px 8px;font-size:9.5px;color:#999;">Name</div>
+          <div style="border:1.5px dashed #999;border-radius:6px;padding:6px 8px;font-size:9.5px;color:#999;">Description</div>
+          <div style="border:1.5px dashed #999;border-radius:6px;padding:6px 8px;font-size:9.5px;color:#999;">Species notes</div>
+
+          <div style="font-size:9px;font-weight:800;color:#666;margin-top:2px;">COORDINATE FORMAT</div>
+          <div style="display:flex;border:1.5px solid #1a1a1a;border-radius:7px;overflow:hidden;font-size:9.5px;font-weight:700;">
+            <div style="flex:1;text-align:center;padding:6px 2px;background:#1a1a1a;color:#fff;">DD</div>
+            <div style="flex:1;text-align:center;padding:6px 2px;border-left:1px solid #1a1a1a;">DMS</div>
+            <div style="flex:1;text-align:center;padding:6px 2px;border-left:1px solid #1a1a1a;">UTM</div>
+          </div>
+
+          <div style="font-size:9px;font-weight:800;color:#666;">PROJECT EXTENT</div>
+          <div style="flex:1;position:relative;background:repeating-linear-gradient(45deg,#f4f4f4,#f4f4f4 10px,#eee 10px,#eee 20px);border-radius:6px;overflow:hidden;">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%;">
+              <polygon points="18,22 82,22 95,50 82,78 18,78" fill="none" stroke="#1a1a1a" stroke-width="1" stroke-dasharray="3,2"></polygon>
+              <rect x="16.5" y="20.5" width="3" height="3" fill="#1a1a1a"></rect>
+              <rect x="80.5" y="20.5" width="3" height="3" fill="#1a1a1a"></rect>
+              <rect x="80.5" y="76.5" width="3" height="3" fill="#1a1a1a"></rect>
+              <rect x="16.5" y="76.5" width="3" height="3" fill="#1a1a1a"></rect>
+              <circle cx="50" cy="22" r="1.6" fill="#fff" stroke="#666" stroke-width="0.8"></circle>
+              <circle cx="50" cy="78" r="1.6" fill="#fff" stroke="#666" stroke-width="0.8"></circle>
+              <circle cx="18" cy="50" r="1.6" fill="#fff" stroke="#666" stroke-width="0.8"></circle>
+              <circle cx="88.5" cy="36" r="1.6" fill="#fff" stroke="#666" stroke-width="0.8"></circle>
+              <circle cx="88.5" cy="64" r="1.6" fill="#fff" stroke="#666" stroke-width="0.8"></circle>
+              <circle cx="95" cy="50" r="2.4" fill="#1a1a1a"></circle>
+              <circle cx="99.5" cy="42" r="3" fill="#fff" stroke="#1a1a1a" stroke-width="0.8"></circle>
+              <text x="99.5" y="43.2" font-size="3.6" text-anchor="middle" fill="#1a1a1a">×</text>
+            </svg>
+            <div style="position:absolute;top:47%;left:38%;transform:translate(-50%,-50%);font-size:8px;font-weight:700;color:#444;text-align:center;">Project extent<br/>drag any point to adjust</div>
+            <div style="position:absolute;top:6px;right:6px;width:18px;height:18px;border-radius:50%;background:#c2410c;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff;">2</div>
+          </div>
+
+          <div style="font-size:9px;font-weight:800;color:#666;position:relative;">TRIANGULATION TIME WINDOW
+            <div style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:#c2410c;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff;">1</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:30px;height:30px;border:1.5px solid #1a1a1a;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;">−</div>
+            <div style="flex:1;text-align:center;font-size:12px;font-weight:800;border:1.5px solid #1a1a1a;border-radius:7px;padding:6px;">15–20 min</div>
+            <div style="width:30px;height:30px;border:1.5px solid #1a1a1a;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;">+</div>
+          </div>
+
+          <div style="flex-shrink:0;margin-top:auto;">
+            <div style="height:42px;background:#1a1a1a;color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:800;">SAVE PROJECT</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:1;min-width:280px;max-width:420px;">
+        <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#666;margin-bottom:10px;">Judgment calls</div>
+        <div style="font-size:13.5px;line-height:1.6;margin-bottom:14px;"><b style="color:#c2410c;">1 ·</b> Time window drawn as a numeric stepper, not a scroll wheel. Doc mandates wheels for "categorical" selections; a duration reads more as numeric/continuous. Confirm stepper (or a slider) is fine here, or you want a wheel for consistency.</div>
+        <div style="font-size:13.5px;line-height:1.6;margin-bottom:14px;"><b style="color:#c2410c;">2 ·</b> Extent is now an editable polygon, not just a rectangle: drag any corner or the small hollow midpoint dots to bow an edge outward. Dragging a midpoint (shown here on the right edge) turns it into a solid point and spawns two new hollow midpoints on the edges it created — tap the × next to a dragged point to delete it and re-merge that edge back to a straight line.</div>
+        <div style="font-size:13.5px;line-height:1.6;">No area/size readout (e.g. km²) on the bbox — not required by the doc, but could help users gauge DEM download size. Not drawn; mentioning as a possible addition.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 6: MANAGE OFFLINE MAPS -->
+  <div style="max-width:1200px;margin:64px auto 20px;">
+    <div style="font-size:22px;font-weight:800;margin-bottom:2px;">6 · Manage Offline Maps</div>
+    <div style="font-size:13.5px;color:#666;margin-bottom:20px;">New screen — expand or change a project's downloaded coverage after it's already started</div>
+    <div style="display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap;">
+
+      <div style="position:relative;width:300px;height:650px;flex-shrink:0;border:3px solid #1a1a1a;border-radius:28px;background:#fff;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:6px;background:#1a1a1a;"></div>
+        <div style="position:absolute;top:6px;left:0;right:0;bottom:0;display:flex;flex-direction:column;padding:10px 12px;gap:8px;box-sizing:border-box;">
+          <div style="font-size:14px;font-weight:800;">Offline Maps</div>
+
+          <div style="height:150px;position:relative;background:repeating-linear-gradient(45deg,#f4f4f4,#f4f4f4 10px,#eee 10px,#eee 20px);border-radius:6px;overflow:hidden;flex-shrink:0;">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%;">
+              <polygon points="22,20 78,20 78,80 22,80" fill="rgba(0,0,0,0.06)" stroke="#1a1a1a" stroke-width="1"></polygon>
+              <rect x="20.5" y="18.5" width="3" height="3" fill="#1a1a1a"></rect>
+              <rect x="76.5" y="18.5" width="3" height="3" fill="#1a1a1a"></rect>
+              <rect x="76.5" y="78.5" width="3" height="3" fill="#1a1a1a"></rect>
+              <rect x="20.5" y="78.5" width="3" height="3" fill="#1a1a1a"></rect>
+            </svg>
+            <div style="position:absolute;top:4px;left:6px;font-size:7px;font-weight:700;color:#444;">downloaded area</div>
+            <div style="position:absolute;bottom:4px;right:6px;border:1.5px solid #1a1a1a;border-radius:6px;padding:4px 6px;font-size:8px;font-weight:800;background:#fff;">Expand coverage ▸</div>
+            <div style="position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:#c2410c;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff;">1</div>
+          </div>
+
+          <div style="font-size:9px;font-weight:800;color:#666;margin-top:2px;">LAYERS</div>
+          <div style="display:flex;flex-direction:column;gap:6px;flex:1;overflow-y:auto;">
+            <div style="border:1.5px solid #1a1a1a;border-radius:7px;padding:7px 9px;display:flex;justify-content:space-between;align-items:center;">
+              <div><div style="font-size:10.5px;font-weight:800;">Terrain</div><div style="font-size:8px;color:#666;">184 MB · downloaded</div></div>
+              <div style="display:flex;gap:5px;"><div style="border:1.5px solid #1a1a1a;border-radius:5px;padding:4px 7px;font-size:8px;font-weight:700;">Update</div><div style="border:1.5px solid #1a1a1a;border-radius:5px;padding:4px 7px;font-size:8px;font-weight:700;">Delete</div></div>
+            </div>
+            <div style="border:1.5px solid #1a1a1a;border-radius:7px;padding:7px 9px;display:flex;justify-content:space-between;align-items:center;">
+              <div><div style="font-size:10.5px;font-weight:800;">Street</div><div style="font-size:8px;color:#666;">96 MB · downloaded</div></div>
+              <div style="display:flex;gap:5px;"><div style="border:1.5px solid #1a1a1a;border-radius:5px;padding:4px 7px;font-size:8px;font-weight:700;">Update</div><div style="border:1.5px solid #1a1a1a;border-radius:5px;padding:4px 7px;font-size:8px;font-weight:700;">Delete</div></div>
+            </div>
+            <div style="border:1.5px dashed #999;border-radius:7px;padding:7px 9px;display:flex;justify-content:space-between;align-items:center;">
+              <div><div style="font-size:10.5px;font-weight:800;color:#666;">Satellite</div><div style="font-size:8px;color:#999;">not downloaded</div></div>
+              <div style="background:#1a1a1a;color:#fff;border-radius:5px;padding:4px 9px;font-size:8px;font-weight:700;">Download</div>
+            </div>
+            <div style="border:1.5px solid #1a1a1a;border-radius:7px;padding:7px 9px;display:flex;justify-content:space-between;align-items:center;">
+              <div><div style="font-size:10.5px;font-weight:800;">DEM (elevation)</div><div style="font-size:8px;color:#666;">202 MB · downloaded</div></div>
+              <div style="display:flex;gap:5px;"><div style="border:1.5px solid #1a1a1a;border-radius:5px;padding:4px 7px;font-size:8px;font-weight:700;">Update</div><div style="border:1.5px solid #1a1a1a;border-radius:5px;padding:4px 7px;font-size:8px;font-weight:700;">Delete</div></div>
+            </div>
+          </div>
+
+          <div style="flex-shrink:0;">
+            <div style="font-size:8.5px;color:#444;margin-bottom:4px;">482 MB used · device storage: 12.4 GB free</div>
+            <div style="width:100%;height:6px;background:#eee;border-radius:3px;overflow:hidden;"><div style="width:38%;height:100%;background:#1a1a1a;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:1;min-width:280px;max-width:420px;">
+        <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#666;margin-bottom:10px;">Judgment calls</div>
+        <div style="font-size:13.5px;line-height:1.6;margin-bottom:14px;"><b style="color:#c2410c;">1 ·</b> "Expand coverage" reuses the same polygon-drag editor from Project Setup, but only ever grows the existing shape (new area = new tiles to fetch; shrinking is a separate "Delete" per layer, not drawn here, to avoid destroying data by accident). Confirm that split makes sense.</div>
+        <div style="font-size:13.5px;line-height:1.6;margin-bottom:14px;">Placed under "More" in the tab bar per the assumed nav structure — this is the closest existing screen to the doc's "Map Management" (#9), reworked so coverage can change mid-project rather than only at setup.</div>
+        <div style="font-size:13.5px;line-height:1.6;">A progress bar during an expand-download isn't drawn (per the doc's bottom-progress-bar pattern for long operations) — assumed it appears the same way it would for the initial download.</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width:1200px;margin:20px auto 0;font-size:12.5px;color:#888;text-align:center;">Stage 1 wireframes — awaiting review before Stage 2 (color, typography, iconography).</div>
+</div>
+
+</x-dc>
+</body>
+</html>

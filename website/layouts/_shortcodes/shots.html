@@ -1,0 +1,10 @@
+{{- /*
+  {{< shots >}}{{< shot "a" "..." >}}{{< shot "b" "..." >}}{{< /shots >}}
+
+  Two or three screenshots that are one sequence — side by side where the page
+  is wide enough, stacked on a phone. Layout only; every image inside still
+  comes from the shot shortcode and so is still checked for existence.
+*/ -}}
+<div class="shots">
+{{ .Inner }}
+</div>

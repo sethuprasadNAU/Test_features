@@ -1,0 +1,199 @@
+# The cheap check, on every commit (task 11.40).
+#
+# ~1,270 tests, no server, no network, no Docker image to build. This is the
+# one that should be quick enough that nobody minds it running on everything.
+#
+# **What it does not cover** is in `.github/workflows/README.md` and
+# `CLAUDE_DOCS/RELEASE_CHECKLIST.md`. A green tick here means the offline
+# suite passed. It does not mean the app works on a phone.
+name: Offline suite
+
+# PAUSED 2026-10-02 (task 11.325): this workflow now starts only when somebody presses
+# "Run workflow". Michael is making many commits a day and GitHub's minutes are limited, so
+# the checks run as one batch on his own machines instead: `scripts/nightly_check.sh`.
+# TO RESTORE: replace the `on:` block below with the one saved in the comment under it,
+# and delete this notice. `CLAUDE_DOCS/RELEASE_CHECKLIST.md` says when: before a release,
+# or when development slows. `test/documentation/ci_pause_test.dart` fails if this notice
+# and the real triggers disagree.
+on:
+  # Task 11.69: a button. This task could not be closed without re-running a
+  # workflow against an unchanged tree — "green on a developer's Mac" is not
+  # evidence about a runner, which is the whole subject of the task — and the
+  # only way to re-run this one was to invent a commit. The gate and
+  # broken-control workflows already had one.
+  workflow_dispatch:
+#
+# Saved triggers, exactly as they were:
+# on:
+#   push:
+#   pull_request:
+
+# A second push to the same branch makes the first run's answer irrelevant.
+concurrency:
+  group: offline-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  offline-suite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # **`fetch-depth: 0`, and it is load-bearing (task 11.150).** The
+      # default is `fetch-depth: 1`, so until 2026-09-04 every run of this
+      # workflow checked out a single commit — and
+      # `test/security/no_committed_secrets_test.dart` scans "every object
+      # reachable from any ref" for committed secrets. Measured on
+      # 2026-09-04: locally that walk names 652 commits and 4,744 distinct
+      # blobs; under this workflow's old checkout it named **1 commit and
+      # 1,047 blobs.** The test's own guard against scanning nothing was
+      # `greaterThan(100)`, which a single tip tree clears easily, so §4.6's
+      # history check was green in five minutes having looked at one commit.
+      #
+      # The clone cost is small — the whole pack is under 25 MiB — and the
+      # scan itself takes about five seconds, because it now asks git only
+      # for the blobs a detector would actually read. **If this line is ever
+      # removed the suite goes red rather than quiet**: that test asserts
+      # `git rev-parse --is-shallow-repository` is `false`.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Installed from flutter/flutter at an exact tag rather than through a
+      # third-party setup action. §3.8's rule is that every dependency is
+      # pinned and reviewed; a marketplace action is a dependency that runs
+      # with the repository's token, and the exact-pin discipline should not
+      # stop at the edge of `pubspec.yaml`.
+      #
+      # Keep FLUTTER_VERSION in step with `flutter --version` on the machine
+      # this is developed on — 3.44.6 / Dart 3.12.2 as of 2026-08-29, and
+      # `pubspec.yaml` requires `sdk: ^3.12.2`.
+      - name: Cache the Flutter SDK
+        id: flutter-cache
+        uses: actions/cache@v4
+        with:
+          path: /opt/flutter
+          key: flutter-3.44.6-${{ runner.os }}
+
+      - name: Install Flutter 3.44.6
+        if: steps.flutter-cache.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch 3.44.6 https://github.com/flutter/flutter.git /opt/flutter
+          /opt/flutter/bin/flutter --version
+          /opt/flutter/bin/flutter precache --universal
+
+      - name: Put Flutter on PATH
+        run: echo "/opt/flutter/bin" >> "$GITHUB_PATH"
+
+      - name: Confirm the toolchain is the pinned one
+        run: |
+          flutter --version
+          dart --version
+
+      - run: flutter pub get
+
+      # `server/` is its own package with its own `pubspec.yaml`, and the root
+      # `flutter analyze` walks into it — measured, on the 2026-08-30 run: 1,172
+      # errors under `server/test/`, 57 under `server/lib/` and 55 under
+      # `server/bin/`, every one of them "undefined name" or "target of URI
+      # doesn't exist". Nothing was wrong with the code. The analyzer had no
+      # `server/.dart_tool/package_config.json` to resolve `package:postgres`
+      # or `package:tritrack_server` from, because that file is written by
+      # `dart pub get` and is not in git.
+      #
+      # It passed on the development machine for exactly that reason: the file
+      # was sitting there from an earlier `dart pub get` in `server/`. **A file
+      # that is not committed is not part of the build.**
+      #
+      # Resolved rather than excluded, deliberately (task 11.69). Adding
+      # `exclude: [server/**]` to `analysis_options.yaml` would have turned the
+      # workflow green by making it stop looking at 1,284 lines of server code
+      # — and the Server suite's own `analysis_options.yaml` is not a substitute
+      # for that, because nothing in CI runs `dart analyze` inside `server/` at
+      # all. The Server suite runs tests. Excluding here would have left the
+      # server unanalysed by every workflow.
+      #
+      # `packages/tritrack_sync` needs no line of its own: the same run
+      # produced zero errors under it, so the root `flutter pub get` already
+      # resolves it. Measured, not assumed — if that ever stops being true the
+      # errors appear here in the same shape as these did.
+      # One line per `pubspec.yaml` in the repository that is not the root's,
+      # with no exemptions — `test/documentation/analyzed_packages_test.dart`
+      # derives that set from the filesystem and fails if one is missing.
+      # `packages/tritrack_sync` is in fact already resolved by the root
+      # `flutter pub get` (measured: the 2026-08-30 run produced zero errors
+      # under it), so its line is redundant today and costs a few seconds. It
+      # is here anyway, because "these two are covered by the root get and that
+      # one is not" is a hand-maintained list, and this project has been bitten
+      # by a hand-maintained list of what gets checked three times.
+      - name: Resolve every other package's dependencies
+        run: |
+          dart pub get --directory server
+          dart pub get --directory packages/tritrack_sync
+          dart pub get --directory website/tools
+
+      # **Task 11.318 item 3 (checklist C3).** The generated files
+      # (`*.g.dart`, `*.freezed.dart`) are committed, and an edit to an
+      # annotated source that is not followed by `build_runner` leaves them
+      # saying the old thing without anything failing. Task 11.309 put the
+      # check in the pre-commit hook, which protects the commits of the one
+      # machine that has the hook. **This is the same script, run on a clean
+      # checkout:** nothing is staged here, and nothing needs to be, because the
+      # index of a fresh checkout is the commit's own content. So what this
+      # compares is the generated files as committed against what
+      # `build_runner` writes from the committed sources. It runs before
+      # Analyze so that its answer does not wait on that step's.
+      - name: Generated files are current
+        run: scripts/check_generated_files_current.sh
+
+      - name: Analyze
+        run: flutter analyze
+
+      # `.env` exists so that `run_offline_suite.sh`'s `docker compose down`
+      # is a real command rather than one that fails on missing required
+      # variables and gets swallowed by its own `|| true`. The values are
+      # throwaway and nothing here ever starts Postgres. Written with a
+      # heredoc rather than committed for the obvious reason.
+      #
+      # The password is generated fresh each run rather than a literal in
+      # this file (task 11.68) — a placeholder committed by value is still a
+      # string the secrets scan has to carry an exemption for forever; one
+      # generated at runtime needs none.
+      - name: Write a throwaway .env
+        run: |
+          ci_postgres_password="$(openssl rand -hex 16)"
+          cat > .env <<EOF
+          POSTGRES_USER=ci
+          POSTGRES_PASSWORD=$ci_postgres_password
+          POSTGRES_DB=tritrack_ci
+          EOF
+
+      # The script, not a bare `flutter test`. Its whole point is that "the app
+      # is fully functional with the server down" is *verified* — it confirms
+      # nothing answers on the server port before it will call the result
+      # meaningful (W-6). A CI runner where nothing was ever up is exactly the
+      # case where assuming it would be easiest and least justified.
+      #
+      # **Task 11.156: it now also states how much of `test/` it reached.**
+      # `flutter test` exits 0 over an unknown fraction — `flutter test
+      # test/localization` prints "All tests passed!" and returns success
+      # having loaded 7 of 250 files, and this step would have been a green
+      # tick. The script hands a JSON report to
+      # `scripts/assert_suite_scope.py`, which fails unless every
+      # `*_test.dart` on disk was loaded and every skipped test is declared
+      # with a reason in `test/declared_skips.json`. The counts are in this
+      # step's log on every run, green or red — the tail of a CI log is all
+      # anybody keeps, and a name in the tail has never told anybody anything.
+      - name: Offline suite
+        run: scripts/run_offline_suite.sh
+
+      # **Task 11.43 (reopened).** `flutter test` does not walk into
+      # `packages/tritrack_sync`, and nothing else did either, so its 313 tests
+      # had never run in CI — including the declarations both the app and the
+      # server are built from. That was found while adding a guard to that very
+      # package, and a guard no workflow runs is not a guard.
+      #
+      # `cd` rather than a flag: `dart test` has no `--directory`, unlike
+      # `dart pub get` above. `analyzed_packages_test.dart` asserts this line
+      # exists for every package that has a `test/` directory.
+      - name: Shared package suite
+        run: cd packages/tritrack_sync && dart test

@@ -1,0 +1,50 @@
+// Code-signing identity for the macOS app.
+//
+// **Do not copy this file and edit it. Run README.md's "Signing the macOS
+// build" step 3 instead** — one command that writes the finished
+// `Signing.xcconfig` with your Team ID already substituted, and there is
+// nothing to hand-edit afterwards.
+//
+// This file stays as documentation of what those settings are and why. It is
+// **not** the procedure, and saying it was is a live instance of the exact
+// defect task 11.38 was reported for: "copy the template, then edit the Team
+// ID" is how somebody comes to paste the wrong ten-character string, and the
+// only symptom arrives much later as `No Account for Team "..."`, which reads
+// like a missing Apple ID account. Task 11.37's sweep found this file still
+// saying it, in the one place the README believed it had closed.
+//
+// **Why this file exists, and why it is not simply committed with a value.**
+// macOS refuses keychain access to an ad-hoc-signed app. The app stores your
+// sign-in session in the keychain, so without a real signing identity,
+// signing in fails with keychain error `-34018` ("a required entitlement
+// isn't present") *after* the server has already accepted and spent your
+// sign-in code. That was task 11.38. A Team ID belongs to one Apple
+// Developer account and cannot be shared, so the repository cannot carry one
+// for you — `AppInfo.xcconfig` pulls this file in with `#include?`, an
+// optional include, so the project still builds without it (ad hoc, no
+// keychain, no sign-in).
+//
+// **Where the Team ID comes from, which Team ID is the wrong one, and the
+// Xcode route instead of the command line — all of that is README.md's
+// "Signing the macOS build", and none of it is repeated here.**
+//
+// This file used to carry a second copy of the `security find-certificate`
+// pipeline, of the warning that `security find-identity`'s parenthesised value
+// is the wrong ten characters, and of the Xcode GUI route — under a heading
+// saying it was "for reading rather than for copying". Task 11.52's finding is
+// that a copy hedged as not-the-procedure is still a copy: task 11.38 replaced
+// the Team ID instruction and **this file kept the superseded one**, in the
+// one place the README believed it had closed. Removed by task 11.40; the
+// class is guarded by `test/documentation/setup_step_ownership_test.dart`.
+
+// The values below are illustrative. README.md step 3 generates the real file.
+DEVELOPMENT_TEAM = ABCDE12345
+CODE_SIGN_STYLE = Automatic
+CODE_SIGN_IDENTITY = Apple Development
+
+// Selects `Runner/DebugProfile-Signed.entitlements` and
+// `Runner/Release-Signed.entitlements`, which declare `keychain-access-groups`.
+// Only valid together with a real DEVELOPMENT_TEAM above: Xcode refuses to
+// build those files without a development signing certificate. Keep the two
+// together — set both, or neither.
+TRITRACK_ENTITLEMENTS_SUFFIX = -Signed

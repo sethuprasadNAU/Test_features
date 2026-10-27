@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<script type="text/babel" src="./ios-frame.jsx"></script>
+<style>
+  body{margin:0;background:#eeeeec;}
+</style>
+</helmet>
+<div style="font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;color:#1a1a1a;background:#eeeeec;min-height:100vh;padding:40px;box-sizing:border-box;">
+
+  <div style="max-width:1300px;margin:0 auto 32px;background:#fff;border:1px solid #e2e2df;border-radius:12px;padding:20px 26px;">
+    <div style="font-size:12px;letter-spacing:0.08em;color:#6b6b68;font-weight:700;text-transform:uppercase;">Stage 2 — Hi-Fi</div>
+    <div style="font-size:26px;font-weight:800;margin:4px 0 12px;">Tri Track — Main Map, Observation Logging, Compass Calibration</div>
+    <div style="font-size:13.5px;line-height:1.6;color:#333;max-width:900px;">
+      Brand accent is the settled forest green (#3E7A4C light / #5FAE71 dark) used for chrome — buttons, active tab, FAB — kept visually distinct from the doc's functional map/compass colors, which are used exactly as specified. System sans throughout, 14px+ body text, 48pt+ touch targets, both a light (max-glare) and dark theme. Sample data is realistic wildlife-telemetry content per your answers. Use the <b>Map Imagery</b> tweak (top right of the editor) to compare a realistic terrain placeholder vs. an abstract/topographic one for the Main Map background.
+    </div>
+  </div>
+
+  <!-- SPLASH -->
+  <div style="max-width:1300px;margin:0 auto 48px;">
+    <div style="font-size:20px;font-weight:800;margin-bottom:14px;">0 · Splash Screen</div>
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:center;">
+      <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+        <div style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:#3E7A4C;">
+          <div style="width:96px;height:96px;border-radius:22px;background:rgba(255,255,255,0.14);position:relative;flex-shrink:0;">
+            <svg width="96" height="96" viewBox="0 0 120 120" style="position:absolute;inset:0;"><g transform="rotate(-90 60 60)"><line x1="24" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round"></line><line x1="96" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.75"></line><line x1="60" y1="98" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.5"></line><circle cx="60" cy="42" r="13" fill="#ffffff"></circle></g></svg>
+          </div>
+          <div style="font-size:30px;font-weight:800;letter-spacing:0.04em;color:#1a1a1a;">TRI<span style="color:#ffffff;">TRACK</span></div>
+          <div style="position:absolute;bottom:56px;font-size:11px;font-weight:600;letter-spacing:0.06em;color:rgba(255,255,255,0.6);">WILDLIFE TELEMETRY</div>
+        </div>
+      </x-import>
+      <div style="font-size:12px;font-weight:700;color:#6b6b68;">Launch — brand green full-bleed, no theme variant</div>
+    </div>
+  </div>
+
+  <!-- MAIN MAP -->
+  <div style="max-width:1300px;margin:0 auto 48px;">
+    <div style="font-size:20px;font-weight:800;margin-bottom:14px;">1 · Main Map</div>
+    <div style="display:flex;gap:36px;flex-wrap:wrap;">
+
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:center;">
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+          <div style="height:100%;display:flex;flex-direction:column;background:#ffffff;">
+            <div style="height:56px;flex-shrink:0;"></div><div style="height:44px;border-bottom:1px solid #e2e2df;flex-shrink:0;display:flex;align-items:center;gap:8px;padding:0 20px;box-sizing:border-box;"><div style="width:26px;height:26px;border-radius:6px;background:#3E7A4C;position:relative;flex-shrink:0;"><svg width="26" height="26" viewBox="0 0 120 120" style="position:absolute;inset:0;"><g transform="rotate(-90 60 60)"><line x1="24" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round"></line><line x1="96" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.75"></line><line x1="60" y1="98" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.5"></line><circle cx="60" cy="42" r="13" fill="#ffffff"></circle></g></svg></div><div style="font-size:15px;font-weight:800;letter-spacing:0.03em;color:#1a1a1a;">TRI<span style="color:#3E7A4C;">TRACK</span></div></div>
+            <div style="padding:0 20px 14px;flex-shrink:0;display:flex;justify-content:center;">
+              <div style="display:inline-flex;border:1.5px solid #e2e2df;border-radius:10px;overflow:hidden;">
+                <div style="padding:9px 16px;font-size:13px;font-weight:700;background:#3E7A4C;color:#fff;">Terrain</div>
+                <div style="padding:9px 16px;font-size:13px;font-weight:700;color:#1a1a1a;border-left:1px solid #e2e2df;">Street</div>
+                <div style="padding:9px 16px;font-size:13px;font-weight:700;color:#1a1a1a;border-left:1px solid #e2e2df;">Satellite</div>
+              </div>
+            </div>
+            <div style="flex:1;position:relative;overflow:hidden;">
+              <sc-if value="{{ mapStyleRealistic }}" hint-placeholder-val="{{ true }}">
+                <div style="position:absolute;inset:0;background:radial-gradient(circle at 22% 28%,#b9d4a4 0%,transparent 42%),radial-gradient(circle at 78% 68%,#d9cfa0 0%,transparent 48%),linear-gradient(160deg,#dfe9d5,#eee8d0 55%,#dde8d5);"></div>
+              </sc-if>
+              <sc-if value="{{ mapStyleAbstract }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;inset:0;background:#eef0ee;background-image:linear-gradient(#dcdedc 1px,transparent 1px),linear-gradient(90deg,#dcdedc 1px,transparent 1px);background-size:24px 24px;"></div>
+                <div style="position:absolute;top:18%;left:10%;width:150px;height:100px;border:1.5px solid #b8bcb8;border-radius:50%;"></div>
+                <div style="position:absolute;top:44%;left:32%;width:190px;height:130px;border:1.5px solid #c7cac6;border-radius:50%;"></div>
+              </sc-if>
+              <div style="position:absolute;top:44%;left:38%;width:12px;height:12px;border-radius:50%;background:#3E7A4C;box-shadow:0 0 0 6px rgba(62,122,76,0.18);"></div>
+              <div style="position:absolute;top:44%;left:40%;width:110px;height:2px;background:#3b82f6;transform:rotate(-20deg);transform-origin:left;"></div>
+              <div style="position:absolute;top:44%;left:40%;width:140px;height:2px;background:#3b82f6;opacity:0.6;transform:rotate(16deg);transform-origin:left;"></div>
+              <div style="position:absolute;top:29%;left:64%;width:18px;height:18px;border:2.5px solid #2563eb;border-radius:50%;background:#fff;"></div>
+              <div style="position:absolute;top:25%;left:66%;font-size:11px;font-weight:700;color:#2563eb;">est. position</div>
+              <div style="position:absolute;top:19%;left:80%;width:16px;height:16px;border:2.5px solid #16a34a;background:#fff;"></div>
+              <div style="position:absolute;top:14%;left:78%;font-size:11px;font-weight:700;color:#16a34a;">M1214 · 150.123 MHz</div>
+              <div style="position:absolute;top:7%;left:9%;width:130px;height:95px;background:rgba(96,165,250,0.30);border-radius:50%;filter:blur(1px);transform:rotate(-8deg);"></div>
+              <div style="position:absolute;top:5%;left:8%;font-size:10.5px;font-weight:700;color:#1d4ed8;">viewshed</div>
+              <div style="position:absolute;bottom:18px;left:16px;font-family:ui-monospace,monospace;font-size:11px;color:#1a1a1a;background:rgba(255,255,255,0.85);padding:2px 6px;border-radius:4px;white-space:nowrap;">34.212, -111.652</div>
+              <div style="position:absolute;bottom:10px;left:16px;width:52px;height:3px;background:#1a1a1a;"></div>
+              <div style="position:absolute;bottom:16px;right:20px;font-size:15px;font-weight:800;">▲ N</div>
+              <div style="position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:10px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.15);display:flex;align-items:center;justify-content:center;font-size:14px;">≡</div>
+              <div style="position:absolute;bottom:96px;right:20px;width:56px;height:56px;border-radius:50%;background:#3E7A4C;color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:300;box-shadow:0 4px 12px rgba(62,122,76,0.4);">+</div>
+            </div>
+            <div style="height:88px;flex-shrink:0;border-top:1px solid #e2e2df;display:flex;">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;background:#3E7A4C;"></div><div style="font-size:11px;font-weight:800;color:#3E7A4C;">Map</div></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;border:1.5px solid #b7b7b3;"></div><div style="font-size:11px;font-weight:600;color:#8a8a86;">Log</div></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;border:1.5px solid #b7b7b3;"></div><div style="font-size:11px;font-weight:600;color:#8a8a86;">Compass</div></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;border:1.5px solid #b7b7b3;"></div><div style="font-size:11px;font-weight:600;color:#8a8a86;">Position</div></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;border:1.5px solid #b7b7b3;"></div><div style="font-size:11px;font-weight:600;color:#8a8a86;">More</div></div>
+            </div>
+          </div>
+        </x-import>
+        <div style="font-size:12px;font-weight:700;color:#6b6b68;">Light</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:center;">
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="true" hint-size="402px,874px">
+          <div style="height:100%;display:flex;flex-direction:column;background:#141414;">
+            <div style="height:56px;flex-shrink:0;"></div><div style="height:44px;border-bottom:1px solid #2a2a2a;flex-shrink:0;display:flex;align-items:center;gap:8px;padding:0 20px;box-sizing:border-box;"><div style="width:26px;height:26px;border-radius:6px;background:#3E7A4C;position:relative;flex-shrink:0;"><svg width="26" height="26" viewBox="0 0 120 120" style="position:absolute;inset:0;"><g transform="rotate(-90 60 60)"><line x1="24" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round"></line><line x1="96" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.75"></line><line x1="60" y1="98" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.5"></line><circle cx="60" cy="42" r="13" fill="#ffffff"></circle></g></svg></div><div style="font-size:15px;font-weight:800;letter-spacing:0.03em;color:#f3efe4;">TRI<span style="color:#6FBF82;">TRACK</span></div></div>
+            <div style="padding:0 20px 14px;flex-shrink:0;display:flex;justify-content:center;">
+              <div style="display:inline-flex;border:1.5px solid #2c2c2a;border-radius:10px;overflow:hidden;">
+                <div style="padding:9px 16px;font-size:13px;font-weight:700;background:#5FAE71;color:#0d1a10;">Terrain</div>
+                <div style="padding:9px 16px;font-size:13px;font-weight:700;color:#f2f2f0;border-left:1px solid #2c2c2a;">Street</div>
+                <div style="padding:9px 16px;font-size:13px;font-weight:700;color:#f2f2f0;border-left:1px solid #2c2c2a;">Satellite</div>
+              </div>
+            </div>
+            <div style="flex:1;position:relative;overflow:hidden;">
+              <sc-if value="{{ mapStyleRealistic }}" hint-placeholder-val="{{ true }}">
+                <div style="position:absolute;inset:0;background:radial-gradient(circle at 22% 28%,#233420 0%,transparent 42%),radial-gradient(circle at 78% 68%,#2c2818 0%,transparent 48%),linear-gradient(160deg,#1b241a,#221f16 55%,#1a221c);"></div>
+              </sc-if>
+              <sc-if value="{{ mapStyleAbstract }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;inset:0;background:#191a1b;background-image:linear-gradient(#26282a 1px,transparent 1px),linear-gradient(90deg,#26282a 1px,transparent 1px);background-size:24px 24px;"></div>
+                <div style="position:absolute;top:18%;left:10%;width:150px;height:100px;border:1.5px solid #33352f;border-radius:50%;"></div>
+                <div style="position:absolute;top:44%;left:32%;width:190px;height:130px;border:1.5px solid #3a3c34;border-radius:50%;"></div>
+              </sc-if>
+              <div style="position:absolute;top:44%;left:38%;width:12px;height:12px;border-radius:50%;background:#5FAE71;box-shadow:0 0 0 6px rgba(95,174,113,0.25);"></div>
+              <div style="position:absolute;top:44%;left:40%;width:110px;height:2px;background:#60a5fa;transform:rotate(-20deg);transform-origin:left;"></div>
+              <div style="position:absolute;top:44%;left:40%;width:140px;height:2px;background:#60a5fa;opacity:0.6;transform:rotate(16deg);transform-origin:left;"></div>
+              <div style="position:absolute;top:29%;left:64%;width:18px;height:18px;border:2.5px solid #3b82f6;border-radius:50%;background:#141414;"></div>
+              <div style="position:absolute;top:25%;left:66%;font-size:11px;font-weight:700;color:#60a5fa;">est. position</div>
+              <div style="position:absolute;top:19%;left:80%;width:16px;height:16px;border:2.5px solid #22c55e;background:#141414;"></div>
+              <div style="position:absolute;top:14%;left:78%;font-size:11px;font-weight:700;color:#4ade80;">M1214 · 150.123 MHz</div>
+              <div style="position:absolute;top:7%;left:9%;width:130px;height:95px;background:rgba(96,165,250,0.22);border-radius:50%;filter:blur(1px);transform:rotate(-8deg);"></div>
+              <div style="position:absolute;top:5%;left:8%;font-size:10.5px;font-weight:700;color:#93c5fd;">viewshed</div>
+              <div style="position:absolute;bottom:18px;left:16px;font-family:ui-monospace,monospace;font-size:11px;color:#f2f2f0;background:rgba(0,0,0,0.55);padding:2px 6px;border-radius:4px;white-space:nowrap;">34.212, -111.652</div>
+              <div style="position:absolute;bottom:10px;left:16px;width:52px;height:3px;background:#f2f2f0;"></div>
+              <div style="position:absolute;bottom:16px;right:20px;font-size:15px;font-weight:800;color:#f2f2f0;">▲ N</div>
+              <div style="position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:10px;background:#1f1f1e;box-shadow:0 2px 6px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;font-size:14px;color:#f2f2f0;">≡</div>
+              <div style="position:absolute;bottom:96px;right:20px;width:56px;height:56px;border-radius:50%;background:#5FAE71;color:#0d1a10;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:300;box-shadow:0 4px 14px rgba(0,0,0,0.5);">+</div>
+            </div>
+            <div style="height:88px;flex-shrink:0;border-top:1px solid #2c2c2a;display:flex;">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;background:#5FAE71;"></div><div style="font-size:11px;font-weight:800;color:#5FAE71;">Map</div></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;border:1.5px solid #4a4a47;"></div><div style="font-size:11px;font-weight:600;color:#8f8f8b;">Log</div></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;border:1.5px solid #4a4a47;"></div><div style="font-size:11px;font-weight:600;color:#8f8f8b;">Compass</div></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;border:1.5px solid #4a4a47;"></div><div style="font-size:11px;font-weight:600;color:#8f8f8b;">Position</div></div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;"><div style="width:8px;height:8px;border-radius:50%;border:1.5px solid #4a4a47;"></div><div style="font-size:11px;font-weight:600;color:#8f8f8b;">More</div></div>
+            </div>
+          </div>
+        </x-import>
+        <div style="font-size:12px;font-weight:700;color:#6b6b68;">Dark</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OBSERVATION LOGGING -->
+  <div style="max-width:1300px;margin:0 auto 48px;">
+    <div style="font-size:20px;font-weight:800;margin-bottom:14px;">2 · Observation Logging</div>
+    <div style="display:flex;gap:36px;flex-wrap:wrap;">
+
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:center;">
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+          <div style="height:100%;display:flex;flex-direction:column;background:#ffffff;">
+            <div style="height:56px;flex-shrink:0;"></div><div style="height:44px;border-bottom:1px solid #e2e2df;flex-shrink:0;display:flex;align-items:center;gap:8px;padding:0 20px;box-sizing:border-box;"><div style="width:26px;height:26px;border-radius:6px;background:#3E7A4C;position:relative;flex-shrink:0;"><svg width="26" height="26" viewBox="0 0 120 120" style="position:absolute;inset:0;"><g transform="rotate(-90 60 60)"><line x1="24" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round"></line><line x1="96" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.75"></line><line x1="60" y1="98" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.5"></line><circle cx="60" cy="42" r="13" fill="#ffffff"></circle></g></svg></div><div style="font-size:15px;font-weight:800;letter-spacing:0.03em;color:#1a1a1a;">TRI<span style="color:#3E7A4C;">TRACK</span></div></div>
+            <div style="flex:1;overflow:hidden;padding:0 20px;display:flex;flex-direction:column;gap:12px;">
+              <div style="font-size:12px;font-weight:800;color:#6b6b68;letter-spacing:0.04em;">TAG</div>
+              <div style="border:1.5px solid #1a1a1a;border-radius:12px;height:168px;display:flex;flex-direction:column;justify-content:center;overflow:hidden;">
+                <div style="text-align:center;font-size:9.5px;color:#d6d6d2;padding:3px 0;">146.902 MHz · 65bpm · Coyote 02</div>
+                <div style="text-align:center;font-size:11.5px;color:#b7b7b3;padding:3px 0;">148.211 MHz · 72bpm · Coyote 04</div>
+                <div style="text-align:center;font-size:16px;font-weight:800;border-top:1px solid #e2e2df;border-bottom:1px solid #e2e2df;padding:8px 0;color:#3E7A4C;">150.123 MHz · 62bpm · M1214 (Mexican Wolf)</div>
+                <div style="text-align:center;font-size:11.5px;color:#b7b7b3;padding:3px 0;">150.311 MHz · 58bpm · F0932 (Mexican Wolf)</div>
+                <div style="text-align:center;font-size:9.5px;color:#d6d6d2;padding:3px 0;">151.045 MHz · 70bpm · M1187 (Mexican Wolf)</div>
+              </div>
+
+              <div style="display:flex;border:1.5px solid #1a1a1a;border-radius:10px;overflow:hidden;font-size:12px;font-weight:700;height:40px;">
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;background:#3E7A4C;color:#fff;">Directional</div>
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;border-left:1px solid #1a1a1a;">Omnidirectional</div>
+              </div>
+
+              <div style="font-size:12px;font-weight:800;color:#6b6b68;letter-spacing:0.04em;">BEARING</div>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <div style="flex:1;border:1.5px solid #1a1a1a;border-radius:12px;padding:10px;text-align:center;font-size:26px;font-weight:800;">145°</div>
+                <div style="width:48px;height:48px;border:1.5px solid #1a1a1a;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">✎</div>
+              </div>
+              <div style="display:flex;border:1.5px solid #1a1a1a;border-radius:10px;overflow:hidden;font-size:12px;font-weight:700;height:36px;">
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;background:#3E7A4C;color:#fff;">Peak</div>
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;border-left:1px solid #1a1a1a;">Null</div>
+              </div>
+
+              <div style="display:flex;border:1.5px solid #1a1a1a;border-radius:10px;overflow:hidden;font-size:12px;font-weight:700;height:40px;">
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;background:#3E7A4C;color:#fff;">Regular pulse</div>
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;border-left:1px solid #1a1a1a;">Mortality</div>
+              </div>
+
+              <div style="font-size:12px;font-weight:800;color:#6b6b68;letter-spacing:0.04em;">SIGNAL STRENGTH</div>
+              <div style="border:1.5px solid #1a1a1a;border-radius:10px;padding:9px;text-align:center;font-size:13px;font-weight:700;">Faint · <span style="opacity:0.5;">Weak</span> · <span style="text-decoration:underline;">Moderate</span> · Strong</div>
+
+              <div style="font-size:12px;font-weight:800;color:#6b6b68;letter-spacing:0.04em;">BEARING QUALITY</div>
+              <div style="display:flex;gap:8px;">
+                <div style="flex:1;min-height:44px;border:1.5px solid #dc2626;border-radius:22px;color:#991b1b;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;">Bounce?</div>
+                <div style="flex:1;min-height:44px;border:1.5px solid #d97706;border-radius:22px;color:#92400e;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;">Fair</div>
+                <div style="flex:1;min-height:44px;border-radius:22px;background:#16a34a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;">✓ Good</div>
+              </div>
+
+              <div style="border:1.5px dashed #c7c7c3;border-radius:10px;padding:10px 12px;font-size:12px;font-weight:700;color:#6b6b68;">▸ Advanced: antenna type, receiver gain</div>
+              <div style="border:1.5px solid #e2e2df;border-radius:10px;padding:10px;font-size:12.5px;color:#a3a39f;min-height:24px;">Notes (optional)</div>
+              <div style="font-size:11.5px;color:#444;display:flex;justify-content:space-between;"><span>📍 34.212, -111.652 · ±4m</span><span style="color:#3E7A4C;font-weight:700;">Manual pin</span></div>
+              <div style="font-size:12px;color:#444;">☐ Attach to triangulation session</div>
+            </div>
+            <div style="flex-shrink:0;padding:10px 20px 22px;">
+              <div style="text-align:center;font-size:11px;color:#a3a39f;font-style:italic;margin-bottom:8px;">Draft autosaves</div>
+              <div style="height:52px;background:#3E7A4C;color:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;">SAVE OBSERVATION</div>
+            </div>
+          </div>
+        </x-import>
+        <div style="font-size:12px;font-weight:700;color:#6b6b68;">Light</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:center;">
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="true" hint-size="402px,874px">
+          <div style="height:100%;display:flex;flex-direction:column;background:#141414;">
+            <div style="height:56px;flex-shrink:0;"></div><div style="height:44px;border-bottom:1px solid #2a2a2a;flex-shrink:0;display:flex;align-items:center;gap:8px;padding:0 20px;box-sizing:border-box;"><div style="width:26px;height:26px;border-radius:6px;background:#3E7A4C;position:relative;flex-shrink:0;"><svg width="26" height="26" viewBox="0 0 120 120" style="position:absolute;inset:0;"><g transform="rotate(-90 60 60)"><line x1="24" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round"></line><line x1="96" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.75"></line><line x1="60" y1="98" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.5"></line><circle cx="60" cy="42" r="13" fill="#ffffff"></circle></g></svg></div><div style="font-size:15px;font-weight:800;letter-spacing:0.03em;color:#f3efe4;">TRI<span style="color:#6FBF82;">TRACK</span></div></div>
+            <div style="flex:1;overflow:hidden;padding:0 20px;display:flex;flex-direction:column;gap:12px;">
+              <div style="font-size:12px;font-weight:800;color:#9c9c98;letter-spacing:0.04em;">TAG</div>
+              <div style="border:1.5px solid #f2f2f0;border-radius:12px;height:168px;display:flex;flex-direction:column;justify-content:center;background:#1c1c1c;overflow:hidden;">
+                <div style="text-align:center;font-size:9.5px;color:#3a3a37;padding:3px 0;">146.902 MHz · 65bpm · Coyote 02</div>
+                <div style="text-align:center;font-size:11.5px;color:#6c6c68;padding:3px 0;">148.211 MHz · 72bpm · Coyote 04</div>
+                <div style="text-align:center;font-size:16px;font-weight:800;border-top:1px solid #2c2c2a;border-bottom:1px solid #2c2c2a;padding:8px 0;color:#6FBF82;">150.123 MHz · 62bpm · M1214 (Mexican Wolf)</div>
+                <div style="text-align:center;font-size:11.5px;color:#6c6c68;padding:3px 0;">150.311 MHz · 58bpm · F0932 (Mexican Wolf)</div>
+                <div style="text-align:center;font-size:9.5px;color:#3a3a37;padding:3px 0;">151.045 MHz · 70bpm · M1187 (Mexican Wolf)</div>
+              </div>
+
+              <div style="display:flex;border:1.5px solid #f2f2f0;border-radius:10px;overflow:hidden;font-size:12px;font-weight:700;height:40px;">
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;background:#5FAE71;color:#0d1a10;">Directional</div>
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;border-left:1px solid #2c2c2a;color:#f2f2f0;">Omnidirectional</div>
+              </div>
+
+              <div style="font-size:12px;font-weight:800;color:#9c9c98;letter-spacing:0.04em;">BEARING</div>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <div style="flex:1;border:1.5px solid #f2f2f0;border-radius:12px;padding:10px;text-align:center;font-size:26px;font-weight:800;color:#f2f2f0;">145°</div>
+                <div style="width:48px;height:48px;border:1.5px solid #f2f2f0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;color:#f2f2f0;">✎</div>
+              </div>
+              <div style="display:flex;border:1.5px solid #f2f2f0;border-radius:10px;overflow:hidden;font-size:12px;font-weight:700;height:36px;">
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;background:#5FAE71;color:#0d1a10;">Peak</div>
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;border-left:1px solid #2c2c2a;color:#f2f2f0;">Null</div>
+              </div>
+
+              <div style="display:flex;border:1.5px solid #f2f2f0;border-radius:10px;overflow:hidden;font-size:12px;font-weight:700;height:40px;">
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;background:#5FAE71;color:#0d1a10;">Regular pulse</div>
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;border-left:1px solid #2c2c2a;color:#f2f2f0;">Mortality</div>
+              </div>
+
+              <div style="font-size:12px;font-weight:800;color:#9c9c98;letter-spacing:0.04em;">SIGNAL STRENGTH</div>
+              <div style="border:1.5px solid #f2f2f0;border-radius:10px;padding:9px;text-align:center;font-size:13px;font-weight:700;color:#f2f2f0;">Faint · <span style="opacity:0.5;">Weak</span> · <span style="text-decoration:underline;">Moderate</span> · Strong</div>
+
+              <div style="font-size:12px;font-weight:800;color:#9c9c98;letter-spacing:0.04em;">BEARING QUALITY</div>
+              <div style="display:flex;gap:8px;">
+                <div style="flex:1;min-height:44px;border:1.5px solid #f87171;border-radius:22px;color:#fca5a5;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;">Bounce?</div>
+                <div style="flex:1;min-height:44px;border:1.5px solid #f59e0b;border-radius:22px;color:#fbbf24;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;">Fair</div>
+                <div style="flex:1;min-height:44px;border-radius:22px;background:#22c55e;color:#0d1a10;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;">✓ Good</div>
+              </div>
+
+              <div style="border:1.5px dashed #3a3a37;border-radius:10px;padding:10px 12px;font-size:12px;font-weight:700;color:#9c9c98;">▸ Advanced: antenna type, receiver gain</div>
+              <div style="border:1.5px solid #2c2c2a;border-radius:10px;padding:10px;font-size:12.5px;color:#6c6c68;min-height:24px;">Notes (optional)</div>
+              <div style="font-size:11.5px;color:#c7c7c3;display:flex;justify-content:space-between;"><span>📍 34.212, -111.652 · ±4m</span><span style="color:#6FBF82;font-weight:700;">Manual pin</span></div>
+              <div style="font-size:12px;color:#c7c7c3;">☐ Attach to triangulation session</div>
+            </div>
+            <div style="flex-shrink:0;padding:10px 20px 22px;">
+              <div style="text-align:center;font-size:11px;color:#6c6c68;font-style:italic;margin-bottom:8px;">Draft autosaves</div>
+              <div style="height:52px;background:#5FAE71;color:#0d1a10;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;">SAVE OBSERVATION</div>
+            </div>
+          </div>
+        </x-import>
+        <div style="font-size:12px;font-weight:700;color:#6b6b68;">Dark</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPASS CALIBRATION -->
+  <div style="max-width:1300px;margin:0 auto 20px;">
+    <div style="font-size:20px;font-weight:800;margin-bottom:14px;">3 · Compass Calibration</div>
+    <div style="display:flex;gap:36px;flex-wrap:wrap;">
+
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:center;">
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+          <div style="height:100%;display:flex;flex-direction:column;align-items:center;background:#ffffff;padding:0 20px;box-sizing:border-box;">
+            <div style="height:56px;flex-shrink:0;"></div><div style="height:44px;border-bottom:1px solid #e2e2df;flex-shrink:0;display:flex;align-items:center;gap:8px;padding:0 20px;box-sizing:border-box;"><div style="width:26px;height:26px;border-radius:6px;background:#3E7A4C;position:relative;flex-shrink:0;"><svg width="26" height="26" viewBox="0 0 120 120" style="position:absolute;inset:0;"><g transform="rotate(-90 60 60)"><line x1="24" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round"></line><line x1="96" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.75"></line><line x1="60" y1="98" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.5"></line><circle cx="60" cy="42" r="13" fill="#ffffff"></circle></g></svg></div><div style="font-size:15px;font-weight:800;letter-spacing:0.03em;color:#1a1a1a;">TRI<span style="color:#3E7A4C;">TRACK</span></div></div>
+            <div style="width:100%;border:1.5px solid #d97706;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:space-between;background:#fff7ed;color:#92400e;flex-shrink:0;">
+              <span>⚠ Interference detected — step away from metal/vehicle</span><span>✕</span>
+            </div>
+
+            <div style="position:relative;width:280px;height:280px;margin-top:20px;flex-shrink:0;">
+              <div style="width:100%;height:100%;border-radius:50%;border:2px solid #1a1a1a;position:relative;background:#fafaf9;">
+                <div style="position:absolute;inset:0;border-radius:50%;background:repeating-conic-gradient(rgba(26,26,26,0.35) 0deg 1deg,transparent 1deg 10deg);-webkit-mask-image:radial-gradient(circle,transparent 88%,#000 88% 96%,transparent 96%);mask-image:radial-gradient(circle,transparent 88%,#000 88% 96%,transparent 96%);"></div>
+                <div style="position:absolute;inset:0;border-radius:50%;background:repeating-conic-gradient(#1a1a1a 0deg 1.5deg,transparent 1.5deg 30deg);-webkit-mask-image:radial-gradient(circle,transparent 82%,#000 82% 96%,transparent 96%);mask-image:radial-gradient(circle,transparent 82%,#000 82% 96%,transparent 96%);"></div>
+                <div style="position:absolute;top:4px;left:50%;transform:translateX(-50%);font-size:13px;font-weight:800;">N</div>
+                <div style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%);font-size:13px;font-weight:800;">S</div>
+                <div style="position:absolute;top:50%;left:4px;transform:translateY(-50%);font-size:13px;font-weight:800;">W</div>
+                <div style="position:absolute;top:50%;right:4px;transform:translateY(-50%);font-size:13px;font-weight:800;">E</div>
+                <div style="position:absolute;top:24.1px;left:171.1px;transform:translate(-50%,-50%);font-size:8px;color:#a3a39f;">15°</div>
+                <div style="position:absolute;top:36.1px;left:200px;transform:translate(-50%,-50%);font-size:9px;color:#a3a39f;">30°</div>
+                <div style="position:absolute;top:55.2px;left:224.9px;transform:translate(-50%,-50%);font-size:8px;color:#a3a39f;">45°</div>
+                <div style="position:absolute;top:80px;left:243.9px;transform:translate(-50%,-50%);font-size:9px;color:#a3a39f;">60°</div>
+                <div style="position:absolute;top:108.9px;left:255.9px;transform:translate(-50%,-50%);font-size:8px;color:#a3a39f;">75°</div>
+                <div style="position:absolute;top:171.1px;left:255.9px;transform:translate(-50%,-50%);font-size:8px;color:#a3a39f;">105°</div>
+                <div style="position:absolute;top:200px;left:243.9px;transform:translate(-50%,-50%);font-size:9px;color:#a3a39f;">120°</div>
+                <div style="position:absolute;top:224.9px;left:224.9px;transform:translate(-50%,-50%);font-size:8px;color:#a3a39f;">135°</div>
+                <div style="position:absolute;top:243.9px;left:200px;transform:translate(-50%,-50%);font-size:9px;color:#a3a39f;">150°</div>
+                <div style="position:absolute;top:255.9px;left:171.1px;transform:translate(-50%,-50%);font-size:8px;color:#a3a39f;">165°</div>
+                <div style="position:absolute;top:255.9px;left:108.9px;transform:translate(-50%,-50%);font-size:8px;color:#a3a39f;">195°</div>
+                <div style="position:absolute;top:243.9px;left:80px;transform:translate(-50%,-50%);font-size:9px;color:#a3a39f;">210°</div>
+                <div style="position:absolute;top:224.9px;left:55.2px;transform:translate(-50%,-50%);font-size:8px;color:#a3a39f;">225°</div>
+                <div style="position:absolute;top:200px;left:36.1px;transform:translate(-50%,-50%);font-size:9px;color:#a3a39f;">240°</div>
+                <div style="position:absolute;top:171.1px;left:24.1px;transform:translate(-50%,-50%);font-size:8px;color:#a3a39f;">255°</div>
+                <div style="position:absolute;top:108.9px;left:24.1px;transform:translate(-50%,-50%);font-size:8px;color:#a3a39f;">285°</div>
+                <div style="position:absolute;top:80px;left:36.1px;transform:translate(-50%,-50%);font-size:9px;color:#a3a39f;">300°</div>
+                <div style="position:absolute;top:55.2px;left:55.2px;transform:translate(-50%,-50%);font-size:8px;color:#a3a39f;">315°</div>
+                <div style="position:absolute;top:36.1px;left:80px;transform:translate(-50%,-50%);font-size:9px;color:#a3a39f;">330°</div>
+                <div style="position:absolute;top:24.1px;left:108.9px;transform:translate(-50%,-50%);font-size:8px;color:#a3a39f;">345°</div>
+                <div style="position:absolute;top:50%;left:50%;width:12px;height:128px;background:#dc2626;clip-path:polygon(32% 100%,68% 100%,68% 9%,50% 0%,32% 9%);transform:translate(-50%,-100%) rotate(-25deg);transform-origin:bottom center;"></div>
+                <div style="position:absolute;top:16%;left:36%;font-size:11px;font-weight:800;color:#dc2626;">M</div>
+                <div style="position:absolute;top:50%;left:50%;width:0;height:0;transform:rotate(8deg);transform-origin:0 0;">
+                  <div style="position:absolute;top:-118px;left:-1.5px;width:3px;height:118px;border-left:3px dotted #dc2626;"></div>
+                  <div style="position:absolute;top:-130px;left:-5px;width:10px;height:13px;background:#dc2626;clip-path:polygon(20% 100%,80% 100%,50% 0%);"></div>
+                </div>
+                <div style="position:absolute;top:11%;left:58%;font-size:11px;font-weight:800;color:#dc2626;">T</div>
+                <div style="position:absolute;top:50%;left:50%;width:150px;height:150px;transform:translate(-50%,-50%);border-radius:50%;background:conic-gradient(from -13deg,rgba(96,165,250,0.35) 0deg 33deg,transparent 33deg);"></div>
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:112px;height:112px;border-radius:50%;background:#fff;border:1px solid #e2e2df;box-shadow:0 2px 8px rgba(0,0,0,0.08);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;">
+                  <div style="font-size:20px;font-weight:800;line-height:1;white-space:nowrap;">145°</div>
+                  <div style="font-size:8.5px;font-weight:700;color:#dc2626;line-height:1;white-space:nowrap;">M 145° · T 137°</div>
+                  <div style="font-size:8px;color:#8a8a86;line-height:1;white-space:nowrap;">±10° uncert.</div>
+                </div>
+              </div>
+              <div style="position:absolute;top:0;right:-10px;width:42px;height:42px;border-radius:50%;border:1.5px solid #1a1a1a;background:#fff;display:flex;align-items:center;justify-content:center;">
+                <div style="width:14px;height:14px;border-radius:50%;background:#16a34a;"></div>
+              </div>
+              <div style="position:absolute;top:40px;right:-6px;font-size:8px;font-weight:700;color:#6b6b68;">LEVEL</div>
+            </div>
+
+            <div style="display:flex;gap:8px;width:100%;margin-top:18px;flex-shrink:0;">
+              <div style="flex:1;border:1.5px solid #1a1a1a;border-radius:10px;padding:8px;text-align:center;font-size:13px;font-weight:700;">Magnetic: 145°</div>
+              <div style="flex:1;border:1.5px solid #1a1a1a;border-radius:10px;padding:8px;text-align:center;font-size:13px;font-weight:700;">True North: 137°</div>
+            </div>
+
+            <div style="width:100%;display:flex;border:1.5px solid #1a1a1a;border-radius:10px;overflow:hidden;font-size:12.5px;font-weight:700;margin-top:12px;flex-shrink:0;">
+              <div style="flex:1;text-align:center;padding:8px 4px;">Single Point</div>
+              <div style="flex:1;text-align:center;padding:8px 4px;background:#3E7A4C;color:#fff;border-left:1px solid #1a1a1a;">Range Capture</div>
+            </div>
+            <div style="width:100%;display:flex;gap:8px;margin-top:10px;flex-shrink:0;">
+              <div style="flex:1;border:1.5px solid #1a1a1a;border-radius:10px;padding:8px;text-align:center;font-size:12.5px;font-weight:800;">● Start</div>
+              <div style="flex:1;border:1.5px solid #1a1a1a;border-radius:10px;padding:8px;text-align:center;font-size:12.5px;font-weight:800;">▪ End</div>
+            </div>
+            <div style="width:100%;font-family:ui-monospace,monospace;font-size:11.5px;text-align:center;margin-top:8px;color:#444;flex-shrink:0;">Start: 350° End: 10° → Bearing: 0° ± 10°</div>
+
+            <div style="margin-top:12px;border:1.5px solid #1a1a1a;border-radius:20px;padding:9px 18px;font-size:12.5px;font-weight:800;white-space:nowrap;flex-shrink:0;">⟲ Calibrate (figure-8)</div>
+            <div style="margin-top:8px;font-size:10.5px;color:#8a8a86;font-style:italic;text-align:center;flex-shrink:0;">Point phone at antenna. Align with signal. Range: tap Start, rotate, tap End.</div>
+            <div style="flex:1;"></div>
+            <div style="width:100%;padding:10px 0 22px;flex-shrink:0;">
+              <div style="height:52px;background:#3E7A4C;color:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;">SAVE BEARING</div>
+            </div>
+          </div>
+        </x-import>
+        <div style="font-size:12px;font-weight:700;color:#6b6b68;">Light</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:center;">
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="true" hint-size="402px,874px">
+          <div style="height:100%;display:flex;flex-direction:column;align-items:center;background:#141414;padding:0 20px;box-sizing:border-box;">
+            <div style="height:56px;flex-shrink:0;"></div><div style="height:44px;border-bottom:1px solid #2a2a2a;flex-shrink:0;display:flex;align-items:center;gap:8px;padding:0 20px;box-sizing:border-box;"><div style="width:26px;height:26px;border-radius:6px;background:#3E7A4C;position:relative;flex-shrink:0;"><svg width="26" height="26" viewBox="0 0 120 120" style="position:absolute;inset:0;"><g transform="rotate(-90 60 60)"><line x1="24" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round"></line><line x1="96" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.75"></line><line x1="60" y1="98" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.5"></line><circle cx="60" cy="42" r="13" fill="#ffffff"></circle></g></svg></div><div style="font-size:15px;font-weight:800;letter-spacing:0.03em;color:#f3efe4;">TRI<span style="color:#6FBF82;">TRACK</span></div></div>
+            <div style="width:100%;border:1.5px solid #d97706;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:space-between;background:#241d10;color:#fbbf24;flex-shrink:0;">
+              <span>⚠ Interference detected — step away from metal/vehicle</span><span>✕</span>
+            </div>
+
+            <div style="position:relative;width:280px;height:280px;margin-top:20px;flex-shrink:0;">
+              <div style="width:100%;height:100%;border-radius:50%;border:2px solid #f2f2f0;position:relative;background:#1a1a1a;">
+                <div style="position:absolute;inset:0;border-radius:50%;background:repeating-conic-gradient(rgba(242,242,240,0.3) 0deg 1deg,transparent 1deg 10deg);-webkit-mask-image:radial-gradient(circle,transparent 88%,#000 88% 96%,transparent 96%);mask-image:radial-gradient(circle,transparent 88%,#000 88% 96%,transparent 96%);"></div>
+                <div style="position:absolute;inset:0;border-radius:50%;background:repeating-conic-gradient(#f2f2f0 0deg 1.5deg,transparent 1.5deg 30deg);-webkit-mask-image:radial-gradient(circle,transparent 82%,#000 82% 96%,transparent 96%);mask-image:radial-gradient(circle,transparent 82%,#000 82% 96%,transparent 96%);"></div>
+                <div style="position:absolute;top:4px;left:50%;transform:translateX(-50%);font-size:13px;font-weight:800;color:#f2f2f0;">N</div>
+                <div style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%);font-size:13px;font-weight:800;color:#f2f2f0;">S</div>
+                <div style="position:absolute;top:50%;left:4px;transform:translateY(-50%);font-size:13px;font-weight:800;color:#f2f2f0;">W</div>
+                <div style="position:absolute;top:50%;right:4px;transform:translateY(-50%);font-size:13px;font-weight:800;color:#f2f2f0;">E</div>
+                <div style="position:absolute;top:24.1px;left:171.1px;transform:translate(-50%,-50%);font-size:8px;color:#6c6c68;">15°</div>
+                <div style="position:absolute;top:36.1px;left:200px;transform:translate(-50%,-50%);font-size:9px;color:#6c6c68;">30°</div>
+                <div style="position:absolute;top:55.2px;left:224.9px;transform:translate(-50%,-50%);font-size:8px;color:#6c6c68;">45°</div>
+                <div style="position:absolute;top:80px;left:243.9px;transform:translate(-50%,-50%);font-size:9px;color:#6c6c68;">60°</div>
+                <div style="position:absolute;top:108.9px;left:255.9px;transform:translate(-50%,-50%);font-size:8px;color:#6c6c68;">75°</div>
+                <div style="position:absolute;top:171.1px;left:255.9px;transform:translate(-50%,-50%);font-size:8px;color:#6c6c68;">105°</div>
+                <div style="position:absolute;top:200px;left:243.9px;transform:translate(-50%,-50%);font-size:9px;color:#6c6c68;">120°</div>
+                <div style="position:absolute;top:224.9px;left:224.9px;transform:translate(-50%,-50%);font-size:8px;color:#6c6c68;">135°</div>
+                <div style="position:absolute;top:243.9px;left:200px;transform:translate(-50%,-50%);font-size:9px;color:#6c6c68;">150°</div>
+                <div style="position:absolute;top:255.9px;left:171.1px;transform:translate(-50%,-50%);font-size:8px;color:#6c6c68;">165°</div>
+                <div style="position:absolute;top:255.9px;left:108.9px;transform:translate(-50%,-50%);font-size:8px;color:#6c6c68;">195°</div>
+                <div style="position:absolute;top:243.9px;left:80px;transform:translate(-50%,-50%);font-size:9px;color:#6c6c68;">210°</div>
+                <div style="position:absolute;top:224.9px;left:55.2px;transform:translate(-50%,-50%);font-size:8px;color:#6c6c68;">225°</div>
+                <div style="position:absolute;top:200px;left:36.1px;transform:translate(-50%,-50%);font-size:9px;color:#6c6c68;">240°</div>
+                <div style="position:absolute;top:171.1px;left:24.1px;transform:translate(-50%,-50%);font-size:8px;color:#6c6c68;">255°</div>
+                <div style="position:absolute;top:108.9px;left:24.1px;transform:translate(-50%,-50%);font-size:8px;color:#6c6c68;">285°</div>
+                <div style="position:absolute;top:80px;left:36.1px;transform:translate(-50%,-50%);font-size:9px;color:#6c6c68;">300°</div>
+                <div style="position:absolute;top:55.2px;left:55.2px;transform:translate(-50%,-50%);font-size:8px;color:#6c6c68;">315°</div>
+                <div style="position:absolute;top:36.1px;left:80px;transform:translate(-50%,-50%);font-size:9px;color:#6c6c68;">330°</div>
+                <div style="position:absolute;top:24.1px;left:108.9px;transform:translate(-50%,-50%);font-size:8px;color:#6c6c68;">345°</div>
+                <div style="position:absolute;top:50%;left:50%;width:12px;height:128px;background:#f87171;clip-path:polygon(32% 100%,68% 100%,68% 9%,50% 0%,32% 9%);transform:translate(-50%,-100%) rotate(-25deg);transform-origin:bottom center;"></div>
+                <div style="position:absolute;top:16%;left:36%;font-size:11px;font-weight:800;color:#f87171;">M</div>
+                <div style="position:absolute;top:50%;left:50%;width:0;height:0;transform:rotate(8deg);transform-origin:0 0;">
+                  <div style="position:absolute;top:-118px;left:-1.5px;width:3px;height:118px;border-left:3px dotted #f87171;"></div>
+                  <div style="position:absolute;top:-130px;left:-5px;width:10px;height:13px;background:#f87171;clip-path:polygon(20% 100%,80% 100%,50% 0%);"></div>
+                </div>
+                <div style="position:absolute;top:11%;left:58%;font-size:11px;font-weight:800;color:#f87171;">T</div>
+                <div style="position:absolute;top:50%;left:50%;width:150px;height:150px;transform:translate(-50%,-50%);border-radius:50%;background:conic-gradient(from -13deg,rgba(59,130,246,0.30) 0deg 33deg,transparent 33deg);"></div>
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:112px;height:112px;border-radius:50%;background:#1c1c1c;border:1px solid #2c2c2a;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;">
+                  <div style="font-size:20px;font-weight:800;line-height:1;color:#f2f2f0;white-space:nowrap;">145°</div>
+                  <div style="font-size:8.5px;font-weight:700;color:#f87171;line-height:1;white-space:nowrap;">M 145° · T 137°</div>
+                  <div style="font-size:8px;color:#8a8a86;line-height:1;white-space:nowrap;">±10° uncert.</div>
+                </div>
+              </div>
+              <div style="position:absolute;top:0;right:-10px;width:42px;height:42px;border-radius:50%;border:1.5px solid #f2f2f0;background:#1c1c1c;display:flex;align-items:center;justify-content:center;">
+                <div style="width:14px;height:14px;border-radius:50%;background:#22c55e;"></div>
+              </div>
+              <div style="position:absolute;top:40px;right:-6px;font-size:8px;font-weight:700;color:#9c9c98;">LEVEL</div>
+            </div>
+
+            <div style="display:flex;gap:8px;width:100%;margin-top:18px;flex-shrink:0;">
+              <div style="flex:1;border:1.5px solid #f2f2f0;border-radius:10px;padding:8px;text-align:center;font-size:13px;font-weight:700;color:#f2f2f0;">Magnetic: 145°</div>
+              <div style="flex:1;border:1.5px solid #f2f2f0;border-radius:10px;padding:8px;text-align:center;font-size:13px;font-weight:700;color:#f2f2f0;">True North: 137°</div>
+            </div>
+
+            <div style="width:100%;display:flex;border:1.5px solid #f2f2f0;border-radius:10px;overflow:hidden;font-size:12.5px;font-weight:700;margin-top:12px;flex-shrink:0;">
+              <div style="flex:1;text-align:center;padding:8px 4px;color:#f2f2f0;">Single Point</div>
+              <div style="flex:1;text-align:center;padding:8px 4px;background:#5FAE71;color:#0d1a10;border-left:1px solid #2c2c2a;">Range Capture</div>
+            </div>
+            <div style="width:100%;display:flex;gap:8px;margin-top:10px;flex-shrink:0;">
+              <div style="flex:1;border:1.5px solid #f2f2f0;border-radius:10px;padding:8px;text-align:center;font-size:12.5px;font-weight:800;color:#f2f2f0;">● Start</div>
+              <div style="flex:1;border:1.5px solid #f2f2f0;border-radius:10px;padding:8px;text-align:center;font-size:12.5px;font-weight:800;color:#f2f2f0;">▪ End</div>
+            </div>
+            <div style="width:100%;font-family:ui-monospace,monospace;font-size:11.5px;text-align:center;margin-top:8px;color:#c7c7c3;flex-shrink:0;">Start: 350° End: 10° → Bearing: 0° ± 10°</div>
+
+            <div style="margin-top:12px;border:1.5px solid #f2f2f0;border-radius:20px;padding:9px 18px;font-size:12.5px;font-weight:800;white-space:nowrap;color:#f2f2f0;flex-shrink:0;">⟲ Calibrate (figure-8)</div>
+            <div style="margin-top:8px;font-size:10.5px;color:#8a8a86;font-style:italic;text-align:center;flex-shrink:0;">Point phone at antenna. Align with signal. Range: tap Start, rotate, tap End.</div>
+            <div style="flex:1;"></div>
+            <div style="width:100%;padding:10px 0 22px;flex-shrink:0;">
+              <div style="height:52px;background:#5FAE71;color:#0d1a10;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;">SAVE BEARING</div>
+            </div>
+          </div>
+        </x-import>
+        <div style="font-size:12px;font-weight:700;color:#6b6b68;">Dark</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- POSITION ESTIMATION -->
+  <div style="max-width:1300px;margin:0 auto 48px;">
+    <div style="font-size:20px;font-weight:800;margin-bottom:14px;">4 · Position Estimation</div>
+    <div style="display:flex;gap:36px;flex-wrap:wrap;">
+
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:center;">
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+          <div style="height:100%;display:flex;flex-direction:column;background:#ffffff;">
+            <div style="height:56px;flex-shrink:0;"></div><div style="height:44px;border-bottom:1px solid #e2e2df;flex-shrink:0;display:flex;align-items:center;gap:8px;padding:0 20px;box-sizing:border-box;"><div style="width:26px;height:26px;border-radius:6px;background:#3E7A4C;position:relative;flex-shrink:0;"><svg width="26" height="26" viewBox="0 0 120 120" style="position:absolute;inset:0;"><g transform="rotate(-90 60 60)"><line x1="24" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round"></line><line x1="96" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.75"></line><line x1="60" y1="98" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.5"></line><circle cx="60" cy="42" r="13" fill="#ffffff"></circle></g></svg></div><div style="font-size:15px;font-weight:800;letter-spacing:0.03em;color:#1a1a1a;">TRI<span style="color:#3E7A4C;">TRACK</span></div></div>
+            <div style="height:52px;flex-shrink:0;border-bottom:1.5px solid #1a1a1a;display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:800;">150.123 MHz · M1214 (Mexican Wolf) <span style="font-size:11px;color:#6b6b68;">▾</span></div>
+            <div style="height:44%;position:relative;overflow:hidden;background:linear-gradient(160deg,#dfe9d5,#eee8d0 55%,#dde8d5);">
+              <div style="position:absolute;top:18%;left:12%;width:74%;height:2px;background:#3b82f6;transform:rotate(9deg);transform-origin:left;"></div>
+              <div style="position:absolute;top:42%;left:8%;width:78%;height:2px;background:#3b82f6;transform:rotate(-5deg);transform-origin:left;opacity:0.85;"></div>
+              <div style="position:absolute;top:62%;left:10%;width:76%;height:2px;background:#93c5fd;transform:rotate(21deg);transform-origin:left;opacity:0.4;"></div>
+              <div style="position:absolute;top:36%;left:50%;width:44px;height:44px;border:2.5px dashed #444;border-radius:50%;transform:translate(-50%,-50%);"></div>
+              <div style="position:absolute;top:41%;left:58%;width:16px;height:16px;border:2.5px solid #2563eb;border-radius:50%;background:#fff;transform:translate(-50%,-50%);"></div>
+              <div style="position:absolute;top:46%;left:70%;font-size:10px;font-weight:800;color:#2563eb;">MLE</div>
+              <div style="position:absolute;top:10px;right:10px;border:1.5px solid #1a1a1a;border-radius:8px;padding:5px 8px;font-size:10px;font-weight:700;background:#fff;white-space:nowrap;">Show intersections</div>
+              <div style="position:absolute;bottom:10px;left:10px;font-size:10px;color:#444;background:rgba(255,255,255,0.85);padding:2px 5px;border-radius:4px;">↖ tap ray to exclude</div>
+            </div>
+            <div style="flex:1;overflow-y:auto;border-top:1.5px solid #1a1a1a;padding:0 20px 10px;display:flex;flex-direction:column;gap:8px;">
+              <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:8px 0 2px;">
+                <div style="width:40px;height:4px;border-radius:2px;background:#c7c7c3;"></div>
+                <div style="font-size:9px;color:#a3a39f;margin-top:3px;">drag to resize</div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-size:11px;font-family:ui-monospace,monospace;color:#444;">N=5 · Ellipse 340m · Conf 68% · Span 12min</div>
+                <div style="border:1.5px solid #1a1a1a;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;">Recompute</div>
+              </div>
+              <div style="border:1.5px solid #d97706;background:#fff7ed;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:700;color:#92400e;">⚠ Time span 22min &gt; 15min window — animal may have moved</div>
+              <div style="border:1.5px solid #d97706;background:#fff7ed;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:700;color:#92400e;">⚠ Bearings near-parallel — try a different angle</div>
+              <div style="display:flex;align-items:center;gap:8px;border-bottom:1px solid #e2e2df;padding-bottom:6px;"><span>☑</span><span style="font-size:11px;">Obs 1 — Rivera — 14:32 — 142°±10° — Strong — Good</span></div>
+              <div style="display:flex;align-items:center;gap:8px;border-bottom:1px solid #e2e2df;padding-bottom:6px;"><span>☑</span><span style="font-size:11px;">Obs 2 — Chen — 14:38 — 138°±12° — Moderate — Good</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span>☐</span><span style="font-size:11px;color:#a3a39f;">Obs 3 — Rivera — 14:51 — 160°±15° — Weak — Bounce?</span></div>
+              <div style="font-size:10.5px;color:#a3a39f;">↓ 2 more</div>
+            </div>
+            <div style="flex-shrink:0;padding:8px 20px 20px;">
+              <div style="height:48px;background:#3E7A4C;color:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;">SAVE POSITION</div>
+            </div>
+          </div>
+        </x-import>
+        <div style="font-size:12px;font-weight:700;color:#6b6b68;">Light</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:center;">
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="true" hint-size="402px,874px">
+          <div style="height:100%;display:flex;flex-direction:column;background:#141414;">
+            <div style="height:56px;flex-shrink:0;"></div><div style="height:44px;border-bottom:1px solid #2a2a2a;flex-shrink:0;display:flex;align-items:center;gap:8px;padding:0 20px;box-sizing:border-box;"><div style="width:26px;height:26px;border-radius:6px;background:#3E7A4C;position:relative;flex-shrink:0;"><svg width="26" height="26" viewBox="0 0 120 120" style="position:absolute;inset:0;"><g transform="rotate(-90 60 60)"><line x1="24" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round"></line><line x1="96" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.75"></line><line x1="60" y1="98" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.5"></line><circle cx="60" cy="42" r="13" fill="#ffffff"></circle></g></svg></div><div style="font-size:15px;font-weight:800;letter-spacing:0.03em;color:#f3efe4;">TRI<span style="color:#6FBF82;">TRACK</span></div></div>
+            <div style="height:52px;flex-shrink:0;border-bottom:1.5px solid #2c2c2a;display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:800;color:#f2f2f0;">150.123 MHz · M1214 (Mexican Wolf) <span style="font-size:11px;color:#9c9c98;">▾</span></div>
+            <div style="height:44%;position:relative;overflow:hidden;background:linear-gradient(160deg,#1b241a,#221f16 55%,#1a221c);">
+              <div style="position:absolute;top:18%;left:12%;width:74%;height:2px;background:#60a5fa;transform:rotate(9deg);transform-origin:left;"></div>
+              <div style="position:absolute;top:42%;left:8%;width:78%;height:2px;background:#60a5fa;transform:rotate(-5deg);transform-origin:left;opacity:0.85;"></div>
+              <div style="position:absolute;top:62%;left:10%;width:76%;height:2px;background:#93c5fd;transform:rotate(21deg);transform-origin:left;opacity:0.35;"></div>
+              <div style="position:absolute;top:36%;left:50%;width:44px;height:44px;border:2.5px dashed #9c9c98;border-radius:50%;transform:translate(-50%,-50%);"></div>
+              <div style="position:absolute;top:41%;left:58%;width:16px;height:16px;border:2.5px solid #3b82f6;border-radius:50%;background:#141414;transform:translate(-50%,-50%);"></div>
+              <div style="position:absolute;top:46%;left:70%;font-size:10px;font-weight:800;color:#60a5fa;">MLE</div>
+              <div style="position:absolute;top:10px;right:10px;border:1.5px solid #f2f2f0;border-radius:8px;padding:5px 8px;font-size:10px;font-weight:700;background:#1c1c1c;color:#f2f2f0;white-space:nowrap;">Show intersections</div>
+              <div style="position:absolute;bottom:10px;left:10px;font-size:10px;color:#f2f2f0;background:rgba(0,0,0,0.55);padding:2px 5px;border-radius:4px;">↖ tap ray to exclude</div>
+            </div>
+            <div style="flex:1;overflow-y:auto;border-top:1.5px solid #2c2c2a;padding:0 20px 10px;display:flex;flex-direction:column;gap:8px;">
+              <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:8px 0 2px;">
+                <div style="width:40px;height:4px;border-radius:2px;background:#4a4a47;"></div>
+                <div style="font-size:9px;color:#8f8f8b;margin-top:3px;">drag to resize</div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-size:11px;font-family:ui-monospace,monospace;color:#c7c7c3;">N=5 · Ellipse 340m · Conf 68% · Span 12min</div>
+                <div style="border:1.5px solid #f2f2f0;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;color:#f2f2f0;">Recompute</div>
+              </div>
+              <div style="border:1.5px solid #d97706;background:#241d10;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:700;color:#fbbf24;">⚠ Time span 22min &gt; 15min window — animal may have moved</div>
+              <div style="border:1.5px solid #d97706;background:#241d10;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:700;color:#fbbf24;">⚠ Bearings near-parallel — try a different angle</div>
+              <div style="display:flex;align-items:center;gap:8px;border-bottom:1px solid #2c2c2a;padding-bottom:6px;color:#f2f2f0;"><span>☑</span><span style="font-size:11px;">Obs 1 — Rivera — 14:32 — 142°±10° — Strong — Good</span></div>
+              <div style="display:flex;align-items:center;gap:8px;border-bottom:1px solid #2c2c2a;padding-bottom:6px;color:#f2f2f0;"><span>☑</span><span style="font-size:11px;">Obs 2 — Chen — 14:38 — 138°±12° — Moderate — Good</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span>☐</span><span style="font-size:11px;color:#6c6c68;">Obs 3 — Rivera — 14:51 — 160°±15° — Weak — Bounce?</span></div>
+              <div style="font-size:10.5px;color:#6c6c68;">↓ 2 more</div>
+            </div>
+            <div style="flex-shrink:0;padding:8px 20px 20px;">
+              <div style="height:48px;background:#5FAE71;color:#0d1a10;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;">SAVE POSITION</div>
+            </div>
+          </div>
+        </x-import>
+        <div style="font-size:12px;font-weight:700;color:#6b6b68;">Dark</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROJECT SETUP / EXTENT -->
+  <div style="max-width:1300px;margin:0 auto 48px;">
+    <div style="font-size:20px;font-weight:800;margin-bottom:14px;">5 · Project Setup / Extent</div>
+    <div style="display:flex;gap:36px;flex-wrap:wrap;">
+
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:center;">
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+          <div style="height:100%;display:flex;flex-direction:column;background:#ffffff;padding:0 20px;box-sizing:border-box;gap:10px;">
+            <div style="height:56px;flex-shrink:0;"></div><div style="height:44px;border-bottom:1px solid #e2e2df;flex-shrink:0;display:flex;align-items:center;gap:8px;padding:0 20px;box-sizing:border-box;"><div style="width:26px;height:26px;border-radius:6px;background:#3E7A4C;position:relative;flex-shrink:0;"><svg width="26" height="26" viewBox="0 0 120 120" style="position:absolute;inset:0;"><g transform="rotate(-90 60 60)"><line x1="24" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round"></line><line x1="96" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.75"></line><line x1="60" y1="98" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.5"></line><circle cx="60" cy="42" r="13" fill="#ffffff"></circle></g></svg></div><div style="font-size:15px;font-weight:800;letter-spacing:0.03em;color:#1a1a1a;">TRI<span style="color:#3E7A4C;">TRACK</span></div></div>
+            <div style="font-size:18px;font-weight:800;">New Project</div>
+            <div style="border:1.5px solid #e2e2df;border-radius:10px;padding:10px 12px;font-size:13px;color:#a3a39f;">Name</div>
+            <div style="border:1.5px solid #e2e2df;border-radius:10px;padding:10px 12px;font-size:13px;color:#a3a39f;">Description</div>
+            <div style="border:1.5px solid #e2e2df;border-radius:10px;padding:10px 12px;font-size:13px;color:#a3a39f;">Species notes</div>
+
+            <div style="font-size:12px;font-weight:800;color:#6b6b68;letter-spacing:0.04em;margin-top:2px;">COORDINATE FORMAT</div>
+            <div style="display:flex;border:1.5px solid #1a1a1a;border-radius:10px;overflow:hidden;font-size:12.5px;font-weight:700;height:40px;">
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;background:#3E7A4C;color:#fff;">DD</div>
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;border-left:1px solid #1a1a1a;">DMS</div>
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;border-left:1px solid #1a1a1a;">UTM</div>
+            </div>
+
+            <div style="font-size:12px;font-weight:800;color:#6b6b68;letter-spacing:0.04em;">PROJECT EXTENT</div>
+            <div style="flex:1;position:relative;border-radius:10px;overflow:hidden;background:linear-gradient(160deg,#dfe9d5,#eee8d0 55%,#dde8d5);">
+              <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%;">
+                <polygon points="18,22 82,22 95,50 82,78 18,78" fill="rgba(62,122,76,0.10)" stroke="#3E7A4C" stroke-width="1.2" stroke-dasharray="3,2"></polygon>
+                <rect x="16.5" y="20.5" width="3" height="3" fill="#3E7A4C"></rect>
+                <rect x="80.5" y="20.5" width="3" height="3" fill="#3E7A4C"></rect>
+                <rect x="80.5" y="76.5" width="3" height="3" fill="#3E7A4C"></rect>
+                <rect x="16.5" y="76.5" width="3" height="3" fill="#3E7A4C"></rect>
+                <circle cx="50" cy="22" r="1.6" fill="#fff" stroke="#3E7A4C" stroke-width="0.9"></circle>
+                <circle cx="50" cy="78" r="1.6" fill="#fff" stroke="#3E7A4C" stroke-width="0.9"></circle>
+                <circle cx="18" cy="50" r="1.6" fill="#fff" stroke="#3E7A4C" stroke-width="0.9"></circle>
+                <circle cx="88.5" cy="36" r="1.6" fill="#fff" stroke="#3E7A4C" stroke-width="0.9"></circle>
+                <circle cx="88.5" cy="64" r="1.6" fill="#fff" stroke="#3E7A4C" stroke-width="0.9"></circle>
+                <circle cx="95" cy="50" r="2.4" fill="#3E7A4C"></circle>
+                <circle cx="99.5" cy="42" r="3" fill="#fff" stroke="#3E7A4C" stroke-width="0.9"></circle>
+                <text x="99.5" y="43.2" font-size="3.6" text-anchor="middle" fill="#3E7A4C">×</text>
+              </svg>
+              <div style="position:absolute;top:6px;left:6px;font-size:10px;font-weight:700;color:#3E7A4C;background:rgba(255,255,255,0.8);padding:2px 6px;border-radius:5px;">drag any point to adjust</div>
+            </div>
+
+            <div style="font-size:12px;font-weight:800;color:#6b6b68;letter-spacing:0.04em;">TRIANGULATION TIME WINDOW</div>
+            <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+              <div style="width:40px;height:40px;border:1.5px solid #1a1a1a;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">−</div>
+              <div style="flex:1;text-align:center;font-size:15px;font-weight:800;border:1.5px solid #1a1a1a;border-radius:10px;padding:8px;">15–20 min</div>
+              <div style="width:40px;height:40px;border:1.5px solid #1a1a1a;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">+</div>
+            </div>
+
+            <div style="flex-shrink:0;padding-bottom:20px;">
+              <div style="height:48px;background:#3E7A4C;color:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;">SAVE PROJECT</div>
+            </div>
+          </div>
+        </x-import>
+        <div style="font-size:12px;font-weight:700;color:#6b6b68;">Light</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:center;">
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="true" hint-size="402px,874px">
+          <div style="height:100%;display:flex;flex-direction:column;background:#141414;padding:0 20px;box-sizing:border-box;gap:10px;">
+            <div style="height:56px;flex-shrink:0;"></div><div style="height:44px;border-bottom:1px solid #2a2a2a;flex-shrink:0;display:flex;align-items:center;gap:8px;padding:0 20px;box-sizing:border-box;"><div style="width:26px;height:26px;border-radius:6px;background:#3E7A4C;position:relative;flex-shrink:0;"><svg width="26" height="26" viewBox="0 0 120 120" style="position:absolute;inset:0;"><g transform="rotate(-90 60 60)"><line x1="24" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round"></line><line x1="96" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.75"></line><line x1="60" y1="98" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.5"></line><circle cx="60" cy="42" r="13" fill="#ffffff"></circle></g></svg></div><div style="font-size:15px;font-weight:800;letter-spacing:0.03em;color:#f3efe4;">TRI<span style="color:#6FBF82;">TRACK</span></div></div>
+            <div style="font-size:18px;font-weight:800;color:#f2f2f0;">New Project</div>
+            <div style="border:1.5px solid #2c2c2a;border-radius:10px;padding:10px 12px;font-size:13px;color:#6c6c68;">Name</div>
+            <div style="border:1.5px solid #2c2c2a;border-radius:10px;padding:10px 12px;font-size:13px;color:#6c6c68;">Description</div>
+            <div style="border:1.5px solid #2c2c2a;border-radius:10px;padding:10px 12px;font-size:13px;color:#6c6c68;">Species notes</div>
+
+            <div style="font-size:12px;font-weight:800;color:#9c9c98;letter-spacing:0.04em;margin-top:2px;">COORDINATE FORMAT</div>
+            <div style="display:flex;border:1.5px solid #f2f2f0;border-radius:10px;overflow:hidden;font-size:12.5px;font-weight:700;height:40px;">
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;background:#5FAE71;color:#0d1a10;">DD</div>
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;border-left:1px solid #2c2c2a;color:#f2f2f0;">DMS</div>
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;border-left:1px solid #2c2c2a;color:#f2f2f0;">UTM</div>
+            </div>
+
+            <div style="font-size:12px;font-weight:800;color:#9c9c98;letter-spacing:0.04em;">PROJECT EXTENT</div>
+            <div style="flex:1;position:relative;border-radius:10px;overflow:hidden;background:linear-gradient(160deg,#1b241a,#221f16 55%,#1a221c);">
+              <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%;">
+                <polygon points="18,22 82,22 95,50 82,78 18,78" fill="rgba(95,174,113,0.14)" stroke="#6FBF82" stroke-width="1.2" stroke-dasharray="3,2"></polygon>
+                <rect x="16.5" y="20.5" width="3" height="3" fill="#6FBF82"></rect>
+                <rect x="80.5" y="20.5" width="3" height="3" fill="#6FBF82"></rect>
+                <rect x="80.5" y="76.5" width="3" height="3" fill="#6FBF82"></rect>
+                <rect x="16.5" y="76.5" width="3" height="3" fill="#6FBF82"></rect>
+                <circle cx="50" cy="22" r="1.6" fill="#1c1c1c" stroke="#6FBF82" stroke-width="0.9"></circle>
+                <circle cx="50" cy="78" r="1.6" fill="#1c1c1c" stroke="#6FBF82" stroke-width="0.9"></circle>
+                <circle cx="18" cy="50" r="1.6" fill="#1c1c1c" stroke="#6FBF82" stroke-width="0.9"></circle>
+                <circle cx="88.5" cy="36" r="1.6" fill="#1c1c1c" stroke="#6FBF82" stroke-width="0.9"></circle>
+                <circle cx="88.5" cy="64" r="1.6" fill="#1c1c1c" stroke="#6FBF82" stroke-width="0.9"></circle>
+                <circle cx="95" cy="50" r="2.4" fill="#6FBF82"></circle>
+                <circle cx="99.5" cy="42" r="3" fill="#1c1c1c" stroke="#6FBF82" stroke-width="0.9"></circle>
+                <text x="99.5" y="43.2" font-size="3.6" text-anchor="middle" fill="#6FBF82">×</text>
+              </svg>
+              <div style="position:absolute;top:6px;left:6px;font-size:10px;font-weight:700;color:#f2f2f0;background:rgba(0,0,0,0.55);padding:2px 6px;border-radius:5px;">drag any point to adjust</div>
+            </div>
+
+            <div style="font-size:12px;font-weight:800;color:#9c9c98;letter-spacing:0.04em;">TRIANGULATION TIME WINDOW</div>
+            <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+              <div style="width:40px;height:40px;border:1.5px solid #f2f2f0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#f2f2f0;">−</div>
+              <div style="flex:1;text-align:center;font-size:15px;font-weight:800;border:1.5px solid #f2f2f0;border-radius:10px;padding:8px;color:#f2f2f0;">15–20 min</div>
+              <div style="width:40px;height:40px;border:1.5px solid #f2f2f0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#f2f2f0;">+</div>
+            </div>
+
+            <div style="flex-shrink:0;padding-bottom:20px;">
+              <div style="height:48px;background:#5FAE71;color:#0d1a10;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;">SAVE PROJECT</div>
+            </div>
+          </div>
+        </x-import>
+        <div style="font-size:12px;font-weight:700;color:#6b6b68;">Dark</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MANAGE OFFLINE MAPS -->
+  <div style="max-width:1300px;margin:0 auto 48px;">
+    <div style="font-size:20px;font-weight:800;margin-bottom:14px;">6 · Manage Offline Maps</div>
+    <div style="display:flex;gap:36px;flex-wrap:wrap;">
+
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:center;">
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" hint-size="402px,874px">
+          <div style="height:100%;display:flex;flex-direction:column;background:#ffffff;padding:0 20px;box-sizing:border-box;gap:10px;">
+            <div style="height:56px;flex-shrink:0;"></div><div style="height:44px;border-bottom:1px solid #e2e2df;flex-shrink:0;display:flex;align-items:center;gap:8px;padding:0 20px;box-sizing:border-box;"><div style="width:26px;height:26px;border-radius:6px;background:#3E7A4C;position:relative;flex-shrink:0;"><svg width="26" height="26" viewBox="0 0 120 120" style="position:absolute;inset:0;"><g transform="rotate(-90 60 60)"><line x1="24" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round"></line><line x1="96" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.75"></line><line x1="60" y1="98" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.5"></line><circle cx="60" cy="42" r="13" fill="#ffffff"></circle></g></svg></div><div style="font-size:15px;font-weight:800;letter-spacing:0.03em;color:#1a1a1a;">TRI<span style="color:#3E7A4C;">TRACK</span></div></div>
+            <div style="font-size:18px;font-weight:800;">Offline Maps</div>
+
+            <div style="height:170px;position:relative;border-radius:10px;overflow:hidden;flex-shrink:0;background:linear-gradient(160deg,#dfe9d5,#eee8d0 55%,#dde8d5);">
+              <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%;">
+                <polygon points="18,22 82,22 95,50 82,78 18,78" fill="rgba(62,122,76,0.10)" stroke="#3E7A4C" stroke-width="1.2" stroke-dasharray="3,2"></polygon>
+                <rect x="16.5" y="20.5" width="3" height="3" fill="#3E7A4C"></rect>
+                <rect x="80.5" y="20.5" width="3" height="3" fill="#3E7A4C"></rect>
+                <rect x="80.5" y="76.5" width="3" height="3" fill="#3E7A4C"></rect>
+                <rect x="16.5" y="76.5" width="3" height="3" fill="#3E7A4C"></rect>
+                <circle cx="50" cy="22" r="1.6" fill="#fff" stroke="#3E7A4C" stroke-width="0.9"></circle>
+                <circle cx="50" cy="78" r="1.6" fill="#fff" stroke="#3E7A4C" stroke-width="0.9"></circle>
+                <circle cx="18" cy="50" r="1.6" fill="#fff" stroke="#3E7A4C" stroke-width="0.9"></circle>
+                <circle cx="88.5" cy="36" r="1.6" fill="#fff" stroke="#3E7A4C" stroke-width="0.9"></circle>
+                <circle cx="88.5" cy="64" r="1.6" fill="#fff" stroke="#3E7A4C" stroke-width="0.9"></circle>
+                <circle cx="95" cy="50" r="2.4" fill="#3E7A4C"></circle>
+                <circle cx="99.5" cy="42" r="3" fill="#fff" stroke="#3E7A4C" stroke-width="0.9"></circle>
+                <text x="99.5" y="43.2" font-size="3.6" text-anchor="middle" fill="#3E7A4C">×</text>
+              </svg>
+              <div style="position:absolute;top:8px;left:8px;font-size:10px;font-weight:700;color:#3E7A4C;background:rgba(255,255,255,0.8);padding:2px 6px;border-radius:5px;">downloaded area — drag any point to adjust</div>
+              <div style="position:absolute;bottom:8px;right:8px;border:1.5px solid #3E7A4C;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;background:#fff;color:#3E7A4C;white-space:nowrap;">Expand coverage ▸</div>
+            </div>
+
+            <div style="font-size:12px;font-weight:800;color:#6b6b68;letter-spacing:0.04em;">LAYERS</div>
+            <div style="display:flex;flex-direction:column;gap:8px;flex:1;overflow-y:auto;">
+              <div style="border:1.5px solid #1a1a1a;border-radius:10px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;">
+                <div><div style="font-size:13px;font-weight:800;">Terrain</div><div style="font-size:11px;color:#6b6b68;">184 MB · downloaded</div></div>
+                <div style="display:flex;gap:6px;"><div style="border:1.5px solid #1a1a1a;border-radius:6px;padding:5px 9px;font-size:11px;font-weight:700;">Update</div><div style="border:1.5px solid #1a1a1a;border-radius:6px;padding:5px 9px;font-size:11px;font-weight:700;">Delete</div></div>
+              </div>
+              <div style="border:1.5px solid #1a1a1a;border-radius:10px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;">
+                <div><div style="font-size:13px;font-weight:800;">Street</div><div style="font-size:11px;color:#6b6b68;">96 MB · downloaded</div></div>
+                <div style="display:flex;gap:6px;"><div style="border:1.5px solid #1a1a1a;border-radius:6px;padding:5px 9px;font-size:11px;font-weight:700;">Update</div><div style="border:1.5px solid #1a1a1a;border-radius:6px;padding:5px 9px;font-size:11px;font-weight:700;">Delete</div></div>
+              </div>
+              <div style="border:1.5px dashed #c7c7c3;border-radius:10px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;">
+                <div><div style="font-size:13px;font-weight:800;color:#6b6b68;">Satellite</div><div style="font-size:11px;color:#a3a39f;">not downloaded</div></div>
+                <div style="background:#3E7A4C;color:#fff;border-radius:6px;padding:5px 11px;font-size:11px;font-weight:700;">Download</div>
+              </div>
+              <div style="border:1.5px solid #1a1a1a;border-radius:10px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;">
+                <div><div style="font-size:13px;font-weight:800;">DEM (elevation)</div><div style="font-size:11px;color:#6b6b68;">202 MB · downloaded</div></div>
+                <div style="display:flex;gap:6px;"><div style="border:1.5px solid #1a1a1a;border-radius:6px;padding:5px 9px;font-size:11px;font-weight:700;">Update</div><div style="border:1.5px solid #1a1a1a;border-radius:6px;padding:5px 9px;font-size:11px;font-weight:700;">Delete</div></div>
+              </div>
+            </div>
+
+            <div style="flex-shrink:0;padding-bottom:20px;">
+              <div style="font-size:11px;color:#444;margin-bottom:6px;">482 MB used · device storage: 12.4 GB free</div>
+              <div style="width:100%;height:7px;background:#e2e2df;border-radius:4px;overflow:hidden;"><div style="width:38%;height:100%;background:#3E7A4C;"></div></div>
+            </div>
+          </div>
+        </x-import>
+        <div style="font-size:12px;font-weight:700;color:#6b6b68;">Light</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:center;">
+        <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="true" hint-size="402px,874px">
+          <div style="height:100%;display:flex;flex-direction:column;background:#141414;padding:0 20px;box-sizing:border-box;gap:10px;">
+            <div style="height:56px;flex-shrink:0;"></div><div style="height:44px;border-bottom:1px solid #2a2a2a;flex-shrink:0;display:flex;align-items:center;gap:8px;padding:0 20px;box-sizing:border-box;"><div style="width:26px;height:26px;border-radius:6px;background:#3E7A4C;position:relative;flex-shrink:0;"><svg width="26" height="26" viewBox="0 0 120 120" style="position:absolute;inset:0;"><g transform="rotate(-90 60 60)"><line x1="24" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round"></line><line x1="96" y1="92" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.75"></line><line x1="60" y1="98" x2="60" y2="42" stroke="#ffffff" stroke-width="9" stroke-linecap="round" opacity="0.5"></line><circle cx="60" cy="42" r="13" fill="#ffffff"></circle></g></svg></div><div style="font-size:15px;font-weight:800;letter-spacing:0.03em;color:#f3efe4;">TRI<span style="color:#6FBF82;">TRACK</span></div></div>
+            <div style="font-size:18px;font-weight:800;color:#f2f2f0;">Offline Maps</div>
+
+            <div style="height:170px;position:relative;border-radius:10px;overflow:hidden;flex-shrink:0;background:linear-gradient(160deg,#1b241a,#221f16 55%,#1a221c);">
+              <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%;">
+                <polygon points="18,22 82,22 95,50 82,78 18,78" fill="rgba(95,174,113,0.14)" stroke="#6FBF82" stroke-width="1.2" stroke-dasharray="3,2"></polygon>
+                <rect x="16.5" y="20.5" width="3" height="3" fill="#6FBF82"></rect>
+                <rect x="80.5" y="20.5" width="3" height="3" fill="#6FBF82"></rect>
+                <rect x="80.5" y="76.5" width="3" height="3" fill="#6FBF82"></rect>
+                <rect x="16.5" y="76.5" width="3" height="3" fill="#6FBF82"></rect>
+                <circle cx="50" cy="22" r="1.6" fill="#1c1c1c" stroke="#6FBF82" stroke-width="0.9"></circle>
+                <circle cx="50" cy="78" r="1.6" fill="#1c1c1c" stroke="#6FBF82" stroke-width="0.9"></circle>
+                <circle cx="18" cy="50" r="1.6" fill="#1c1c1c" stroke="#6FBF82" stroke-width="0.9"></circle>
+                <circle cx="88.5" cy="36" r="1.6" fill="#1c1c1c" stroke="#6FBF82" stroke-width="0.9"></circle>
+                <circle cx="88.5" cy="64" r="1.6" fill="#1c1c1c" stroke="#6FBF82" stroke-width="0.9"></circle>
+                <circle cx="95" cy="50" r="2.4" fill="#6FBF82"></circle>
+                <circle cx="99.5" cy="42" r="3" fill="#1c1c1c" stroke="#6FBF82" stroke-width="0.9"></circle>
+                <text x="99.5" y="43.2" font-size="3.6" text-anchor="middle" fill="#6FBF82">×</text>
+              </svg>
+              <div style="position:absolute;top:8px;left:8px;font-size:10px;font-weight:700;color:#f2f2f0;background:rgba(0,0,0,0.55);padding:2px 6px;border-radius:5px;">downloaded area — drag any point to adjust</div>
+              <div style="position:absolute;bottom:8px;right:8px;border:1.5px solid #6FBF82;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;background:#1c1c1c;color:#6FBF82;white-space:nowrap;">Expand coverage ▸</div>
+            </div>
+
+            <div style="font-size:12px;font-weight:800;color:#9c9c98;letter-spacing:0.04em;">LAYERS</div>
+            <div style="display:flex;flex-direction:column;gap:8px;flex:1;overflow-y:auto;">
+              <div style="border:1.5px solid #f2f2f0;border-radius:10px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;">
+                <div><div style="font-size:13px;font-weight:800;color:#f2f2f0;">Terrain</div><div style="font-size:11px;color:#9c9c98;">184 MB · downloaded</div></div>
+                <div style="display:flex;gap:6px;"><div style="border:1.5px solid #f2f2f0;border-radius:6px;padding:5px 9px;font-size:11px;font-weight:700;color:#f2f2f0;">Update</div><div style="border:1.5px solid #f2f2f0;border-radius:6px;padding:5px 9px;font-size:11px;font-weight:700;color:#f2f2f0;">Delete</div></div>
+              </div>
+              <div style="border:1.5px solid #f2f2f0;border-radius:10px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;">
+                <div><div style="font-size:13px;font-weight:800;color:#f2f2f0;">Street</div><div style="font-size:11px;color:#9c9c98;">96 MB · downloaded</div></div>
+                <div style="display:flex;gap:6px;"><div style="border:1.5px solid #f2f2f0;border-radius:6px;padding:5px 9px;font-size:11px;font-weight:700;color:#f2f2f0;">Update</div><div style="border:1.5px solid #f2f2f0;border-radius:6px;padding:5px 9px;font-size:11px;font-weight:700;color:#f2f2f0;">Delete</div></div>
+              </div>
+              <div style="border:1.5px dashed #3a3a37;border-radius:10px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;">
+                <div><div style="font-size:13px;font-weight:800;color:#9c9c98;">Satellite</div><div style="font-size:11px;color:#6c6c68;">not downloaded</div></div>
+                <div style="background:#5FAE71;color:#0d1a10;border-radius:6px;padding:5px 11px;font-size:11px;font-weight:700;">Download</div>
+              </div>
+              <div style="border:1.5px solid #f2f2f0;border-radius:10px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;">
+                <div><div style="font-size:13px;font-weight:800;color:#f2f2f0;">DEM (elevation)</div><div style="font-size:11px;color:#9c9c98;">202 MB · downloaded</div></div>
+                <div style="display:flex;gap:6px;"><div style="border:1.5px solid #f2f2f0;border-radius:6px;padding:5px 9px;font-size:11px;font-weight:700;color:#f2f2f0;">Update</div><div style="border:1.5px solid #f2f2f0;border-radius:6px;padding:5px 9px;font-size:11px;font-weight:700;color:#f2f2f0;">Delete</div></div>
+              </div>
+            </div>
+
+            <div style="flex-shrink:0;padding-bottom:20px;">
+              <div style="font-size:11px;color:#c7c7c3;margin-bottom:6px;">482 MB used · device storage: 12.4 GB free</div>
+              <div style="width:100%;height:7px;background:#2c2c2a;border-radius:4px;overflow:hidden;"><div style="width:38%;height:100%;background:#5FAE71;"></div></div>
+            </div>
+          </div>
+        </x-import>
+        <div style="font-size:12px;font-weight:700;color:#6b6b68;">Dark</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width:1300px;margin:0 auto;font-size:12.5px;color:#8a8a86;text-align:center;">Stage 2 hi-fi pass — all 6 screens covered, light + dark.</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;mapStyle&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;realistic&quot;,&quot;options&quot;:[&quot;realistic&quot;,&quot;abstract&quot;],&quot;tsType&quot;:&quot;'realistic'|'abstract'&quot;,&quot;section&quot;:&quot;Main Map&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const mapStyle = this.props.mapStyle ?? 'realistic';
+    return {
+      mapStyleRealistic: mapStyle === 'realistic',
+      mapStyleAbstract: mapStyle === 'abstract',
+    };
+  }
+}
+</script>
+</body>
+</html>

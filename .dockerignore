@@ -1,0 +1,20 @@
+# The server image only needs server/ and packages/tritrack_sync/ (see
+# server/Dockerfile's COPY lines); everything below is irrelevant to that
+# build and would only slow down `docker compose build`'s context upload.
+.git/
+.dart_tool/
+build/
+android/
+ios/
+macos/
+web/
+windows/
+linux/
+lib/
+test/
+assets/
+CLAUDE_DOCS/
+*.iml
+.idea/
+.vscode/
+**/*.log

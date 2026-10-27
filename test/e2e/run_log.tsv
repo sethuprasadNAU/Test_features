@@ -1,0 +1,46 @@
+# One line per run of scripts/run_e2e_tests.sh (task 11.125).
+# utc	commit	result
+2026-09-02T06:12:56Z	407f55f	green
+2026-09-02T14:22:29Z	414e59d	red(6)
+#
+# ^ Task 11.130 investigated this run. Six sign-in links did not arrive; three
+#   later runs were green. WHAT WAS RULED OUT, so the next person starts here:
+#
+#   * The per-address rate limit is NOT the cause. Measured on a full 75-test
+#     run on 2026-09-02: `auth_audit_log` held exactly ONE
+#     rate_limit_tripped/email_limited row, and it is the deliberate probe in
+#     magic_link_reader_diagnosis_e2e_test.dart. It cannot be anything else --
+#     every address in this suite is minted per test by randomEmail() and gets
+#     at most two requests, against a limit of three per fifteen minutes.
+#     117 link_requested rows, all outcome 'sent'; no source_limited, no
+#     internal_error.
+#   * Accumulated old link files are NOT the cause -- task 11.118 tested that.
+#
+#   NOT RULED OUT, and not asserted either:
+#   * first-run cost after container start (11.118 named it and refused to
+#     assert it; this suite runs in ~8s, against a 30s per-link ceiling);
+#   * clock skew between the container and the host on Docker Desktop, which
+#     would make a fresh link look stale to `_isStale` and fail a random
+#     minority of sign-ins. Measured on this machine: the container read
+#     slightly AHEAD of the host, which is the harmless direction.
+#
+#   WHY IT COULD NOT BE SETTLED FROM THIS RUN: the reader had already asked the
+#   audit log and printed a verdict for each of the six failures, and both the
+#   output and the database were gone -- run_e2e_tests.sh's EXIT trap ran
+#   `down -v`. That is fixed: a red run now leaves the stack up and tees its
+#   output to .e2e_last_run.log.
+#
+2026-09-02T14:40:39Z	414e59d	green
+2026-09-03T06:05:50Z	e92a7a7	green
+2026-09-03T06:10:04Z	e92a7a7	green
+2026-09-03T06:11:02Z	e92a7a7	red(1)
+#   ^ NOT A REAL FAILURE. Task 11.130 injected a test that calls fail() to watch
+#     the red path above actually keep the stack up, rather than shipping it
+#     unobserved. The probe file was deleted immediately after. Kept in the
+#     ledger rather than removed, because this script did run and the count is
+#     supposed to be a fact about the project; it resets the green streak, which
+#     is the safe direction (11.40 counts greens, and this ledger already says
+#     its count is a floor).
+2026-09-03T06:12:16Z	e92a7a7	green
+2026-09-06T05:31:31Z	cf4bffe	green
+2026-09-06T05:38:17Z	cf4bffe	green

@@ -1,0 +1,60 @@
+# Source for website/static/diagrams/trash-move-restore.svg.
+# Rendered by website/tools/render_diagrams.sh — do not hand-edit the SVG.
+#
+# For projects-members-and-roles.md, "Deleting a project" (/w-35 item 11).
+# Where a published project's records are, after Move to Trash and Restore.
+# Checked against the code, not the guide (2026-10-10):
+# - Move to Trash writes a tombstone on the project row and nothing else
+#   (projects_screen.dart `_deleteProject` -> `softDeleteById`); the records
+#   are untouched. It is offered to an owner, and to somebody who has left or
+#   holds a read-only copy (`canDelete`); a current non-owner sees it grayed.
+# - The tombstone syncs (`_offerStrandedProjectChanges`), so the server holds
+#   the records hidden (`_DeletedOnServerRow`: "Its records are still held on
+#   the server.") and each member's phone hides the project at its next pull
+#   (project_merger.dart, `deleted`), telling them who did it
+#   (project_deletion_dialogs.dart `describeDeletedArrivals`).
+# - A phone that has left does not sync the project, so its move is this
+#   phone's alone (PERMISSIONS_MATRIX P6, P8).
+# - Restore of a server-held project is the owner's request to the server,
+#   which clears the tombstone and withdraws any countdown (M11); members get
+#   it back by themselves (`describeRestoredArrivals`).
+digraph TrashMoveRestore {
+  rankdir=TB;
+  bgcolor="transparent";
+  graph [fontname="Helvetica,Arial,sans-serif", fontsize=12, margin=0,
+         nodesep=0.3, ranksep=0.35];
+  node [fontname="Helvetica,Arial,sans-serif", fontsize=13, shape=box,
+        style="rounded", margin="0.18,0.10"];
+  edge [fontname="Helvetica,Arial,sans-serif", fontsize=11];
+
+  move [label="An owner taps Move to Trash\l", class="highlight"];
+  ownerPhone [label="Owner's phone\l✓ records kept\l   the project is in the Trash\l",
+              class="good"];
+  server [label="Server\l✓ records kept\l   hidden from every member\l",
+          class="good"];
+  members [label="Each member's phone\l✓ records kept\l   the project is hidden, and\l   they are told who moved it\l",
+           class="good"];
+
+  move -> ownerPhone;
+  ownerPhone -> server [label="  sync"];
+  server -> members [label="  their next sync"];
+
+  restore [label="The owner taps Restore, in the Trash\l", class="highlight"];
+  server2 [label="Server\l✓ back for every member\l   any countdown is canceled\l",
+           class="good"];
+  members2 [label="Each phone\l✓ the project comes back by\l   itself at the next sync\l",
+            class="good"];
+  members -> restore [style=invis];
+  restore -> server2;
+  server2 -> members2 [label="  next sync"];
+
+  left [label="A member who has left the project\ltaps Move to Trash\l",
+        class="highlight"];
+  leftPhone [label="Their phone only\l✓ records kept, in the Trash\l   nothing is sent; the server and\l   everybody else are unchanged\l",
+             class="good"];
+  current [label="A current member who is not an\lowner sees Move to Trash grayed\l",
+           class="note", shape=note];
+  members2 -> left [style=invis];
+  left -> leftPhone;
+  leftPhone -> current [style=invis];
+}

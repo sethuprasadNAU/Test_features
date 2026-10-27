@@ -1,0 +1,27 @@
+# The numbered references shared by the two theory pages (task /w-37):
+# docs/how-the-estimate-is-calculated.md and
+# docs/the-mathematics-of-the-estimate.md. Both pages render this list with
+# {{< theory-references >}}, so [2] means the same source on both and there is
+# one copy to correct. Numbered in the order each source is first cited,
+# reading the first page and then the mathematics page. A citation in the text
+# is a link, [[2]](#ref-2); `text` is Markdown.
+
+[[refs]]
+n = 1
+text = "Lenth, R. V. (1981). On finding the source of a signal. _Technometrics_ 23(2): 149–154."
+
+[[refs]]
+n = 2
+text = "White, G. C., and R. A. Garrott (1990). _Analysis of Wildlife Radio-Tracking Data._ Academic Press, San Diego. Chapter 4, Estimating Animal Locations; chapter 5, Designing and Testing Triangulation Systems."
+
+[[refs]]
+n = 3
+text = "Ecological Software Solutions. LOAS (software) manual, dated 1/1/2005; error ellipses on p. 11. <http://www.ecostats.com>"
+
+[[refs]]
+n = 4
+text = "Garrott, R. A., G. C. White, R. M. Bartmann, and D. M. Weybright (1986). Reflected signal bias in biotelemetry triangulation systems. _Journal of Wildlife Management_ 50: 747–752. Cited as White and Garrott [[2]](#ref-2) report it, in their Table 4.1 and reference list; the paper itself was not read for these pages."
+
+[[refs]]
+n = 5
+text = "Fisher, N. I. (1993). _Statistical Analysis of Circular Data._ Cambridge University Press."

@@ -1,0 +1,13 @@
+# A pubspec with no dependencies, so the website's checks can run with a plain
+# Dart SDK and never need the Flutter toolchain.
+#
+# Without it, `dart run` walks up to the repository root, finds the app's
+# pubspec, and refuses to start until `flutter pub get` has resolved several
+# hundred packages — which would make a check on the website's own prose
+# depend on the app's entire dependency tree.
+name: tritrack_website_tools
+description: Checks that keep the website honest about what the app says.
+publish_to: none
+
+environment:
+  sdk: ^3.0.0

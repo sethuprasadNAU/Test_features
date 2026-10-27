@@ -1,0 +1,12 @@
+# Build output. The site is rebuilt from source on every deploy; a committed
+# copy would be a second answer to "what does the site say".
+public/
+
+# Rendered from website/diagrams/*.dot by website/tools/render_diagrams.sh.
+# Cheap to regenerate (one `dot` call each), unlike the screenshots, so this
+# is build output too rather than a second copy of the source.
+static/diagrams/
+
+# `dart pub get --directory website/tools` writes this.
+tools/.dart_tool/
+.hugo_build.lock

@@ -1,0 +1,33 @@
+# Source for website/static/diagrams/device-and-server.svg.
+# Rendered by website/tools/render_diagrams.sh — do not hand-edit the SVG.
+#
+# For sync.md, under "TriTrack works with no server at all": what's on the
+# phone versus the server, and that the phone is where everything starts.
+# Six project-scoped tables sync (packages/tritrack_sync/lib/src/
+# sync_tables.dart: projects, tags, individuals, observations [bearings],
+# actualTagLocations [truth points], estimatedPositions); the Tag Library
+# is device-local and is not one of syncTables at all — see
+# managing-your-tags.md and its "tag-library-copy" diagram for that split.
+digraph DeviceAndServer {
+  rankdir=TB;
+  bgcolor="transparent";
+  graph [fontname="Helvetica,Arial,sans-serif", fontsize=12, margin=0,
+         nodesep=0.4, ranksep=0.7];
+  node [fontname="Helvetica,Arial,sans-serif", fontsize=13, shape=box,
+        style="rounded", margin="0.22,0.16"];
+  edge [fontname="Helvetica,Arial,sans-serif", fontsize=11];
+
+  device [label="On your phone\lrecorded here first, always\l\lProjects\lTags (a project's copies)\lIndividuals\lBearings\lTruth points\lPosition estimates\l",
+          class="highlight"];
+  library [label="Tag Library\lalso on your phone, and it\lnever syncs: your own\lequipment list\l",
+           class="wait"];
+  server [label="On the server, once synced\lthe same six, scoped to each\lproject — visible to your teammates\l",
+          class="good"];
+
+  # No label on this edge (/w-35, Michael's review): "also on this device —
+  # never syncs" sat between the two arrows and read as if it described the
+  # sync line too. It is now inside the Tag Library box, which it is about.
+  device -> library [dir=none, style=dashed];
+  library -> server [style=invis];
+  device -> server [label="sync"];
+}

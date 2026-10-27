@@ -1,0 +1,203 @@
+# TLS-terminating reverse proxy (task 10.49 / Security Model §4.1, §8.6).
+#
+#   docker compose -f docker-compose.yml -f docker-compose.tls.yml up --build -d
+#
+# Three straight gates swept the repository for nginx, Caddy, Traefik,
+# certbot or any ACME configuration and found nothing outside
+# `CLAUDE_DOCS/` — §4.1 named the reverse proxy as part of any real
+# deployment and nothing shipped one. This is that artifact: a `caddy`
+# service that terminates real TLS on 443, and reconfigures `server` so the
+# only way in from outside this compose network is through it.
+#
+# Layered on top of the base file rather than folded into it, on the same
+# reasoning `docker-compose.e2e.yml` and `docker-compose.server-test.yml`
+# already use: a clean checkout stays a zero-certificate `docker compose up`,
+# and choosing to add this file is the typed decision §4.10 requires before
+# anything changes shape.
+#
+# Required in `.env` (see `.env.example`):
+#   TRITRACK_TLS_DOMAIN         the public site address Caddy serves — a real
+#                                domain for a real deployment, or `localhost`
+#                                (or another address Caddy's own heuristic
+#                                treats as internal) for a local self-signed
+#                                verification run. See `proxy/Caddyfile`.
+#   TRITRACK_TLS_ORIGIN_CERT /
+#   TRITRACK_TLS_ORIGIN_KEY     a self-signed certificate pair for the
+#                                *origin* server's own TLS — generated once,
+#                                on this host, never committed. See
+#                                server/README.md's "TLS termination"
+#                                section for the one-line command and why
+#                                this is a second, separate certificate from
+#                                the one Caddy serves publicly.
+#
+# Optional:
+#   TRITRACK_TLS_PUBLISH_ADDRESS   which host interface 80/443 are published
+#                                    on. Defaults to every interface — unlike
+#                                    the base file's loopback-only default,
+#                                    because bringing this override up at all
+#                                    is the explicit decision to be reachable
+#                                    that §4.10 asks for; a reverse proxy
+#                                    nobody can reach serves no purpose. Set
+#                                    it narrower (e.g. a specific interface)
+#                                    if that is what the deployment needs.
+services:
+  server:
+    environment:
+      # A real deployment's whole point (§4.1's decision table) — see
+      # docker-compose.yml's own comment on why the base file leaves this
+      # unset. Hardcoded here, the same way the base file hardcodes
+      # TRITRACK_ALLOW_CLEARTEXT_LAN: bringing this override up at all IS
+      # the deployment decision; it should not also require remembering a
+      # second variable in .env to make real.
+      TRITRACK_ENV: production
+      # Satisfies `server`'s own §4.1 requirement independently of Caddy:
+      # `TransportSecurityConfig` resolves TLS-configured/all-interfaces the
+      # moment both paths below are set, which is what lets TRITRACK_ENV=
+      # production coexist with the base file's hardcoded
+      # TRITRACK_ALLOW_CLEARTEXT_LAN=1 at all — that combination alone
+      # refuses to start (by design; see docker-compose.yml's comment on the
+      # base file's own hardcoded env var), and this is the file's own
+      # documented remedy for exactly that refusal.
+      TRITRACK_TLS_CERT_PATH: /tls/origin.crt
+      TRITRACK_TLS_KEY_PATH: /tls/origin.key
+      # Task 10.52 / Security Model §4.4 — finding I-1, and the reason this
+      # file could not ship without it. TRITRACK_ENV=production above makes
+      # the server REFUSE TO START unless this question is answered, which is
+      # deliberate: task 10.49 shipped the proxy below without answering it,
+      # and the per-source rate limit silently became one bucket shared by
+      # every user of the deployment — ten unauthenticated requests denying
+      # magic-link sign-in to everybody, and every audit row naming this
+      # proxy instead of the caller.
+      #
+      # The value is the proxy's address, pinned below, and NOT the whole
+      # bridge subnet: an allowlist that covers every container on this
+      # network would also cover whatever service someone adds to it next.
+      # From this peer, and only this peer, the origin reads the
+      # X-Forwarded-For that proxy/Caddyfile's `header_up` writes.
+      #
+      # This line alone answers "who may speak for a client" with a fact about
+      # this file, not an operator's claim — TRITRACK_PROXY_SOURCE_IDENTITY
+      # below is where that claim about the operator's own network has to be
+      # made, because an allowlist here cannot see past its own publish path.
+      TRITRACK_TRUSTED_PROXIES: ${TRITRACK_TLS_PROXY_ADDRESS:-172.31.242.10}
+      # Task 10.62 / §4.4.2. `ports: !override []` below means no host port
+      # maps to this service at all, so the only way in is the proxy — that is
+      # what `none` says here, and it is why this file's answer above is the
+      # allowlist rather than `peer-verified`.
+      #
+      # Hardcoded rather than inherited: the base file's value follows
+      # SERVER_PUBLISH_ADDRESS, which is meaningless once this override empties
+      # `ports:`, and an inherited `0.0.0.0` would have this service refuse to
+      # start describing an exposure it does not have. Same reasoning as the
+      # `ports: !override` on the line below, applied to the variable that
+      # mirrors it.
+      #
+      # **What this does NOT say:** the `proxy` service below publishes 80/443
+      # on the host, so every caller from outside the compose network crosses a
+      # host publish path before Caddy sees them. Where that path rewrites
+      # source addresses — Docker Desktop does — Caddy's X-Forwarded-For
+      # faithfully carries one gateway address for everybody, and the allowlist
+      # above cannot help. That was finding K-2; the variable below is now the
+      # answer, and the server refuses to start without it.
+      TRITRACK_PUBLISH_ADDRESS: none
+      # Task 10.74 / §4.4.2 — finding K-2. Deliberately NOT hardcoded, unlike
+      # every other value in this file. The two above are facts about this
+      # compose file, which ships; this one is a fact about the HOST, which
+      # does not, and shipping a default here would be this project vouching
+      # for a machine it has never seen. That is precisely what §12.4 recorded
+      # as still open and what K-2 measured: the shipped TLS deployment ran
+      # with its per-source limit collapsed, on the one path §4.1 mandates.
+      #
+      #   TRITRACK_PROXY_SOURCE_IDENTITY=probe-verified
+      #       scripts/verify_source_identity.sh --assisted, run ON THIS HOST
+      #       from two real off-host devices, reported `proxied: PRESERVED`.
+      #       The only value that qualifies this deployment to be exposed. No
+      #       Docker Desktop host can earn it, and the probe's automatic mode
+      #       cannot issue it on any host (§4.4.4).
+      #   TRITRACK_PROXY_SOURCE_IDENTITY=on-network-only
+      #       nothing off this host reaches the proxy either. True of
+      #       scripts/verify_i1_source_identity.sh and
+      #       scripts/verify_tls_termination.sh, which is why both set it.
+      #
+      # Both this variable and TRITRACK_TRUSTED_PROXIES above are an
+      # operator's own measured claim about their own network, never a value
+      # this repository can generate on their behalf. Full reasoning:
+      # CLAUDE_DOCS/SECURITY_SCOPE_AND_EXIT.md, "What TRITRACK_TRUSTED_PROXIES
+      # / TRITRACK_PROXY_SOURCE_IDENTITY mean".
+      TRITRACK_PROXY_SOURCE_IDENTITY: ${TRITRACK_PROXY_SOURCE_IDENTITY:-}
+    # Task 11.223. `!override` REPLACES the base file's `volumes:` list
+    # rather than merging it, so every mount the server needs has to be
+    # listed here, not just the two this file itself is about — the durable
+    # degradation-record volume (task 11.129) silently stopped being mounted
+    # in this, the deployment that actually ships, for two weeks before
+    # anybody noticed, because nothing in this file's own change touched it.
+    # `server/test/security/shipped_defaults_test.dart` now asserts this
+    # against the merged `docker compose -f docker-compose.yml -f
+    # docker-compose.tls.yml config` output rather than against either file
+    # alone, so a mount added to the base file's `server.volumes:` in the
+    # future and forgotten here fails loudly instead of shipping silently
+    # dropped.
+    volumes: !override
+      - ${TRITRACK_TLS_ORIGIN_CERT:?Set TRITRACK_TLS_ORIGIN_CERT in .env — see .env.example}:/tls/origin.crt:ro
+      - ${TRITRACK_TLS_ORIGIN_KEY:?Set TRITRACK_TLS_ORIGIN_KEY in .env — see .env.example}:/tls/origin.key:ro
+      - tritrack_server_state:/var/lib/tritrack
+      # Task 11.287 — the sign-in relay's CA certificate, when the relay needs
+      # one the system store lacks. Repeated from the base file because this
+      # list replaces it; the environment variable that points at it is
+      # inherited, since `environment:` maps merge.
+      - ${TRITRACK_SMTP_CA_CERT:-/dev/null}:/tls/smtp-ca.pem:ro
+    # Task 10.47's own `!override` discipline, applied the day it actually
+    # matters: the base file's `ports:` publishes 8080 in cleartext, which
+    # this override exists specifically to stop being reachable from outside
+    # the compose network. An un-tagged empty list here would still leave
+    # the base mapping concatenated in — the exact class §10.7.3 recorded as
+    # a latent risk, now the first real instance of it.
+    ports: !override []
+
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - server
+    # Task 10.52: a fixed address, because TRITRACK_TRUSTED_PROXIES above has
+    # to name it and Docker otherwise assigns whichever address is free on
+    # the day. Both values default together and are overridden together —
+    # TRITRACK_TLS_PROXY_ADDRESS must be inside TRITRACK_TLS_PROXY_SUBNET, and
+    # a mismatch fails loudly at `up` rather than quietly at runtime.
+    networks:
+      default:
+        ipv4_address: ${TRITRACK_TLS_PROXY_ADDRESS:-172.31.242.10}
+    environment:
+      TRITRACK_TLS_DOMAIN: ${TRITRACK_TLS_DOMAIN:?Set TRITRACK_TLS_DOMAIN in .env — see .env.example}
+    ports:
+      # Port 80 is not a redirect nicety here — Caddy's automatic HTTPS uses
+      # it for the ACME HTTP-01 challenge against a real TRITRACK_TLS_DOMAIN.
+      # Without it reachable from the internet, the real-deployment path in
+      # `proxy/Caddyfile`'s own comment never gets a certificate at all.
+      - "${TRITRACK_TLS_PUBLISH_ADDRESS:-0.0.0.0}:80:80"
+      - "${TRITRACK_TLS_PUBLISH_ADDRESS:-0.0.0.0}:443:443"
+    volumes:
+      - ./proxy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # Caddy's own certificate storage — the ACME account key and every
+      # issued certificate (real or internal) live here. Named volumes, not
+      # bind mounts: nothing about this needs to be human-readable on the
+      # host, and a named volume survives `docker compose down` (never `-v`)
+      # the same way `tritrack_postgres_data` does.
+      - tritrack_caddy_data:/data
+      - tritrack_caddy_config:/config
+
+volumes:
+  tritrack_caddy_data:
+  tritrack_caddy_config:
+
+# Task 10.52: the base file declares no networks, so every service sits on the
+# implicit `default` bridge with a Docker-assigned subnet. Pinning the subnet
+# here is what makes a fixed proxy address possible at all — and therefore what
+# makes TRITRACK_TRUSTED_PROXIES nameable. Override
+# TRITRACK_TLS_PROXY_SUBNET/_ADDRESS together if this range collides with
+# something else on the host.
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: ${TRITRACK_TLS_PROXY_SUBNET:-172.31.242.0/24}
